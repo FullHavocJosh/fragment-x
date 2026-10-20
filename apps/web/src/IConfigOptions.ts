@@ -33,6 +33,10 @@ export interface ConfigOptions extends WebConfigJson {
          * opened or closed in a room keeps that state.
          */
         member_list_default_open?: boolean;
+        /**
+         * When true, the space panel (server rail) shows a search button that opens the spotlight search.
+         */
+        rail_search_button?: boolean;
     };
 }
 

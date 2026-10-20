@@ -58,6 +58,7 @@ import SettingsStore from "../../../settings/SettingsStore";
 import { SettingLevel } from "../../../settings/SettingLevel";
 import UIStore from "../../../stores/UIStore";
 import QuickSettingsButton from "./QuickSettingsButton";
+import RailSearchButton from "./RailSearchButton";
 import { useSettingValue } from "../../../hooks/useSettings";
 import IndicatorScrollbar from "../../structures/IndicatorScrollbar";
 import { useDispatcher } from "../../../hooks/useDispatcher";
@@ -453,6 +454,7 @@ const SpacePanel: React.FC = () => {
                         >
                             <ChevronRightIcon />
                         </AccessibleButton>
+                        <RailSearchButton isPanelCollapsed={isPanelCollapsed} />
                         <Droppable droppableId="top-level-spaces">
                             {(provided, snapshot) => (
                                 <InnerSpacePanel
