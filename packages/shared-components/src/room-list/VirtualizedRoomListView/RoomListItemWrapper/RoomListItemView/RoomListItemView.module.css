@@ -21,8 +21,8 @@
     --padding-bottom: var(--cpd-space-1x);
     padding: var(--padding-top) 0 var(--padding-bottom) 0;
 
-    /* 36px height + padding */
-    min-height: calc(36px + var(--padding-top) + var(--padding-bottom));
+    /* 44px height + padding */
+    min-height: calc(44px + var(--padding-top) + var(--padding-bottom));
 
     font: var(--cpd-font-body-md-regular);
     letter-spacing: var(--cpd-font-letter-spacing-body-md);
@@ -67,19 +67,15 @@
 
 .container {
     flex: 1;
-    margin: 0 var(--cpd-space-2x);
+    margin: 0 var(--cpd-space-3x);
     padding: 0 var(--cpd-space-2x);
-    border-radius: 4px;
+    border-radius: 8px;
     min-width: 0;
 }
 
 .dragging {
     outline: 1px solid var(--cpd-color-border-interactive-hovered);
-    background-color: color-mix(
-        in srgb,
-        var(--cpd-color-bg-action-tertiary-hovered) 95%,
-        transparent
-    );
+    background-color: color-mix(in srgb, var(--cpd-color-bg-action-tertiary-hovered) 95%, transparent);
     color: var(--cpd-color-text-primary);
 }
 
@@ -122,13 +118,13 @@
     .container::before {
         content: "";
         position: absolute;
-        /* Marker height is 20px, room list item height is 36px. So position is at 8px at top and bottom + padding */
-        top: calc(8px + var(--padding-top));
-        bottom: calc(8px + var(--padding-bottom));
+        /* Marker height is 34px, room list item height is 44px. So position is at 5px at and bottom + padding */
+        top: calc(5px + var(--padding-top));
+        bottom: calc(5px + var(--padding-bottom));
         left: 0;
         width: 4px;
         background-color: var(--cpd-color-bg-accent-rest);
-        border-radius: 0 4px 4px 0;
+        border-radius: 0 8px 8px 0;
     }
 }
 
