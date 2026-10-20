@@ -77,5 +77,8 @@
     },
     "element_call": {
         "use_exclusively": true
+    },
+    "fragment_x": {
+        "member_list_default_open": true
     }
 }

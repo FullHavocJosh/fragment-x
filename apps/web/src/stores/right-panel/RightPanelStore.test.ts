@@ -20,6 +20,7 @@ import { type ActiveRoomChangedPayload } from "../../dispatcher/payloads/ActiveR
 import RightPanelStore from "./RightPanelStore";
 import { RightPanelPhases } from "./RightPanelStorePhases";
 import SettingsStore from "../../settings/SettingsStore";
+import SdkConfig from "../../SdkConfig";
 import { SettingLevel } from "../../settings/SettingLevel";
 import { pendingVerificationRequestForUser } from "../../verification.ts";
 
@@ -323,6 +324,36 @@ describe("RightPanelStore", () => {
         expect(store.currentCard).toEqual({
             phase: RightPanelPhases.EncryptionPanel,
             state: { member, verificationRequest },
+        });
+    });
+
+    describe("fragment_x.member_list_default_open", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("leaves a room with no saved state closed by default", async () => {
+            await viewRoom("!1:example.org");
+            expect(store.isOpenForRoom("!1:example.org")).toEqual(false);
+        });
+
+        it("opens the member list for a room with no saved state when enabled", async () => {
+            SdkConfig.put({ fragment_x: { member_list_default_open: true } });
+            await viewRoom("!1:example.org");
+            expect(store.isOpenForRoom("!1:example.org")).toEqual(true);
+            expect(store.currentCardForRoom("!1:example.org").phase).toEqual(RightPanelPhases.MemberList);
+        });
+
+        it("keeps a panel the user closed", async () => {
+            SdkConfig.put({ fragment_x: { member_list_default_open: true } });
+            await viewRoom("!1:example.org");
+            store.togglePanel("!1:example.org");
+            expect(store.isOpenForRoom("!1:example.org")).toEqual(false);
+
+            // Switch away and back
+            await viewRoom("!2:example.org");
+            await viewRoom("!1:example.org");
+            expect(store.isOpenForRoom("!1:example.org")).toEqual(false);
         });
     });
 });

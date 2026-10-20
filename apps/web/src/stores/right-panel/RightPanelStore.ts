@@ -12,6 +12,7 @@ import { CryptoEvent } from "matrix-js-sdk/src/crypto-api";
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import { pendingVerificationRequestForUser } from "../../verification";
 import SettingsStore from "../../settings/SettingsStore";
+import SdkConfig from "../../SdkConfig";
 import { RightPanelPhases } from "./RightPanelStorePhases";
 import { SettingLevel } from "../../settings/SettingLevel";
 import { UPDATE_EVENT } from "../AsyncStore";
@@ -323,6 +324,13 @@ export default class RightPanelStore extends ReadyWatchingStore {
                     this.byRoom[this.viewedRoomId] ??
                     convertToStatePanel(SettingsStore.getValue("RightPanel.phases", this.viewedRoomId), room) ??
                     undefined;
+                // Fragment X: with the option set, a room with no saved panel state opens with the member list.
+                if (!this.byRoom[this.viewedRoomId] && SdkConfig.get().fragment_x?.member_list_default_open) {
+                    this.byRoom[this.viewedRoomId] = {
+                        isOpen: true,
+                        history: this.generateHistoryForPhase(RightPanelPhases.MemberList),
+                    };
+                }
             } else {
                 logger.warn(
                     "Could not restore the right panel after load because there was no associated room object.",

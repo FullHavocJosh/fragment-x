@@ -23,6 +23,17 @@ export interface ConfigOptions extends WebConfigJson {
      * This is not a real config field, we're just abusing the config structure to pass around a validated server config
      */
     validated_server_config?: ValidatedServerConfig;
+
+    /**
+     * Fragment X options.
+     */
+    fragment_x?: {
+        /**
+         * When true, a room that has no saved right panel state opens with the member list. A panel the user has
+         * opened or closed in a room keeps that state.
+         */
+        member_list_default_open?: boolean;
+    };
 }
 
 /**
