@@ -1,0 +1,104 @@
+name: Fragment X image
+
+# Builds the web image from this repository (apps/web, using upstream's Dockerfile and docker-bake.hcl) and publishes it
+# to GHCR for the Hetzner cluster. The cluster pins the image by digest; the digest is printed in the job summary.
+# Only linux/amd64 is built: every node of the cluster is amd64.
+on:
+    workflow_dispatch: {}
+    push:
+        branches: [develop]
+        paths-ignore:
+            - "docs/**"
+            - "**/*.md"
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref_name }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    image:
+        name: Build and push the web image
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        permissions:
+            contents: read
+            packages: write # needed for publishing to GHCR with GITHUB_TOKEN
+        env:
+            IMAGE: ghcr.io/fullhavocjosh/fragment-x-web
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  fetch-depth: 0 # needed for docker-package to be able to calculate the version
+                  persist-credentials: false
+
+            - name: Short commit id
+              id: vars
+              run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+              with:
+                  install: true
+
+            - name: Log in to GHCR
+              uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build and push
+              id: bake
+              uses: docker/bake-action@59cb1203cd42bcefd40a1b6d73b589e48c86040e # v7
+              with:
+                  source: .
+                  files: ./docker-bake.hcl
+                  targets: element-web
+                  push: true
+                  set: |
+                      element-web.platform=linux/amd64
+                      element-web.tags=${{ env.IMAGE }}:develop
+                      element-web.tags=${{ env.IMAGE }}:sha-${{ steps.vars.outputs.short }}
+                      element-web.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
+                      element-web.labels.org.opencontainers.image.revision=${{ github.sha }}
+
+            - name: Read the image digest
+              id: digest
+              env:
+                  METADATA: ${{ steps.bake.outputs.metadata }}
+              run: |
+                  DIGEST=$(echo "$METADATA" | jq -r '."element-web"."containerimage.digest"')
+                  test -n "$DIGEST" && test "$DIGEST" != "null"
+                  echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+            - name: Smoke test the pushed image
+              env:
+                  REF: ${{ env.IMAGE }}@${{ steps.digest.outputs.digest }}
+              timeout-minutes: 3
+              run: |
+                  set -x
+                  PORT=8181
+                  docker run --rm -d --name fragment-x-web-smoke -e "ELEMENT_WEB_PORT=$PORT" -p "$PORT:$PORT" "$REF"
+                  wget --retry-connrefused --tries=10 -q --wait=3 --spider "http://localhost:$PORT/config.json"
+                  curl -fsS "http://localhost:$PORT/config.json" | jq -e . > /dev/null
+                  curl -fsS "http://localhost:$PORT/" | grep -qi "<title>"
+                  docker stop fragment-x-web-smoke
+
+            - name: Job summary
+              env:
+                  DIGEST: ${{ steps.digest.outputs.digest }}
+                  SHORT: ${{ steps.vars.outputs.short }}
+                  COMMIT: ${{ github.sha }}
+              run: |
+                  {
+                      echo "### Fragment X web image"
+                      echo
+                      echo "- Image: \`${IMAGE}@${DIGEST}\`"
+                      echo "- Tags: \`develop\`, \`sha-${SHORT}\`"
+                      echo "- Commit: \`${COMMIT}\`"
+                      echo
+                      echo "Pin this digest in \`k3s-apps/matrix/fragment-x-web-deployment.yaml\` in home-infrastructure."
+                  } >> "$GITHUB_STEP_SUMMARY"
