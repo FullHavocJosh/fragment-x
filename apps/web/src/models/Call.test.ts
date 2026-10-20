@@ -979,6 +979,31 @@ describe("ElementCall", () => {
             expect(preventDefault).toHaveBeenCalled();
         });
 
+        it("tracks the mute state Element Call reports and clears it on disconnect", async () => {
+            await connect(call, widgetApi);
+            expect(call.deviceMute).toBeNull();
+
+            const onDeviceMute = vi.fn();
+            call.on(CallEvent.DeviceMute, onDeviceMute);
+            call.handleDeviceMute({ audio_enabled: false, video_enabled: true });
+            expect(call.deviceMute).toEqual({ audio_enabled: false, video_enabled: true });
+            expect(onDeviceMute).toHaveBeenCalledWith({ audio_enabled: false, video_enabled: true });
+
+            await disconnect(call, widgetApi);
+            expect(call.deviceMute).toBeNull();
+        });
+
+        it("mutes the microphone through the widget API and records the reply", async () => {
+            await connect(call, widgetApi);
+            vi.mocked(widgetApi.transport).send.mockResolvedValueOnce({ audio_enabled: false, video_enabled: true });
+
+            await call.setAudioMuted(true);
+            expect(widgetApi.transport.send).toHaveBeenCalledWith(ElementWidgetActions.DeviceMute, {
+                audio_enabled: false,
+            });
+            expect(call.deviceMute).toEqual({ audio_enabled: false, video_enabled: true });
+        });
+
         it("emits events when connection state changes", async () => {
             // const wait = vi.spyOn(CallModule, "waitForEvent");
             const onConnectionState = vi.fn();

@@ -39,6 +39,10 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.room_list_toggle_button: true`: a button in the server rail collapses or expands the room list so the chat can
   use the full width (the separator between the room list and the chat does the same on double click and click). See
   `apps/web/src/components/views/spaces/RoomListToggleButton.tsx`.
+- `fragment_x.user_panel: true`: the room list column ends in a user panel like Discord's (avatar and name with the user
+  menu, a settings button, and a microphone mute button while the user is in an Element Call). The server rail no longer
+  shows the user menu. Element Call has no deafen control, so there is no deafen button. See
+  `apps/web/src/components/views/spaces/UserPanel.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

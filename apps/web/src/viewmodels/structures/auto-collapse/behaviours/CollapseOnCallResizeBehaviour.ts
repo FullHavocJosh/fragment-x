@@ -9,11 +9,14 @@ import { BaseCollapseBehaviour } from "./BaseCollapseBehaviour";
 import type { Call } from "../../../../models/Call";
 import { type CallStore, CallStoreEvent } from "../../../../stores/CallStore";
 import type { CollapseHandler } from "../CollapseHandler";
+import SdkConfig from "../../../../SdkConfig";
 
 /**
  * This behaviour:
  * - Collapses the left-panel when the user joins a call.
  * - Expands the left-panel when the user leaves that call.
+ *
+ * Fragment X: with `fragment_x.user_panel` the left panel holds the microphone button, so it stays open during a call.
  */
 export class CollapseOnCallResizeBehaviour extends BaseCollapseBehaviour {
     private callJustStarted: boolean = false;
@@ -28,6 +31,7 @@ export class CollapseOnCallResizeBehaviour extends BaseCollapseBehaviour {
     }
 
     private onCallConnected = (calls: Set<Call>): void => {
+        if (SdkConfig.get().fragment_x?.user_panel) return;
         if (calls.size > 0) {
             this.setCallJustStarted();
             this.collapseHandler.collapse();

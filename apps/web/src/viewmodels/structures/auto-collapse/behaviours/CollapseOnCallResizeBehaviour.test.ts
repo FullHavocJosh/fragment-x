@@ -12,11 +12,32 @@ import EventEmitter from "node:events";
 import { type CallStore, CallStoreEvent } from "../../../../stores/CallStore";
 import { CollapseOnCallResizeBehaviour } from "./CollapseOnCallResizeBehaviour";
 import { CollapseHandler } from "../CollapseHandler";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
+
+import SdkConfig from "../../../../SdkConfig";
 
 vi.useFakeTimers();
 
 describe("CollapseOnCallResizeBehaviour", () => {
+    afterEach(() => {
+        SdkConfig.reset();
+    });
+
+    it("Should leave the panel alone on call with the Fragment X user panel", () => {
+        SdkConfig.put({ fragment_x: { user_panel: true } });
+        const mockCallStore = new EventEmitter() as unknown as CallStore;
+
+        const expandPanel = vi.fn();
+        const collapsePanel = vi.fn();
+        const collapseHandler = new CollapseHandler(expandPanel, collapsePanel, 0);
+        new CollapseOnCallResizeBehaviour(collapseHandler, mockCallStore);
+
+        mockCallStore.emit(CallStoreEvent.ConnectedCalls, new Set([1]));
+        mockCallStore.emit(CallStoreEvent.ConnectedCalls, new Set([]));
+        expect(collapsePanel).not.toHaveBeenCalled();
+        expect(expandPanel).not.toHaveBeenCalled();
+    });
+
     it("Should collapse/expand the panel on call", () => {
         const mockCallStore = new EventEmitter() as unknown as CallStore;
 

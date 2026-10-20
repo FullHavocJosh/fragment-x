@@ -81,6 +81,7 @@
     "fragment_x": {
         "member_list_default_open": true,
         "rail_search_button": true,
-        "room_list_toggle_button": true
+        "room_list_toggle_button": true,
+        "user_panel": true
     }
 }

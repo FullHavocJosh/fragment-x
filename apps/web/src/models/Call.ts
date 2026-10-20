@@ -101,6 +101,7 @@ export enum CallEvent {
     Close = "close",
     Destroy = "destroy",
     CallTypeChanged = "call_type_changed",
+    DeviceMute = "device_mute",
 }
 
 interface CallEventHandlerMap {
@@ -112,6 +113,7 @@ interface CallEventHandlerMap {
     [CallEvent.Close]: () => void;
     [CallEvent.Destroy]: () => void;
     [CallEvent.CallTypeChanged]: (callType: CallType) => void;
+    [CallEvent.DeviceMute]: (state: DeviceMuteState) => void;
 }
 
 /**
@@ -1173,15 +1175,47 @@ export class ElementCall extends Call {
         this.close(); // User is done with the call; tell the UI to close it
     }
 
+    private _deviceMute: DeviceMuteState | null = null;
+
+    /**
+     * The microphone and camera mute state Element Call last reported or confirmed, or null if it has not
+     * said yet or the call is not connected.
+     */
+    public get deviceMute(): DeviceMuteState | null {
+        return this._deviceMute;
+    }
+
     /** Element Call reports its mute state (`HostBridge.notifyDeviceMute` / `io.element.device_mute`). */
-    public handleDeviceMute(_state?: DeviceMuteState): void {
-        // Nothing to do yet; Element Web does not track the call's mute state.
+    public handleDeviceMute(state?: DeviceMuteState): void {
+        if (!state) return;
+        this._deviceMute = state;
+        this.emit(CallEvent.DeviceMute, state);
+    }
+
+    /**
+     * Mutes or unmutes the microphone in the call, through the React component's handle or the widget API,
+     * and records the state Element Call reports back.
+     */
+    public async setAudioMuted(muted: boolean): Promise<void> {
+        const request = { audio_enabled: !muted };
+        let state: DeviceMuteState | undefined;
+        if (this.componentHandle) {
+            state = await this.componentHandle.setDeviceMute(request);
+        } else if (this.widgetApi) {
+            state = (await this.widgetApi.transport.send(ElementWidgetActions.DeviceMute, request)) as DeviceMuteState;
+        }
+        this.handleDeviceMute(state);
+    }
+
+    protected setDisconnected(): void {
+        this._deviceMute = null;
+        super.setDisconnected();
     }
 
     private readonly onDeviceMute = (ev: CustomEvent<IWidgetApiRequest>): void => {
         ev.preventDefault();
         this.widgetApi!.transport.reply(ev.detail, {}); // ack
-        this.handleDeviceMute();
+        this.handleDeviceMute(ev.detail.data as unknown as DeviceMuteState | undefined);
     };
 
     private readonly onJoin = (ev: CustomEvent<IWidgetApiRequest>): void => {
