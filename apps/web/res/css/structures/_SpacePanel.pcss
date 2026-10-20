@@ -246,6 +246,37 @@ Please see LICENSE files in the repository root for full details.
         line-height: 0;
     }
 
+    /* Fragment X: server icons are circles that become rounded squares on hover and when selected. */
+    .mx_SpaceButton .mx_SpaceButton_avatarWrapper .mx_BaseAvatar,
+    .mx_SpaceButton .mx_SpaceButton_icon {
+        border-radius: 50%;
+        transition: border-radius 0.15s ease-out;
+    }
+
+    .mx_SpaceButton:hover .mx_SpaceButton_avatarWrapper .mx_BaseAvatar,
+    .mx_SpaceButton:hover .mx_SpaceButton_icon,
+    .mx_SpaceButton.mx_SpaceButton_active .mx_SpaceButton_avatarWrapper .mx_BaseAvatar,
+    .mx_SpaceButton.mx_SpaceButton_active .mx_SpaceButton_icon {
+        border-radius: 30%;
+    }
+
+    /* Fragment X: the selected server gets a pill on the left edge of the rail instead of a ring. */
+    .mx_SpaceButton.mx_SpaceButton_narrow.mx_SpaceButton_active .mx_SpaceButton_selectionWrapper {
+        border-color: transparent;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: calc(-1 * var(--gutterSize));
+            top: 50%;
+            width: 4px;
+            height: 20px;
+            transform: translateY(-50%);
+            border-radius: 0 4px 4px 0;
+            background-color: var(--cpd-color-text-primary);
+        }
+    }
+
     .mx_SpacePanel_badgeContainer {
         /* Create a flexbox to make aligning dot badges easier */
         display: flex;
