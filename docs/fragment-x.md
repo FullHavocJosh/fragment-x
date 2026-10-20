@@ -22,6 +22,9 @@ What it sets, all through configuration with no code changes:
   colour; a darker server rail like Discord's needs a CSS change in `apps/web/res/css/structures/_SpacePanel.pcss`.
 - `element_call.use_exclusively: true`: Element Call is the only call option. The "Voice call using" menu with Legacy Call
   and Jitsi is not shown, and the call button starts Element Call directly.
+- `fragment_x.member_list_default_open: true`: a room with no saved right panel state opens with the member list, like a
+  Discord server. A panel the user has opened or closed keeps its state. This is a small code change in
+  `apps/web/src/stores/right-panel/RightPanelStore.ts`, not only configuration.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
