@@ -64,8 +64,6 @@ jobs:
                       element-web.tags=${{ env.IMAGE }}:sha-${{ steps.vars.outputs.short }}
                       element-web.labels.org.opencontainers.image.source=https://github.com/${{ github.repository }}
                       element-web.labels.org.opencontainers.image.revision=${{ github.sha }}
-                      element-web.cache-from=type=gha
-                      element-web.cache-to=type=gha,mode=max
 
             - name: Read the image digest
               id: digest
@@ -90,13 +88,17 @@ jobs:
                   docker stop fragment-x-web-smoke
 
             - name: Job summary
+              env:
+                  DIGEST: ${{ steps.digest.outputs.digest }}
+                  SHORT: ${{ steps.vars.outputs.short }}
+                  COMMIT: ${{ github.sha }}
               run: |
                   {
                       echo "### Fragment X web image"
                       echo
-                      echo "- Image: \`${IMAGE}@${{ steps.digest.outputs.digest }}\`"
-                      echo "- Tags: \`develop\`, \`sha-${{ steps.vars.outputs.short }}\`"
-                      echo "- Commit: \`${{ github.sha }}\`"
+                      echo "- Image: \`${IMAGE}@${DIGEST}\`"
+                      echo "- Tags: \`develop\`, \`sha-${SHORT}\`"
+                      echo "- Commit: \`${COMMIT}\`"
                       echo
                       echo "Pin this digest in \`k3s-apps/matrix/fragment-x-web-deployment.yaml\` in home-infrastructure."
                   } >> "$GITHUB_STEP_SUMMARY"
