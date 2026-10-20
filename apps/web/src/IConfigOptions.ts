@@ -37,6 +37,10 @@ export interface ConfigOptions extends WebConfigJson {
          * When true, the space panel (server rail) shows a search button that opens the spotlight search.
          */
         rail_search_button?: boolean;
+        /**
+         * When true, the space panel shows a button that collapses or expands the room list.
+         */
+        room_list_toggle_button?: boolean;
     };
 }
 

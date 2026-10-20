@@ -17,6 +17,8 @@ import { ResizerViewModel } from "./ResizerViewModel";
 import SettingsStore from "../../settings/SettingsStore";
 import { SettingLevel } from "../../settings/SettingLevel";
 import { CallStore } from "../../stores/CallStore";
+import defaultDispatcher from "../../dispatcher/dispatcher";
+import { Action } from "../../dispatcher/actions";
 
 /** The pointer handlers only read where the pointer is, so that is all a test has to give them. */
 const pointerAt = (x: number, y: number) => ({ clientX: x, clientY: y }) as PointerEvent;
@@ -174,6 +176,54 @@ describe("LeftPanelResizerViewModel", () => {
 
         vm.onDoubleClick();
         expect(mockHandle.collapse).toHaveBeenCalled();
+    });
+
+    describe("togglePanel", () => {
+        it("should collapse an expanded panel", () => {
+            const vm = new ResizerViewModel(CallStore.instance);
+            const mockHandle = {
+                collapse: vi.fn(),
+                resize: vi.fn(),
+                isCollapsed: vi.fn().mockReturnValue(false),
+            } as unknown as PanelImperativeHandle;
+            vm.setPanelHandle(mockHandle);
+
+            vm.togglePanel();
+            expect(mockHandle.collapse).toHaveBeenCalled();
+            expect(mockHandle.resize).not.toHaveBeenCalled();
+        });
+
+        it("should expand a collapsed panel to the last size the user set", async () => {
+            const vm = new ResizerViewModel(CallStore.instance);
+            await SettingsStore.setValue("RoomList.panelSize", null, SettingLevel.DEVICE, 34);
+            const mockHandle = {
+                collapse: vi.fn(),
+                resize: vi.fn(),
+                isCollapsed: vi.fn().mockReturnValue(true),
+            } as unknown as PanelImperativeHandle;
+            vm.setPanelHandle(mockHandle);
+
+            vm.togglePanel();
+            expect(mockHandle.resize).toHaveBeenCalledWith("34%");
+            expect(mockHandle.collapse).not.toHaveBeenCalled();
+        });
+
+        it("should toggle on the ToggleRoomListPanel action and stop after dispose", () => {
+            const vm = new ResizerViewModel(CallStore.instance);
+            const mockHandle = {
+                collapse: vi.fn(),
+                resize: vi.fn(),
+                isCollapsed: vi.fn().mockReturnValue(false),
+            } as unknown as PanelImperativeHandle;
+            vm.setPanelHandle(mockHandle);
+
+            defaultDispatcher.dispatch({ action: Action.ToggleRoomListPanel }, true);
+            expect(mockHandle.collapse).toHaveBeenCalledTimes(1);
+
+            vm.dispose();
+            defaultDispatcher.dispatch({ action: Action.ToggleRoomListPanel }, true);
+            expect(mockHandle.collapse).toHaveBeenCalledTimes(1);
+        });
     });
 
     it("should ignore first resized event", () => {

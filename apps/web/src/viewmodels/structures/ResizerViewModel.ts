@@ -21,6 +21,9 @@ import SettingsStore from "../../settings/SettingsStore";
 import { SettingLevel } from "../../settings/SettingLevel";
 import { AutoCollapse } from "./auto-collapse/AutoCollapse";
 import { type CallStore } from "../../stores/CallStore";
+import defaultDispatcher from "../../dispatcher/dispatcher";
+import { Action } from "../../dispatcher/actions";
+import { type ActionPayload } from "../../dispatcher/payloads";
 
 function getInitialState(): ResizerViewSnapshot {
     const shouldStartCollapsed =
@@ -80,6 +83,30 @@ export class ResizerViewModel
             ),
         );
         this.disposables.track(() => this.onLeftPanelResize.cancel());
+
+        const dispatcherRef = defaultDispatcher.register(this.onAction);
+        this.disposables.track(() => defaultDispatcher.unregister(dispatcherRef));
+    }
+
+    private onAction = (payload: ActionPayload): void => {
+        if (payload.action === Action.ToggleRoomListPanel) this.togglePanel();
+    };
+
+    /**
+     * Collapses the left panel, or expands it to its last known size.
+     */
+    public togglePanel = (): void => {
+        if (this.panelHandle?.isCollapsed()) {
+            this.expandPanel();
+        } else {
+            this.panelHandle?.collapse();
+        }
+    };
+
+    private expandPanel(): void {
+        const lastSize = SettingsStore.getValue("RoomList.panelSize");
+        this.panelHandle?.resize(`${lastSize ?? 100}%`);
+        this.autoCollapse.onLeftPanelResized();
     }
 
     public onLeftPanelResize = debounce((panelSize: PanelSize): void => {
@@ -119,11 +146,7 @@ export class ResizerViewModel
 
     private onSeparatorClick = (): void => {
         // When panel is collapsed, single click should expand the panel.
-        if (this.panelHandle?.isCollapsed()) {
-            const lastSize = SettingsStore.getValue("RoomList.panelSize");
-            this.panelHandle.resize(`${lastSize ?? 100}%`);
-            this.autoCollapse.onLeftPanelResized();
-        }
+        if (this.panelHandle?.isCollapsed()) this.expandPanel();
     };
 
     public onDoubleClick = (): void => {
