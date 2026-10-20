@@ -1,0 +1,50 @@
+/*
+Copyright 2026 Fragment X contributors.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+/* Same look as the quick settings button at the bottom of the space panel. */
+.mx_RailSearchButton {
+    /* !important override compound */
+    border-radius: 8px !important;
+    margin: 4px auto 8px;
+
+    svg {
+        fill: $secondary-content;
+    }
+
+    &:not(.expanded):hover {
+        background-color: $quaternary-content !important;
+
+        svg {
+            fill: $primary-content;
+        }
+    }
+
+    &.expanded {
+        background-color: transparent !important;
+
+        /* align with the icons of the other expanded buttons */
+        margin-left: 19px;
+        margin-right: 8px;
+        width: 100%;
+
+        /* the compound component wraps its children in a div */
+        & > div {
+            display: flex;
+            align-items: center;
+        }
+
+        svg {
+            margin-right: 11px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        & .mx_RailSearchButton_label {
+            color: $secondary-content !important;
+        }
+    }
+}

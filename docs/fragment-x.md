@@ -33,6 +33,9 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.member_list_default_open: true`: a room with no saved right panel state opens with the member list, like a
   Discord server. A panel the user has opened or closed keeps its state. This is a small code change in
   `apps/web/src/stores/right-panel/RightPanelStore.ts`, not only configuration.
+- `fragment_x.rail_search_button: true`: a Search button at the top of the server rail opens the spotlight search (the same
+  dialog as `Ctrl/Cmd+K`), so global search is part of the main navigation. See
+  `apps/web/src/components/views/spaces/RailSearchButton.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
