@@ -41,6 +41,11 @@ export interface ConfigOptions extends WebConfigJson {
          * When true, the space panel shows a button that collapses or expands the room list.
          */
         room_list_toggle_button?: boolean;
+        /**
+         * When true, the room list column ends in a user panel (avatar, name, menu, settings, and a microphone
+         * button during a call), and the space panel no longer shows the user menu.
+         */
+        user_panel?: boolean;
     };
 }
 

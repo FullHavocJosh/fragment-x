@@ -78,6 +78,7 @@ import { KeyboardShortcut } from "../settings/KeyboardShortcut";
 import { ModuleApi } from "../../../modules/Api.ts";
 import { useModuleSpacePanelItems } from "../../../modules/ExtrasApi.ts";
 import { UserMenuViewModel } from "../../../viewmodels/menus/UserMenuViewModel.ts";
+import SdkConfig from "../../../SdkConfig";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
 import { OwnProfileStore } from "../../../stores/OwnProfileStore.ts";
 import { type SDKContextClass } from "../../../contexts/SDKContextClass.ts";
@@ -439,7 +440,9 @@ const SpacePanel: React.FC = () => {
                         ref={ref}
                         aria-label={_t("common|spaces")}
                     >
-                        <UserMenu vm={userMenuVm} className="mx_UserMenu" />
+                        {!SdkConfig.get().fragment_x?.user_panel && (
+                            <UserMenu vm={userMenuVm} className="mx_UserMenu" />
+                        )}
                         <AccessibleButton
                             className={classNames("mx_SpacePanel_toggleCollapse", {
                                 expanded: !isPanelCollapsed,

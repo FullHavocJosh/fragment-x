@@ -1,0 +1,54 @@
+/*
+Copyright 2026 Fragment X contributors.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+/* The user area at the bottom of the room list column, like Discord's. */
+.mx_UserPanel {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 4px;
+    min-height: 52px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    /* one shade darker than the list above, like Discord's user area */
+    background-color: var(--cpd-color-bg-subtle-primary);
+}
+
+.mx_UserPanel_menu {
+    /* the shared user menu adds vertical margins for its place at the top of the rail */
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+
+    /* the display name is shown next to the avatar; keep long names on one line */
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.mx_UserPanel_buttons {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 2px;
+}
+
+.mx_UserPanel_button {
+    svg {
+        fill: var(--cpd-color-icon-secondary);
+    }
+
+    &:hover svg {
+        fill: var(--cpd-color-icon-primary);
+    }
+
+    &[aria-pressed="true"] svg {
+        fill: var(--cpd-color-icon-critical-primary);
+    }
+}
