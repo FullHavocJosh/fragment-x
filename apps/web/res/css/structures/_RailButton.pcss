@@ -6,7 +6,7 @@ Please see LICENSE files in the repository root for full details.
 */
 
 /* Same look as the quick settings button at the bottom of the space panel. */
-.mx_RailSearchButton {
+.mx_RailButton {
     /* !important override compound */
     border-radius: 8px !important;
     margin: 4px auto 8px;
@@ -43,8 +43,13 @@ Please see LICENSE files in the repository root for full details.
             flex-shrink: 0;
         }
 
-        & .mx_RailSearchButton_label {
+        & .mx_RailButton_label {
             color: $secondary-content !important;
         }
     }
+}
+
+/* Without the user menu above them (the user panel replaces it), the first rail button needs its own top spacing. */
+.mx_SpacePanel > :not(.mx_RailButton) + .mx_RailButton {
+    margin-top: 12px;
 }
