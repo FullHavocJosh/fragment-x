@@ -7,12 +7,17 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=element-web)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=bugs)](https://sonarcloud.io/summary/new_code?id=element-web)
 
-# Fragment X Web
+# Fragment X
 
 > **Thought project.** This is a fork of [element-hq/element-web](https://github.com/element-hq/element-web) used to
 > explore whether a Discord-style Matrix client family (web, Linux and macOS desktop, Android, iOS and iPadOS) built
 > on Element's stack is viable. It is not a released product, it is not affiliated with or endorsed by Element, and
 > nothing here is supported. The tools used to evaluate it are listed at the bottom of this file.
+
+This repository is the Fragment X monorepo, laid out like Element's: `apps/web` is the hosted web app (Element Web with
+the Fragment X theme and layout). The Fragment X desktop app for Linux and macOS will be a new Rust app that does not
+use Electron, in its own folder next to `apps/web`. `apps/desktop` is Element's Electron desktop app; it is kept from
+upstream for reference and is not used. See [docs/fragment-x.md](docs/fragment-x.md).
 
 The text below is the upstream Element Web README.
 
