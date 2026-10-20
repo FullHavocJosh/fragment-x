@@ -63,7 +63,11 @@
                     "--cpd-color-bg-subtle-secondary": "#35373c",
                     "--cpd-color-bg-subtle-primary": "#1e1f22",
                     "--cpd-color-text-action-accent": "#a79cf7",
-                    "--cpd-color-icon-accent-tertiary": "#a79cf7"
+                    "--cpd-color-icon-accent-tertiary": "#a79cf7",
+                    "--cpd-color-icon-accent-primary": "#7c6cf0",
+                    "--cpd-color-bg-accent-rest": "#7c6cf0",
+                    "--cpd-color-bg-accent-hovered": "#8a7bf3",
+                    "--cpd-color-bg-accent-pressed": "#6d5ce0"
                 }
             }
         ]
