@@ -7,6 +7,15 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=element-web)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=element-web&metric=bugs)](https://sonarcloud.io/summary/new_code?id=element-web)
 
+# Fragment X Web
+
+> **Thought project.** This is a fork of [element-hq/element-web](https://github.com/element-hq/element-web) used to
+> explore whether a Discord-style Matrix client family (web, Linux and macOS desktop, Android, iOS and iPadOS) built
+> on Element's stack is viable. It is not a released product, it is not affiliated with or endorsed by Element, and
+> nothing here is supported. The tools used to evaluate it are listed at the bottom of this file.
+
+The text below is the upstream Element Web README.
+
 # Element
 
 Element (formerly known as Vector and Riot) is a Matrix web & desktop client built using the [Matrix
@@ -115,3 +124,21 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 Please contact [licensing@element.io](mailto:licensing@element.io) to purchase
 an Element commercial license for this software.
+
+## Automated/AI tools leveraged in these projects:
+
+These tools and models are being used to determine whether this project is viable.
+
+Tools:
+
+- Claude Code
+- `ai`, `aidev` and `ainfo` (local command line front ends that route work to the models below)
+- pi
+- OpenCode
+
+Models:
+
+- Claude (Anthropic): Sonnet and Haiku, plus Claude Sonnet 5.5 in the Claude Code session that created these forks
+- Qwen3.5 9B (local)
+- Qwen3-Coder-30B-A3B-Instruct (local, on device)
+- Big Pickle (OpenCode Zen)
