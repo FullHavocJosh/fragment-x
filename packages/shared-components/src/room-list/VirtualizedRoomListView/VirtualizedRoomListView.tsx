@@ -5,11 +5,30 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type JSX, type ReactNode } from "react";
-import { type ScrollIntoViewLocation, type VirtuosoHandle } from "react-virtuoso";
+import React, {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    type JSX,
+    type ReactNode,
+} from "react";
+import {
+    type ScrollIntoViewLocation,
+    type VirtuosoHandle,
+} from "react-virtuoso";
 import { isEqual } from "lodash";
-import { DragDropProvider, DragOverlay, useDragOperation } from "@dnd-kit/react";
-import { KeyboardSensor, PointerActivationConstraints, PointerSensor } from "@dnd-kit/dom";
+import {
+    DragDropProvider,
+    DragOverlay,
+    useDragOperation,
+} from "@dnd-kit/react";
+import {
+    KeyboardSensor,
+    PointerActivationConstraints,
+    PointerSensor,
+} from "@dnd-kit/dom";
 
 import { type Room } from "./RoomListItemWrapper/RoomListItemView";
 import { useViewModel } from "../../core/viewmodel";
@@ -21,7 +40,10 @@ import {
     type GroupedVirtualizedListProps,
 } from "../../core/VirtualizedList";
 import type { RoomListViewSnapshot, RoomListViewModel } from "../RoomListView";
-import { RoomListSectionHeaderView, RoomListStickySectionHeaderView } from "./RoomListSectionHeaderView";
+import {
+    RoomListSectionHeaderView,
+    RoomListStickySectionHeaderView,
+} from "./RoomListSectionHeaderView";
 import { RoomListSectionHeaderDragOverlayView } from "./RoomListSectionHeaderDragOverlayView";
 import { RoomListItemWrapper } from "./RoomListItemWrapper";
 import { RoomListItemDragOverlayView } from "./RoomListItemDragOverlayView";
@@ -70,8 +92,8 @@ export interface VirtualizedRoomListViewProps {
     onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }
 
-/** Height of a single room list item in pixels (44px item + 8px padding bottom) */
-const ROOM_LIST_ITEM_HEIGHT = 52;
+/** Height of a single room list item in pixels (36px item + 8px padding bottom) */
+const ROOM_LIST_ITEM_HEIGHT = 44;
 
 /**
  * Number of pixels the keyboard sensor moves the dragged element per arrow keypress.
@@ -118,13 +140,18 @@ const EXTENDED_VIEWPORT_HEIGHT = 25 * ROOM_LIST_ITEM_HEIGHT;
  * resolves to its header, so it is not shown detached from the section it belongs to; an index past
  * the last room resolves to the last entry.
  */
-export function getScrollTargetEntryIndex(sections: { roomIds: string[] }[], roomIndex: number): number {
+export function getScrollTargetEntryIndex(
+    sections: { roomIds: string[] }[],
+    roomIndex: number,
+): number {
     let headerEntry = 0;
     let roomsBefore = 0;
     for (const section of sections) {
         if (roomIndex < roomsBefore + section.roomIds.length) {
             const indexInSection = roomIndex - roomsBefore;
-            return indexInSection === 0 ? headerEntry : headerEntry + 1 + indexInSection;
+            return indexInSection === 0
+                ? headerEntry
+                : headerEntry + 1 + indexInSection;
         }
         headerEntry += section.roomIds.length + 1;
         roomsBefore += section.roomIds.length;
@@ -142,7 +169,11 @@ export function getScrollTargetEntryIndex(sections: { roomIds: string[] }[], roo
  * <VirtualizedRoomListView vm={roomListViewModel} renderAvatar={(room) => <Avatar room={room} />} />
  * ```
  */
-export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: VirtualizedRoomListViewProps): JSX.Element {
+export function VirtualizedRoomListView({
+    vm,
+    renderAvatar,
+    onKeyDown,
+}: VirtualizedRoomListViewProps): JSX.Element {
     const { translate: _t } = useI18n();
     const snapshot = useViewModel(vm);
     const { roomListState, sections, isFlatList } = snapshot;
@@ -191,7 +222,10 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
     const onItemIntersection = useCallback(
         (entries: IntersectionObserverEntry[]) => {
             for (const entry of entries) {
-                itemVisibilityRef.current.set(entry.target, entry.isIntersecting);
+                itemVisibilityRef.current.set(
+                    entry.target,
+                    entry.isIntersecting,
+                );
             }
             reportFold();
         },
@@ -205,7 +239,9 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
         const scroller = foldScrollerRef.current;
         const observer = foldObserverRef.current;
         if (!scroller || !observer) return;
-        const current = new Set<Element>(scroller.querySelectorAll("[data-item-index]"));
+        const current = new Set<Element>(
+            scroller.querySelectorAll("[data-item-index]"),
+        );
         for (const el of current) {
             if (!itemVisibilityRef.current.has(el)) {
                 observer.observe(el);
@@ -244,13 +280,19 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
             const scroller = element instanceof HTMLElement ? element : null;
             foldScrollerRef.current = scroller;
             if (scroller) {
-                foldObserverRef.current = new IntersectionObserver(onItemIntersection, { root: scroller });
+                foldObserverRef.current = new IntersectionObserver(
+                    onItemIntersection,
+                    { root: scroller },
+                );
                 scheduleSyncObservedItems();
             }
         },
         [onItemIntersection, scheduleSyncObservedItems],
     );
-    const roomIds = useMemo(() => sections.flatMap((section) => section.roomIds), [sections]);
+    const roomIds = useMemo(
+        () => sections.flatMap((section) => section.roomIds),
+        [sections],
+    );
     const roomCount = roomIds.length;
     const sectionCount = sections.length;
     const totalCount = roomCount + sectionCount;
@@ -269,7 +311,10 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
     // range. A header entry maps to the section boundary: "from this section's first room" as a
     // start, "up to the previous section's last room" as an end.
     const mapEntryRangeToRoomRange = useCallback(
-        (startEntry: number, endEntry: number): [start: number, endExclusive: number] => {
+        (
+            startEntry: number,
+            endEntry: number,
+        ): [start: number, endExclusive: number] => {
             let start: number | undefined;
             let end: number | undefined;
             let headerEntry = 0; // entry index of the current section's header
@@ -281,7 +326,8 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
                 // The range starts in this section: on the header (-1 clamped to the first room)
                 // or on one of its rooms
                 if (start === undefined && startEntry <= lastEntry) {
-                    start = roomsBefore + Math.max(0, startEntry - headerEntry - 1);
+                    start =
+                        roomsBefore + Math.max(0, startEntry - headerEntry - 1);
                 }
 
                 // The range ends in this section: on the header (0 rooms of this section
@@ -314,7 +360,10 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
             if (isFlatList) {
                 vm.updateVisibleRooms(range.startIndex, range.endIndex + 1);
             } else {
-                const [start, end] = mapEntryRangeToRoomRange(range.startIndex, range.endIndex);
+                const [start, end] = mapEntryRangeToRoomRange(
+                    range.startIndex,
+                    range.endIndex,
+                );
                 vm.updateVisibleRooms(start, end);
             }
             // The rendered set changed; (un)observe items so the fold stays accurate.
@@ -347,7 +396,8 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
             isInLastSection?: boolean,
             roomIndexInSection?: number,
         ): JSX.Element => {
-            const { activeRoomIndex, roomCount, vm, isFlatList } = context.context;
+            const { activeRoomIndex, roomCount, vm, isFlatList } =
+                context.context;
             const isSelected = activeRoomIndex === index;
             const roomItemVM = vm.getRoomItemViewModel(roomId);
 
@@ -361,7 +411,9 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
             const isFocused = context.focused && context.tabIndexKey === roomId;
 
             const isFirstItem = isFlatList && index === 0;
-            const isLastItem = Boolean((isFlatList || isInLastSection) && index === roomCount - 1);
+            const isLastItem = Boolean(
+                (isFlatList || isInLastSection) && index === roomCount - 1,
+            );
 
             return (
                 <RoomListItemWrapper
@@ -397,9 +449,18 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
             groupIndex: number,
         ): JSX.Element => {
             const { sections } = context.context;
-            const roomIndexInSection = sections[groupIndex].roomIds.findIndex((id) => id === roomId);
+            const roomIndexInSection = sections[groupIndex].roomIds.findIndex(
+                (id) => id === roomId,
+            );
             const isInLastSection = groupIndex === sections.length - 1;
-            return getItemComponent(index, roomId, context, onFocus, isInLastSection, roomIndexInSection);
+            return getItemComponent(
+                index,
+                roomId,
+                context,
+                onFocus,
+                isInLastSection,
+                roomIndexInSection,
+            );
         },
         [getItemComponent],
     );
@@ -440,7 +501,8 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
 
             // Item is focused when the list has focus AND this item's key matches tabIndexKey
             // This matches the old RoomList implementation's roving tabindex pattern
-            const isFocused = context.focused && context.tabIndexKey === headerId;
+            const isFocused =
+                context.focused && context.tabIndexKey === headerId;
 
             return (
                 <RoomListSectionHeaderView
@@ -465,9 +527,20 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
      * controls. See {@link RoomListStickySectionHeaderView}.
      */
     const renderStickyHeader = useCallback(
-        (groupIndex: number, headerId: string, context: VirtualizedListContext<Context>): ReactNode => {
-            const sectionHeaderVM = context.context.vm.getSectionHeaderViewModel(headerId);
-            return <RoomListStickySectionHeaderView key={headerId} vm={sectionHeaderVM} isFirst={groupIndex === 0} />;
+        (
+            groupIndex: number,
+            headerId: string,
+            context: VirtualizedListContext<Context>,
+        ): ReactNode => {
+            const sectionHeaderVM =
+                context.context.vm.getSectionHeaderViewModel(headerId);
+            return (
+                <RoomListStickySectionHeaderView
+                    key={headerId}
+                    vm={sectionHeaderVM}
+                    isFirst={groupIndex === 0}
+                />
+            );
         },
         [],
     );
@@ -509,7 +582,9 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
 
     const activeEntryIndex = useMemo(() => {
         if (activeRoomIndex === undefined) return undefined;
-        return isFlatList ? activeRoomIndex : getScrollTargetEntryIndex(sections, activeRoomIndex);
+        return isFlatList
+            ? activeRoomIndex
+            : getScrollTargetEntryIndex(sections, activeRoomIndex);
     }, [activeRoomIndex, isFlatList, sections]);
 
     /**
@@ -525,7 +600,8 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
         }): ScrollIntoViewLocation | null | undefined | false => {
             const { spaceId, filterKeys } = params.context.context;
             const shouldScrollIndexIntoView =
-                lastSpaceId.current !== spaceId || !isEqual(lastFilterKeys.current, filterKeys);
+                lastSpaceId.current !== spaceId ||
+                !isEqual(lastFilterKeys.current, filterKeys);
             lastFilterKeys.current = filterKeys;
             lastSpaceId.current = spaceId;
 
@@ -545,9 +621,13 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
     // scrollIntoView on virtuoso handle is more reliable in this case vs scrollIntoViewOnChange
     useLayoutEffect(() => {
         if (scrollToSectionTag === undefined) return;
-        const sectionIndex = sections.findIndex((s) => s.id === scrollToSectionTag);
+        const sectionIndex = sections.findIndex(
+            (s) => s.id === scrollToSectionTag,
+        );
         if (sectionIndex === -1) return;
-        const flatIndex = sections.slice(0, sectionIndex).reduce((acc, s) => acc + s.roomIds.length + 1, 0);
+        const flatIndex = sections
+            .slice(0, sectionIndex)
+            .reduce((acc, s) => acc + s.roomIds.length + 1, 0);
         virtuosoHandleRef.current?.scrollIntoView({
             index: flatIndex,
             align: "start",
@@ -561,7 +641,11 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
     // scroll requests through its snapshot.
     useEffect(() => {
         vm.setScrollToIndex((index) =>
-            virtuosoHandleRef.current?.scrollIntoView({ index, align: "center", behavior: "auto" }),
+            virtuosoHandleRef.current?.scrollIntoView({
+                index,
+                align: "center",
+                behavior: "auto",
+            }),
         );
         return () => vm.setScrollToIndex(undefined);
     }, [vm]);
@@ -581,7 +665,9 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
         scrollIntoViewOnChange,
         // If fixedItemHeight is not set and initialTopMostItemIndex=undefined, virtuoso crashes
         // If we don't set it, it works
-        ...(activeEntryIndex !== undefined ? { initialTopMostItemIndex: activeEntryIndex } : {}),
+        ...(activeEntryIndex !== undefined
+            ? { initialTopMostItemIndex: activeEntryIndex }
+            : {}),
         ["data-testid"]: "room-list",
         ["aria-label"]: _t("room_list|list_title"),
         getItemKey,
@@ -630,9 +716,18 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
                 PointerSensor.configure({
                     activationConstraints(event) {
                         if (event.pointerType === "touch") {
-                            return [new PointerActivationConstraints.Delay({ value: 250, tolerance: 5 })];
+                            return [
+                                new PointerActivationConstraints.Delay({
+                                    value: 250,
+                                    tolerance: 5,
+                                }),
+                            ];
                         }
-                        return [new PointerActivationConstraints.Distance({ value: 5 })];
+                        return [
+                            new PointerActivationConstraints.Distance({
+                                value: 5,
+                            }),
+                        ];
                     },
                 }),
                 // By default, the KeyboardSensor uses both space and enter to start dragging, which interferes with the keyboard enter shortcut to open a room.
@@ -675,10 +770,17 @@ export function VirtualizedRoomListView({ vm, renderAvatar, onKeyDown }: Virtual
  * Uses useDragOperation to detect active keyboard drags and disable the list's own keyboard
  * navigation shortcuts while a drag is in progress, preventing unwanted list scrolling.
  */
-function GroupedRoomList(props: GroupedVirtualizedListProps<string, string, Context>): JSX.Element {
+function GroupedRoomList(
+    props: GroupedVirtualizedListProps<string, string, Context>,
+): JSX.Element {
     const { source } = useDragOperation<RoomListDragData>();
 
-    return <GroupedVirtualizedList<string, string, Context> {...props} disableKeyboardNavigation={source !== null} />;
+    return (
+        <GroupedVirtualizedList<string, string, Context>
+            {...props}
+            disableKeyboardNavigation={source !== null}
+        />
+    );
 }
 
 interface DragOverlayContentProps {
@@ -691,7 +793,10 @@ interface DragOverlayContentProps {
 /**
  * Component rendered in the drag overlay when dragging a room item. Renders a copy of the dragged item to avoid dragging the actual element out of virtualization.
  */
-function DragOverlayContent({ vm, renderAvatar }: DragOverlayContentProps): JSX.Element | null {
+function DragOverlayContent({
+    vm,
+    renderAvatar,
+}: DragOverlayContentProps): JSX.Element | null {
     const { source } = useDragOperation<RoomListDragData>();
     if (!source) return null;
 
@@ -703,5 +808,7 @@ function DragOverlayContent({ vm, renderAvatar }: DragOverlayContentProps): JSX.
     const itemVm = vm.getRoomItemViewModel(String(source.id));
     if (!itemVm) return null;
 
-    return <RoomListItemDragOverlayView vm={itemVm} renderAvatar={renderAvatar} />;
+    return (
+        <RoomListItemDragOverlayView vm={itemVm} renderAvatar={renderAvatar} />
+    );
 }
