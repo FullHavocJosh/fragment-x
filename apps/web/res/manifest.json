@@ -1,8 +1,8 @@
 {
-    "name": "Element",
-    "short_name": "Element",
+    "name": "Fragment X",
+    "short_name": "Fragment X",
     "display": "standalone",
-    "theme_color": "#76CFA6",
+    "theme_color": "#04c086",
     "start_url": "index.html",
     "icons": [
         {
