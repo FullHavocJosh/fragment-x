@@ -1,7 +1,15 @@
-# Fragment X Web
+# Fragment X
 
-Fragment X Web is a thought-project fork of Element Web that explores a Discord-style Matrix client. It is not affiliated
+Fragment X is a thought-project fork of Element Web that explores a Discord-style Matrix client. It is not affiliated
 with or endorsed by Element. See the README for the project note and the list of AI tools used.
+
+## Layout
+
+- `apps/web`: the Fragment X web app, built from Element Web and configured as described below.
+- `apps/desktop`: Element's Electron desktop app, kept from upstream and not used by Fragment X.
+- The Fragment X desktop app: a new Rust app that does not use Electron, to be added next to `apps/web`. It is built on
+  the Matrix Rust SDK and aims for parity with Element Web.
+- Android and iOS apps are separate forks of Element X (`fragment-x-android`, `fragment-x-ios`).
 
 ## Configuration
 
