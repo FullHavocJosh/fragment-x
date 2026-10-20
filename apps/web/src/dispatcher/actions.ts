@@ -109,6 +109,11 @@ export enum Action {
     ToggleSpacePanel = "toggle_space_panel",
 
     /**
+     * Collapses or expands the room list panel next to the space panel. No additional payload information required.
+     */
+    ToggleRoomListPanel = "toggle_room_list_panel",
+
+    /**
      * Sets the apps root font size delta. Should be used with UpdateFontSizeDeltaPayload
      * It will add the delta to the current font size.
      * The delta should be between {@link FontWatcher.MIN_DELTA} and {@link FontWatcher.MAX_DELTA}.

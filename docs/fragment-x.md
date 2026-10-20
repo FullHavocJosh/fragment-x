@@ -36,6 +36,9 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.rail_search_button: true`: a Search button at the top of the server rail opens the spotlight search (the same
   dialog as `Ctrl/Cmd+K`), so global search is part of the main navigation. See
   `apps/web/src/components/views/spaces/RailSearchButton.tsx`.
+- `fragment_x.room_list_toggle_button: true`: a button in the server rail collapses or expands the room list so the chat can
+  use the full width (the separator between the room list and the chat does the same on double click and click). See
+  `apps/web/src/components/views/spaces/RoomListToggleButton.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

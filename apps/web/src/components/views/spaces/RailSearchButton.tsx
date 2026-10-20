@@ -27,13 +27,13 @@ const RailSearchButton: React.FC<{
     let button = (
         <IconButton
             aria-label={_t("action|search")}
-            className={classNames("mx_RailSearchButton", { expanded: !isPanelCollapsed })}
+            className={classNames("mx_RailButton", { expanded: !isPanelCollapsed })}
             onClick={() => defaultDispatcher.fire(Action.OpenSpotlight)}
         >
             <>
                 <SearchIcon />
                 {!isPanelCollapsed && (
-                    <Text className="mx_RailSearchButton_label" as="span" size="md">
+                    <Text className="mx_RailButton_label" as="span" size="md">
                         {_t("action|search")}
                     </Text>
                 )}
