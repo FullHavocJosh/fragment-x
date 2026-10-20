@@ -1,0 +1,77 @@
+{
+    "default_server_config": {
+        "m.homeserver": {
+            "base_url": "https://matrix.example.org",
+            "server_name": "example.org"
+        }
+    },
+    "disable_custom_urls": true,
+    "disable_guests": true,
+    "disable_login_language_selector": false,
+    "disable_3pid_login": false,
+    "force_verification": true,
+    "brand": "Fragment X",
+    "default_widget_container_height": 280,
+    "default_country_code": "GB",
+    "show_labs_settings": false,
+    "features": {},
+    "default_federate": true,
+    "default_theme": "custom-Fragment Dark",
+    "setting_defaults": {
+        "breadcrumbs": true,
+        "custom_themes": [
+            {
+                "name": "Fragment Dark",
+                "is_dark": true,
+                "colors": {
+                    "accent-color": "#7c6cf0",
+                    "primary-color": "#7c6cf0",
+                    "warning-color": "#f23f43",
+                    "sidebar-color": "#1e1f22",
+                    "roomlist-background-color": "#2b2d31",
+                    "roomlist-text-color": "#b5bac1",
+                    "roomlist-text-secondary-color": "#949ba4",
+                    "roomlist-highlights-color": "#35373c",
+                    "roomlist-separator-color": "#1e1f22",
+                    "timeline-background-color": "#313338",
+                    "timeline-text-color": "#dbdee1",
+                    "timeline-text-secondary-color": "#949ba4",
+                    "timeline-highlights-color": "#2b2d31",
+                    "username-colors": [
+                        "#f0b232",
+                        "#5fb3ff",
+                        "#3ba55d",
+                        "#eb459e",
+                        "#9b84ee",
+                        "#ed7a45",
+                        "#43c6c6",
+                        "#e0e05a"
+                    ],
+                    "avatar-background-colors": [
+                        "#7c6cf0",
+                        "#3ba55d",
+                        "#c2457e",
+                        "#d9822b",
+                        "#2f8fbf",
+                        "#9a5fd1",
+                        "#4f8a8b",
+                        "#b8860b"
+                    ]
+                },
+                "compound": {
+                    "--cpd-color-bg-canvas-default": "#2b2d31",
+                    "--cpd-color-bg-subtle-secondary": "#35373c",
+                    "--cpd-color-bg-subtle-primary": "#1e1f22",
+                    "--cpd-color-text-action-accent": "#a79cf7",
+                    "--cpd-color-icon-accent-tertiary": "#a79cf7"
+                }
+            }
+        ]
+    },
+    "jitsi": {
+        "preferred_domain": "meet.element.io"
+    },
+    "element_call": {
+        "use_exclusively": true
+    }
+}
