@@ -440,7 +440,9 @@ const SpacePanel: React.FC = () => {
                         ref={ref}
                         aria-label={_t("common|spaces")}
                     >
-                        {!SdkConfig.get().fragment_x?.user_panel && <UserMenu vm={userMenuVm} className="mx_UserMenu" />}
+                        {!SdkConfig.get().fragment_x?.user_panel && (
+                            <UserMenu vm={userMenuVm} className="mx_UserMenu" />
+                        )}
                         <AccessibleButton
                             className={classNames("mx_SpacePanel_toggleCollapse", {
                                 expanded: !isPanelCollapsed,
