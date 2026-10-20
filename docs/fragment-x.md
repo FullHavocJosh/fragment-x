@@ -1,0 +1,45 @@
+# Fragment X Web
+
+Fragment X Web is a thought-project fork of Element Web that explores a Discord-style Matrix client. It is not affiliated
+with or endorsed by Element. See the README for the project note and the list of AI tools used.
+
+## Configuration
+
+`apps/web/config.fragment.sample.json` is the Fragment X starting point. Copy it to `apps/web/config.json` (which is
+git-ignored) and replace the placeholder homeserver:
+
+```sh
+cp apps/web/config.fragment.sample.json apps/web/config.json
+# then edit default_server_config: "m.homeserver".base_url and server_name
+```
+
+What it sets, all through configuration with no code changes:
+
+- `brand`: `Fragment X`.
+- `default_theme`: `custom-Fragment Dark`, defined in `setting_defaults.custom_themes`. The legacy `colors` keys style the
+  timeline and accent; the `compound` overrides restyle the left side, because the space rail, left panel and room list all
+  use the single Compound token `--cpd-color-bg-canvas-default`. One canvas token means those areas currently share one
+  colour; a darker server rail like Discord's needs a CSS change in `apps/web/res/css/structures/_SpacePanel.pcss`.
+- `element_call.use_exclusively: true`: Element Call is the only call option. The "Voice call using" menu with Legacy Call
+  and Jitsi is not shown, and the call button starts Element Call directly.
+- `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
+- The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
+
+## Homeserver requirements
+
+Native sliding sync, and for calls the MatrixRTC settings from Element Call's self-hosting guide (delayed events,
+`matrix_rtc.transports`, an SFU such as LiveKit with `lk-jwt-service`).
+
+## Build
+
+```sh
+pnpm install --frozen-lockfile
+cd apps/web && pnpm build   # output in apps/web/webapp
+```
+
+The repository pins a pnpm version in `devEngines`; install that version first.
+
+## Maintenance
+
+Changes to Element Web are kept as small commits on top of `develop` and rebased on each upstream release. Configuration
+and theme changes live in the sample config; code and CSS changes are separate commits.
