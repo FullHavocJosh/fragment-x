@@ -151,7 +151,7 @@ exports[`<MatrixChat /> > Multi-tab lockout > waits for other tab to stop during
               >
                 <img
                   alt="Test"
-                  src="themes/element/img/logos/element-logo.svg"
+                  src="themes/element/img/logos/fragment-x-logo.png"
                 />
               </a>
               <h1
@@ -437,7 +437,7 @@ exports[`<MatrixChat /> > with a soft-logged-out session > should show the soft-
           >
             <img
               alt="Element"
-              src="themes/element/img/logos/element-logo.svg"
+              src="themes/element/img/logos/fragment-x-logo.png"
             />
           </aside>
           <div
