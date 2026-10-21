@@ -16,6 +16,7 @@ import { MetaSpace, UPDATE_HOME_BEHAVIOUR, UPDATE_SELECTED_SPACE } from "../../s
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import { Action } from "../../dispatcher/actions";
 import SettingsStore from "../../settings/SettingsStore";
+import SdkConfig from "../../SdkConfig";
 import { SortingAlgorithm } from "../../stores/room-list-v3/skip-list/sorters";
 import RoomListStoreV3 from "../../stores/room-list-v3/RoomListStoreV3";
 import {
@@ -81,6 +82,30 @@ describe("RoomListHeaderViewModel", () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vm.dispose();
+    });
+
+    describe("Fragment X home_direct_messages", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("titles Home Direct Messages with the option on", () => {
+            SdkConfig.put({ fragment_x: { home_direct_messages: true } });
+            vi.spyOn(sdkContext.spaceStore, "activeSpace", "get").mockReturnValue(MetaSpace.Home);
+            vi.spyOn(sdkContext.spaceStore, "activeSpaceRoom", "get").mockReturnValue(null);
+
+            vm = new RoomListHeaderViewModel({ matrixClient, spaceStore: sdkContext.spaceStore });
+            expect(vm.getSnapshot().title).toBe("Direct Messages");
+        });
+
+        it("keeps the space name for a space with the option on", () => {
+            SdkConfig.put({ fragment_x: { home_direct_messages: true } });
+            vi.spyOn(sdkContext.spaceStore, "activeSpace", "get").mockReturnValue(mockSpace.roomId);
+            vi.spyOn(sdkContext.spaceStore, "activeSpaceRoom", "get").mockReturnValue(mockSpace);
+
+            vm = new RoomListHeaderViewModel({ matrixClient, spaceStore: sdkContext.spaceStore });
+            expect(vm.getSnapshot().title).toBe(mockSpace.roomId);
+        });
     });
 
     describe("snapshot", () => {

@@ -43,6 +43,9 @@ What it sets, all through configuration with no code changes:
   menu, a settings button, and a microphone mute button while the user is in an Element Call). The server rail no longer
   shows the user menu. Element Call has no deafen control, so there is no deafen button. See
   `apps/web/src/components/views/spaces/UserPanel.tsx`.
+- `fragment_x.home_direct_messages: true`: Home is titled "Direct Messages" and opens with the People filter applied, so it
+  lists direct messages like Discord's home. The People chip can be switched off to see every room again; other spaces
+  are unaffected. See `applyHomeDefaultFilter` in `apps/web/src/viewmodels/room-list/RoomListViewModel.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

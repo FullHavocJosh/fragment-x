@@ -23,6 +23,8 @@ import { type ViewRoomDeltaPayload } from "../../dispatcher/payloads/ViewRoomDel
 import { type ViewRoomPayload } from "../../dispatcher/payloads/ViewRoomPayload";
 import { type RoomListSectionsCollapseStateChangedPayload } from "../../dispatcher/payloads/RoomListSectionsCollapseStateChangedPayload";
 import type SpaceStore from "../../stores/spaces/SpaceStore";
+import { MetaSpace } from "../../stores/spaces";
+import SdkConfig from "../../SdkConfig";
 import RoomListStoreV3, {
     RoomListStoreV3Event,
     type RoomsResult,
@@ -129,6 +131,11 @@ export class RoomListViewModel
 {
     // State tracking
     private activeFilter: FilterEnum | undefined = undefined;
+
+    /**
+     * Whether {@link activeFilter} is the People filter that Home applies by default (`fragment_x.home_direct_messages`).
+     */
+    private homeFilterApplied = false;
     private roomsResult: RoomsResult;
     /**
      * List of sections to display in the room list, derived from roomsResult and section header view model expansion state.
@@ -244,6 +251,13 @@ export class RoomListViewModel
 
         // Build initial roomsMap from roomsResult
         this.updateRoomsMap(roomsResult);
+
+        // Fragment X: starting on Home shows the direct messages.
+        if (this.applyHomeDefaultFilter(roomsResult.spaceId)) {
+            this.roomsResult = RoomListStoreV3.instance.getSortedRoomsInActiveSpace([FilterEnum.PeopleFilter]);
+            this.updateRoomsMap(this.roomsResult);
+            void this.updateRoomListData();
+        }
 
         // Subscribe to room list updates
         this.disposables.trackListener(RoomListStoreV3.instance, RoomListStoreV3Event.ListsUpdate, this.onListsUpdate);
@@ -387,7 +401,31 @@ export class RoomListViewModel
         return props.roomType === RoomType.Space ? undefined : props;
     }
 
+    /**
+     * Fragment X: with `fragment_x.home_direct_messages`, entering Home applies the People filter, so Home lists the
+     * direct messages like Discord's, and leaving Home removes it again. The user can still toggle the People chip off.
+     * @param spaceId The space that is now active.
+     * @returns Whether {@link activeFilter} changed.
+     */
+    private applyHomeDefaultFilter(spaceId: string): boolean {
+        const enabled = Boolean(SdkConfig.get().fragment_x?.home_direct_messages);
+        if (enabled && spaceId === MetaSpace.Home && this.activeFilter === undefined) {
+            this.activeFilter = FilterEnum.PeopleFilter;
+            this.homeFilterApplied = true;
+            return true;
+        }
+        if (this.homeFilterApplied && (!enabled || spaceId !== MetaSpace.Home)) {
+            this.homeFilterApplied = false;
+            if (this.activeFilter === FilterEnum.PeopleFilter) {
+                this.activeFilter = undefined;
+                return true;
+            }
+        }
+        return false;
+    }
+
     public onToggleFilter = (filterId: FilterId): void => {
+        this.homeFilterApplied = false;
         // Find the FilterKey by matching the filter ID
         let filterKey: FilterEnum | undefined = undefined;
         for (const [key, id] of filterKeyToIdMap.entries()) {
@@ -840,6 +878,10 @@ export class RoomListViewModel
 
         // Detect space change
         if (oldSpaceId !== newSpaceId) {
+            if (this.applyHomeDefaultFilter(newSpaceId)) {
+                const spaceFilterKeys = this.activeFilter !== undefined ? [this.activeFilter] : undefined;
+                this.roomsResult = RoomListStoreV3.instance.getSortedRoomsInActiveSpace(spaceFilterKeys);
+            }
             // Clear view models when the space changes
             // We only want to do this on space changes, not on regular list updates, to preserve view models when possible
             // The view models are disposed when scrolling out of view (handled by updateVisibleRooms)

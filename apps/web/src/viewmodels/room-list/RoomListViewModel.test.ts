@@ -36,6 +36,7 @@ import { tagRoom } from "../../utils/room/tagRoom";
 import { getSectionTagForRoom } from "../../utils/room/getSectionTagForRoom";
 import { CHATS_TAG, CUSTOM_SECTION_TAG_PREFIX, type SectionExpansionState } from "../../stores/room-list-v3/section";
 import { MetaSpace } from "../../stores/spaces";
+import SdkConfig from "../../SdkConfig";
 import { RoomNotificationStateStore } from "../../stores/notifications/RoomNotificationStateStore";
 import { type RoomNotificationState } from "../../stores/notifications/RoomNotificationState";
 
@@ -211,6 +212,77 @@ describe("RoomListViewModel", () => {
 
             // View model should be still valid
             expect(room1VM!.isDisposed).toBe(false);
+        });
+    });
+
+    describe("Fragment X home_direct_messages", () => {
+        const homeResult = (): void => {
+            vi.spyOn(RoomListStoreV3.instance, "getSortedRoomsInActiveSpace").mockImplementation((filterKeys) => ({
+                spaceId: MetaSpace.Home,
+                sections: [{ tag: CHATS_TAG, rooms: [room1, room2] }],
+                filterKeys,
+            }));
+        };
+        const create = (): RoomListViewModel =>
+            new RoomListViewModel({
+                client: matrixClient,
+                spaceStore: SDKContextClass.instance.spaceStore,
+                roomViewStore: SDKContextClass.instance.roomViewStore,
+            });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("applies the People filter when starting on Home", async () => {
+            SdkConfig.put({ fragment_x: { home_direct_messages: true } });
+            homeResult();
+            viewModel = create();
+
+            expect(RoomListStoreV3.instance.getSortedRoomsInActiveSpace).toHaveBeenCalledWith([FilterEnum.PeopleFilter]);
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBe("people"));
+        });
+
+        it("does not apply a filter with the option off", () => {
+            homeResult();
+            viewModel = create();
+
+            expect(RoomListStoreV3.instance.getSortedRoomsInActiveSpace).not.toHaveBeenCalledWith([
+                FilterEnum.PeopleFilter,
+            ]);
+            expect(viewModel.getSnapshot().activeFilterId).toBeUndefined();
+        });
+
+        it("removes the People filter when switching from Home to a space, and applies it again on return", async () => {
+            SdkConfig.put({ fragment_x: { home_direct_messages: true } });
+            homeResult();
+            viewModel = create();
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBe("people"));
+
+            vi.spyOn(RoomListStoreV3.instance, "getSortedRoomsInActiveSpace").mockImplementation((filterKeys) => ({
+                spaceId: "!space:server",
+                sections: [{ tag: CHATS_TAG, rooms: [room3] }],
+                filterKeys,
+            }));
+            RoomListStoreV3.instance.emit(RoomListStoreV3Event.ListsUpdate);
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBeUndefined());
+
+            homeResult();
+            RoomListStoreV3.instance.emit(RoomListStoreV3Event.ListsUpdate);
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBe("people"));
+        });
+
+        it("leaves the filter off when the user switched People off", async () => {
+            SdkConfig.put({ fragment_x: { home_direct_messages: true } });
+            homeResult();
+            viewModel = create();
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBe("people"));
+
+            viewModel.onToggleFilter("people");
+            await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBeUndefined());
+
+            RoomListStoreV3.instance.emit(RoomListStoreV3Event.ListsUpdate);
+            expect(viewModel.getSnapshot().activeFilterId).toBeUndefined();
         });
     });
 
