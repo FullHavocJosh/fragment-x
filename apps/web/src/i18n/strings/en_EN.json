@@ -1292,11 +1292,14 @@
         "add_friend": "Add Friend",
         "blocked": "Blocked",
         "direct_messages": "Direct Messages",
+        "discover": "Discover",
         "members": "Members",
         "no_blocked": "You have not blocked anyone.",
         "no_pending": "No pending invites.",
+        "no_servers": "You have not joined any servers yet.",
         "pending": "Pending",
         "pinned": "Pinned",
+        "servers": "Servers",
         "unblock": "Unblock"
     },
     "identity_server": {
