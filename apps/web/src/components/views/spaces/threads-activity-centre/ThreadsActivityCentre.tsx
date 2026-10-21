@@ -6,7 +6,7 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-import React, { type JSX, useState } from "react";
+import React, { type JSX, useMemo, useState } from "react";
 import { Menu, MenuItem, NavBar, NavItem, Text } from "@vector-im/compound-web";
 import { NotificationDecoration, type NotificationDecorationData } from "@element-hq/web-shared-components";
 
@@ -28,6 +28,9 @@ import { KeyBindingAction } from "../../../../accessibility/KeyboardShortcuts";
 import SdkConfig from "../../../../SdkConfig";
 import { useMatrixClientContext } from "../../../../contexts/MatrixClientContext";
 import { type MentionRoom, useMentionRooms } from "./useMentionRooms";
+import { buildForYou, forYouKey, forYouRooms } from "./forYou";
+import { clearRoomNotification } from "../../../../utils/notifications";
+import AccessibleButton from "../../elements/AccessibleButton";
 
 interface ThreadsActivityCentreProps {
     /**
@@ -39,7 +42,7 @@ interface ThreadsActivityCentreProps {
 /**
  * The two views available in the Threads Activity Centre popup.
  */
-type TACView = "mentions" | "my_threads" | "other_threads";
+type TACView = "for_you" | "mentions" | "my_threads" | "other_threads";
 
 /**
  * Get the threads to display for the active tab, and the caption shown when that tab is empty.
@@ -69,9 +72,12 @@ function getActiveTabContent(
  */
 export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCentreProps): JSX.Element {
     const [open, setOpen] = useState(false);
-    // Fragment X: with inbox_mentions the panel starts on a Mentions tab, the rooms where the user was mentioned.
-    const mentionsEnabled = Boolean(SdkConfig.get().fragment_x?.inbox_mentions);
-    const [view, setView] = useState<TACView>(mentionsEnabled ? "mentions" : "my_threads");
+    // Fragment X: with inbox_mentions the panel starts on a Mentions tab, the rooms where the user was mentioned. With
+    // inbox_for_you it is the inbox: a For you tab merging those with the threads the user took part in, an Unread
+    // threads tab, and Mark all read.
+    const forYouEnabled = Boolean(SdkConfig.get().fragment_x?.inbox_for_you);
+    const mentionsEnabled = Boolean(SdkConfig.get().fragment_x?.inbox_mentions) || forYouEnabled;
+    const [view, setView] = useState<TACView>(forYouEnabled ? "for_you" : mentionsEnabled ? "mentions" : "my_threads");
     const cli = useMatrixClientContext();
     const mentionRooms = useMentionRooms(cli, mentionsEnabled);
     const threadRooms = useUnreadThreadRooms(open);
@@ -83,9 +89,17 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
     };
 
     const { threads: activeThreads, emptyCaption: activeEmptyCaption } = getActiveTabContent(
-        view === "mentions" ? "my_threads" : view,
+        view === "mentions" || view === "for_you" ? "my_threads" : view,
         roomsAndNotifications,
     );
+    const forYou = useMemo(
+        () => (forYouEnabled ? buildForYou(mentionRooms, threadRooms.participatingThreads) : []),
+        [forYouEnabled, mentionRooms, threadRooms.participatingThreads],
+    );
+    const markAllRead = (): void => {
+        void Promise.all(forYouRooms(forYou).map((room) => clearRoomNotification(room, cli)));
+    };
+    const inboxLabel = forYouEnabled ? _t("fragment_x|inbox") : undefined;
 
     return (
         <div
@@ -113,10 +127,11 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
 
                     setOpen(newOpen);
                 }}
-                title={_t("threads_activity_centre|header")}
+                title={inboxLabel ?? _t("threads_activity_centre|header")}
                 showTitle={false}
                 trigger={
                     <ThreadsActivityCentreButton
+                        label={inboxLabel}
                         displayLabel={displayButtonLabel}
                         notificationLevel={roomsAndNotifications.greatestNotificationLevel}
                     />
@@ -126,9 +141,18 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                 <NavBar
                     className="mx_ThreadsActivityCentre_tabs"
                     role="tablist"
-                    aria-label={_t("threads_activity_centre|header")}
+                    aria-label={inboxLabel ?? _t("threads_activity_centre|header")}
                 >
-                    {mentionsEnabled && (
+                    {forYouEnabled && (
+                        <NavItem
+                            aria-controls="mx_ThreadsActivityCentre_panel"
+                            active={view === "for_you"}
+                            onClick={() => setView("for_you")}
+                        >
+                            {_t("fragment_x|for_you")}
+                        </NavItem>
+                    )}
+                    {mentionsEnabled && !forYouEnabled && (
                         <NavItem
                             aria-controls="mx_ThreadsActivityCentre_panel"
                             active={view === "mentions"}
@@ -137,24 +161,56 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                             {_t("fragment_x|inbox_mentions")}
                         </NavItem>
                     )}
-                    <NavItem
-                        aria-controls="mx_ThreadsActivityCentre_panel"
-                        active={view === "my_threads"}
-                        onClick={() => setView("my_threads")}
-                    >
-                        {_t("threads_activity_centre|my_threads_tab")}
-                    </NavItem>
+                    {!forYouEnabled && (
+                        <NavItem
+                            aria-controls="mx_ThreadsActivityCentre_panel"
+                            active={view === "my_threads"}
+                            onClick={() => setView("my_threads")}
+                        >
+                            {_t("threads_activity_centre|my_threads_tab")}
+                        </NavItem>
+                    )}
                     <NavItem
                         aria-controls="mx_ThreadsActivityCentre_panel"
                         active={view === "other_threads"}
                         onClick={() => setView("other_threads")}
                     >
-                        {_t("threads_activity_centre|other_threads_tab")}
+                        {forYouEnabled
+                            ? _t("fragment_x|unread_threads")
+                            : _t("threads_activity_centre|other_threads_tab")}
                     </NavItem>
                 </NavBar>
                 {/* Make the content of the pop-up scrollable */}
                 <div id="mx_ThreadsActivityCentre_panel" role="tabpanel" className="mx_ThreadsActivityCentre_rows">
-                    {view === "mentions" ? (
+                    {view === "for_you" ? (
+                        <>
+                            {forYou.map((item) =>
+                                item.kind === "thread" ? (
+                                    <ThreadsActivityCentreThreadRow
+                                        key={forYouKey(item)}
+                                        threadData={item.thread}
+                                        onClick={() => setOpen(false)}
+                                    />
+                                ) : (
+                                    <MentionRoomRow
+                                        key={forYouKey(item)}
+                                        mention={item.mention}
+                                        onClick={() => setOpen(false)}
+                                    />
+                                ),
+                            )}
+                            {forYou.length === 0 && (
+                                <Text
+                                    as="div"
+                                    size="sm"
+                                    weight="regular"
+                                    className="mx_ThreadsActivityCentre_emptyCaption"
+                                >
+                                    {_t("fragment_x|inbox_empty")}
+                                </Text>
+                            )}
+                        </>
+                    ) : view === "mentions" ? (
                         <>
                             {mentionRooms.map((mention) => (
                                 <MentionRoomRow
@@ -196,6 +252,13 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                         </>
                     )}
                 </div>
+                {view === "for_you" && (
+                    <div className="mx_ThreadsActivityCentre_footer">
+                        <AccessibleButton kind="link" disabled={forYou.length === 0} onClick={markAllRead}>
+                            {_t("fragment_x|mark_all_read")}
+                        </AccessibleButton>
+                    </div>
+                )}
             </Menu>
         </div>
     );

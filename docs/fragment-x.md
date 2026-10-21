@@ -76,6 +76,11 @@ What it sets, all through configuration with no code changes:
   same tree as avatars. Spaces collapse and expand per space. The user panel moves to the bottom of the rail. The room
   list filters, sections and sorting are not available in this mode. See
   `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
+- `fragment_x.inbox_for_you: true`: the Threads activity centre in the server rail becomes the inbox. The button and panel are
+  called Inbox. It opens on a For you tab: one collapsed row per conversation you follow, each with a counter and the
+  newest first, either a thread you took part in or a room where you were mentioned (muted rooms are left out). The other
+  tab is Unread threads. Mark all read clears the rooms behind the For you rows. This supersedes the Mentions tab of
+  `inbox_mentions`. See `apps/web/src/components/views/spaces/threads-activity-centre/forYou.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

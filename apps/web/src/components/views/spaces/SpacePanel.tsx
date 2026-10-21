@@ -507,21 +507,25 @@ const SpacePanel: React.FC = () => {
                         {!SdkConfig.get().fragment_x?.user_panel && (
                             <UserMenu vm={userMenuVm} className="mx_UserMenu" />
                         )}
-                        <AccessibleButton
-                            className={classNames("mx_SpacePanel_toggleCollapse", {
-                                expanded: !isPanelCollapsed,
-                            })}
-                            onClick={() => setPanelCollapsed(!isPanelCollapsed)}
-                            title={isPanelCollapsed ? _t("action|expand") : _t("action|collapse")}
-                            caption={
-                                <KeyboardShortcut
-                                    value={{ ctrlOrCmdKey: true, shiftKey: true, key: "d" }}
-                                    className="mx_SpacePanel_Tooltip_KeyboardShortcut"
-                                />
-                            }
-                        >
-                            <ChevronRightIcon />
-                        </AccessibleButton>
+                        {/* Fragment X unified tree: the larger button under Search expands and collapses the rail, so the
+                            round chevron on the edge would be a second button for the same thing. */}
+                        {!isUnifiedTree() && (
+                            <AccessibleButton
+                                className={classNames("mx_SpacePanel_toggleCollapse", {
+                                    expanded: !isPanelCollapsed,
+                                })}
+                                onClick={() => setPanelCollapsed(!isPanelCollapsed)}
+                                title={isPanelCollapsed ? _t("action|expand") : _t("action|collapse")}
+                                caption={
+                                    <KeyboardShortcut
+                                        value={{ ctrlOrCmdKey: true, shiftKey: true, key: "d" }}
+                                        className="mx_SpacePanel_Tooltip_KeyboardShortcut"
+                                    />
+                                }
+                            >
+                                <ChevronRightIcon />
+                            </AccessibleButton>
+                        )}
                         <RailSearchButton isPanelCollapsed={isPanelCollapsed} />
                         <RoomListToggleButton isPanelCollapsed={isPanelCollapsed} />
                         <Droppable droppableId="top-level-spaces">
@@ -540,7 +544,11 @@ const SpacePanel: React.FC = () => {
 
                         <ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed} />
 
-                        <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
+                        {/* Fragment X: the user panel's gear opens the settings, so with the unified tree and the user
+                            panel the quick settings entry above it would be a second settings button. */}
+                        {!(isUnifiedTree() && SdkConfig.get().fragment_x?.user_panel) && (
+                            <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
+                        )}
                         {isUnifiedTree() && <UserPanel compact={isPanelCollapsed} />}
                     </nav>
                 </DragDropContext>

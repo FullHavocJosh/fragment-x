@@ -28,6 +28,10 @@ interface ThreadsActivityCentreButtonProps extends ComponentProps<typeof IconBut
      * The notification level of the threads.
      */
     notificationLevel: NotificationLevel;
+    /**
+     * Fragment X: the name of the button, instead of "Threads" (the inbox is called Inbox).
+     */
+    label?: string;
     ref?: Ref<HTMLButtonElement>;
 }
 
@@ -38,6 +42,7 @@ export const ThreadsActivityCentreButton = function ThreadsActivityCentreButton(
     displayLabel,
     notificationLevel,
     disableTooltip,
+    label = _t("common|threads"),
     ref,
     ...props
 }: ThreadsActivityCentreButtonProps): JSX.Element {
@@ -45,9 +50,9 @@ export const ThreadsActivityCentreButton = function ThreadsActivityCentreButton(
     const openTooltip = disableTooltip || displayLabel ? false : undefined;
 
     return (
-        <Tooltip label={_t("common|threads")} placement="right" open={openTooltip}>
+        <Tooltip label={label} placement="right" open={openTooltip}>
             <IconButton
-                aria-label={_t("common|threads")}
+                aria-label={label}
                 className={classNames("mx_ThreadsActivityCentreButton", { expanded: displayLabel })}
                 indicator={notificationLevelToIndicator(notificationLevel)}
                 {...props}
@@ -57,13 +62,8 @@ export const ThreadsActivityCentreButton = function ThreadsActivityCentreButton(
                     <ThreadsSolidIcon className="mx_ThreadsActivityCentreButton_Icon" />
                     {/* This is dirty, but we need to add the label to the indicator icon */}
                     {displayLabel && (
-                        <Text
-                            className="mx_ThreadsActivityCentreButton_Text"
-                            as="span"
-                            size="md"
-                            title={_t("common|threads")}
-                        >
-                            {_t("common|threads")}
+                        <Text className="mx_ThreadsActivityCentreButton_Text" as="span" size="md" title={label}>
+                            {label}
                         </Text>
                     )}
                 </>

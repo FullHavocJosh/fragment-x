@@ -127,20 +127,23 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     const welcome = (
         <div className="mx_HomePage_default_wrapper">
             {introSection}
-            <div className="mx_HomePage_default_buttons">
-                <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
-                    <ChatSolidIcon />
-                    {_tDom("onboarding|send_dm")}
-                </AccessibleButton>
-                <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
-                    <ExploreIcon />
-                    {_tDom("onboarding|explore_rooms")}
-                </AccessibleButton>
-                <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
-                    <GroupIcon />
-                    {_tDom("onboarding|create_room")}
-                </AccessibleButton>
-            </div>
+            {/* Fragment X: with the top bar these three are Add Friend, Discover and the new group chat button. */}
+            {!showTopBar && (
+                <div className="mx_HomePage_default_buttons">
+                    <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
+                        <ChatSolidIcon />
+                        {_tDom("onboarding|send_dm")}
+                    </AccessibleButton>
+                    <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
+                        <ExploreIcon />
+                        {_tDom("onboarding|explore_rooms")}
+                    </AccessibleButton>
+                    <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
+                        <GroupIcon />
+                        {_tDom("onboarding|create_room")}
+                    </AccessibleButton>
+                </div>
+            )}
         </div>
     );
 
