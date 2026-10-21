@@ -25,6 +25,7 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
     OverflowHorizontalIcon,
+    NotificationsOffSolidIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import RoomAvatar from "../avatars/RoomAvatar";
@@ -49,6 +50,7 @@ import SpaceContextMenu from "../context_menus/SpaceContextMenu";
 import { useRovingTabIndex } from "../../../accessibility/RovingTabIndex";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
+import { useIsSpaceMuted } from "../../../hooks/useIsSpaceMuted";
 
 type ButtonProps<T extends keyof HTMLElementTagNameMap> = Omit<
     AccessibleButtonProps<T>,
@@ -91,6 +93,8 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
     const tabIndex = isActive ? 0 : -1;
 
     const spaceKey = _spaceKey ?? space?.roomId;
+    // Fragment X: a space muted with Mute server shows a muted indicator
+    const muted = useIsSpaceMuted(space?.roomId);
 
     let avatar = (
         <div className="mx_SpaceButton_avatarPlaceholder">
@@ -155,6 +159,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                 mx_SpaceButton_hasMenuOpen: menuDisplayed,
                 mx_SpaceButton_narrow: isNarrow,
                 mx_SpaceButton_withIcon: Boolean(icon),
+                mx_SpaceButton_muted: muted,
             })}
             aria-label={label}
             title={!isNarrow || menuDisplayed ? undefined : label}
@@ -169,6 +174,15 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                 <div className="mx_SpaceButton_avatarWrapper">
                     {avatar}
                     {notifBadge}
+                    {muted && (
+                        <div
+                            className="mx_SpaceButton_mutedIndicator"
+                            role="img"
+                            aria-label={_t("fragment_x|space_muted")}
+                        >
+                            <NotificationsOffSolidIcon />
+                        </div>
+                    )}
                 </div>
                 {!isNarrow && <span className="mx_SpaceButton_name">{label}</span>}
 

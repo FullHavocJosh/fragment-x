@@ -9,8 +9,9 @@ Please see LICENSE files in the repository root for full details.
 // @vitest-environment happy-dom
 
 import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
+import { ClientEvent, type MatrixEvent } from "matrix-js-sdk/src/matrix";
 import React from "react";
-import { fireEvent, getByTestId, render } from "test-utils-rtl";
+import { act, fireEvent, getByTestId, render, screen } from "test-utils-rtl";
 import { clientAndSDKContextRenderOptions, mkRoom, stubClient } from "test-utils";
 
 import DMRoomMap from "../../../utils/DMRoomMap";
@@ -79,6 +80,73 @@ describe("SpaceButton", () => {
             expect(dispatchSpy).not.toHaveBeenCalled();
             fireEvent.click(getByTestId(container, "create-space-button"));
             expect(dispatchSpy).toHaveBeenCalledWith({ action: Action.ViewRoom, room_id: "!1:example.org" });
+        });
+    });
+
+    describe("muted indicator (fragment_x.mute_server)", () => {
+        const mutedAccountData = (spaceIds: string[]): MatrixEvent =>
+            ({
+                getType: () => "io.fragmentx.muted_spaces",
+                getContent: () => Object.fromEntries(spaceIds.map((id) => [id, { mutedAt: 1, rooms: {} }])),
+            }) as unknown as MatrixEvent;
+
+        const renderButton = (): ReturnType<typeof render> =>
+            render(
+                <SpaceButton space={space} selected={false} label="My space" size="32px" />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+
+        beforeEach(() => {
+            SdkConfig.put({ fragment_x: { mute_server: true } });
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+            vi.mocked(cli.getAccountData).mockReset();
+        });
+
+        it("shows the indicator and dims a muted space", () => {
+            vi.mocked(cli.getAccountData).mockReturnValue(mutedAccountData(["!1:example.org"]));
+            const { container } = renderButton();
+
+            expect(screen.getByRole("img", { name: "Muted" })).toBeInTheDocument();
+            expect(container.querySelector(".mx_SpaceButton_muted")).toBeInTheDocument();
+        });
+
+        it("shows nothing for a space that is not muted, or another one that is", () => {
+            vi.mocked(cli.getAccountData).mockReturnValue(mutedAccountData(["!other:example.org"]));
+            const { container } = renderButton();
+
+            expect(screen.queryByRole("img", { name: "Muted" })).not.toBeInTheDocument();
+            expect(container.querySelector(".mx_SpaceButton_muted")).not.toBeInTheDocument();
+        });
+
+        it("shows nothing without the option", () => {
+            SdkConfig.reset();
+            vi.mocked(cli.getAccountData).mockReturnValue(mutedAccountData(["!1:example.org"]));
+            renderButton();
+
+            expect(screen.queryByRole("img", { name: "Muted" })).not.toBeInTheDocument();
+        });
+
+        it("follows the account data as the space is muted and unmuted", () => {
+            vi.mocked(cli.getAccountData).mockReturnValue(undefined);
+            renderButton();
+            expect(screen.queryByRole("img", { name: "Muted" })).not.toBeInTheDocument();
+
+            const muted = mutedAccountData(["!1:example.org"]);
+            vi.mocked(cli.getAccountData).mockReturnValue(muted);
+            act(() => {
+                cli.emit(ClientEvent.AccountData, muted);
+            });
+            expect(screen.getByRole("img", { name: "Muted" })).toBeInTheDocument();
+
+            const unmuted = mutedAccountData([]);
+            vi.mocked(cli.getAccountData).mockReturnValue(unmuted);
+            act(() => {
+                cli.emit(ClientEvent.AccountData, unmuted);
+            });
+            expect(screen.queryByRole("img", { name: "Muted" })).not.toBeInTheDocument();
         });
     });
 
