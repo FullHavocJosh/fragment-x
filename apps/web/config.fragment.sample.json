@@ -84,6 +84,7 @@
         "room_list_toggle_button": true,
         "user_panel": true,
         "home_direct_messages": true,
-        "home_top_bar": true
+        "home_top_bar": true,
+        "double_click_reply": true
     }
 }

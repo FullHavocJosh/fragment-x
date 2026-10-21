@@ -56,6 +56,11 @@ export interface ConfigOptions extends WebConfigJson {
          * group chat and help buttons.
          */
         home_top_bar?: boolean;
+        /**
+         * When true, double clicking a message starts a reply to it (links, media and controls in the message keep
+         * their own behaviour).
+         */
+        double_click_reply?: boolean;
     };
 }
 

@@ -50,6 +50,9 @@ What it sets, all through configuration with no code changes:
   Pending (invites) and Blocked (ignored users, with Unblock) tabs, an Add Friend button that starts a direct chat, and
   buttons for a new group chat and help. A user with no direct chats still sees the welcome content. See
   `apps/web/src/components/structures/HomeTabs.tsx`.
+- `fragment_x.double_click_reply: true`: double clicking a message starts a reply to it, like Discord. Links, images, media
+  and buttons inside the message keep their own behaviour, and nothing happens while editing the message or when the
+  user cannot send messages. See `onDoubleClick` in `apps/web/src/components/views/rooms/EventTile.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

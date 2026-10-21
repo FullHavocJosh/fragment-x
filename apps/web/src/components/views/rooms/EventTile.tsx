@@ -41,6 +41,8 @@ import { copyPlainTextToClipboard } from "@element-hq/element-web-shared-utils";
 import ReplyChain from "../elements/ReplyChain";
 import { _t } from "../../../languageHandler";
 import dis from "../../../dispatcher/dispatcher";
+import SdkConfig from "../../../SdkConfig";
+import { isContentActionable } from "../../../utils/EventUtils";
 import { Layout } from "../../../settings/enums/Layout";
 import SettingsStore from "../../../settings/SettingsStore";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
@@ -750,6 +752,25 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         this.showContextMenu(ev);
     };
 
+    /**
+     * Fragment X: double clicking a message replies to it, like Discord. Only with `fragment_x.double_click_reply`.
+     * Links, media and other controls inside the message keep their own behaviour.
+     */
+    private readonly onDoubleClick = (ev: React.MouseEvent): void => {
+        if (!SdkConfig.get().fragment_x?.double_click_reply) return;
+        if (this.props.editState || !this.context.canSendMessages || !isContentActionable(this.props.mxEvent)) return;
+        const target = ev.target as HTMLElement;
+        if (target.closest("a, button, input, textarea, select, video, audio, img, [role='button']")) return;
+
+        // The browser selects the word under a double click; a reply should not leave that selection behind.
+        window.getSelection()?.removeAllRanges();
+        dis.dispatch({
+            action: "reply_to_event",
+            event: this.props.mxEvent,
+            context: this.context.timelineRenderingType,
+        });
+    };
+
     private readonly onTimestampContextMenu = (ev: React.MouseEvent): void => {
         this.showContextMenu(ev, this.props.permalinkCreator?.forEvent(this.props.mxEvent.getId()!));
     };
@@ -1195,6 +1216,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                 onFocus={this.onFocusWithin}
                 onBlur={this.onBlurWithin}
                 onClick={this.onPreviewTileClick}
+                onDoubleClick={this.onDoubleClick}
                 onContextMenu={this.onContextMenu}
                 onPermalinkClick={this.onPermalinkClicked}
                 onPermalinkContextMenu={this.onTimestampContextMenu}
