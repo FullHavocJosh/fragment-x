@@ -92,6 +92,11 @@ export interface ConfigOptions extends WebConfigJson {
          * collapsed row each with a counter), has an Unread threads tab, and a Mark all read button.
          */
         inbox_for_you?: boolean;
+        /**
+         * When true, the room header has one Room info button: the room name. The separate info icon, which does the same,
+         * is not shown.
+         */
+        single_room_info_button?: boolean;
     };
 }
 

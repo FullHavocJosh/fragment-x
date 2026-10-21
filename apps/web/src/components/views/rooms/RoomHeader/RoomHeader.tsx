@@ -19,6 +19,7 @@ import VerifiedIcon from "@vector-im/compound-design-tokens/assets/web/icons/ver
 import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-solid";
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import { HistoryVisibility, JoinRule, type Room } from "matrix-js-sdk/src/matrix";
+import SdkConfig from "../../../../SdkConfig";
 import { Flex, Box, StatusTextView } from "@element-hq/web-shared-components";
 import { CallType } from "matrix-js-sdk/src/webrtc/call";
 import { HistoryIcon, UserProfileSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -334,17 +335,20 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                 </Tooltip>
             )}
 
-            <Tooltip label={_t("right_panel|room_summary_card|title")}>
-                <IconButton
-                    onClick={(evt) => {
-                        evt.stopPropagation();
-                        sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.RoomSummary);
-                    }}
-                    aria-label={_t("right_panel|room_summary_card|title")}
-                >
-                    <ToggleableIcon Icon={RoomInfoIcon} phase={RightPanelPhases.RoomSummary} />
-                </IconButton>
-            </Tooltip>
+            {/* Fragment X: the room name opens the room info too, so the info icon is a second button for it. */}
+            {!SdkConfig.get().fragment_x?.single_room_info_button && (
+                <Tooltip label={_t("right_panel|room_summary_card|title")}>
+                    <IconButton
+                        onClick={(evt) => {
+                            evt.stopPropagation();
+                            sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.RoomSummary);
+                        }}
+                        aria-label={_t("right_panel|room_summary_card|title")}
+                    >
+                        <ToggleableIcon Icon={RoomInfoIcon} phase={RightPanelPhases.RoomSummary} />
+                    </IconButton>
+                </Tooltip>
+            )}
 
             {!isDirectMessage && (
                 <Text as="div" size="sm" weight="medium">

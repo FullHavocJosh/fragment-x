@@ -81,6 +81,8 @@ What it sets, all through configuration with no code changes:
   newest first, either a thread you took part in or a room where you were mentioned (muted rooms are left out). The other
   tab is Unread threads. Mark all read clears the rooms behind the For you rows. This supersedes the Mentions tab of
   `inbox_mentions`. See `apps/web/src/components/views/spaces/threads-activity-centre/forYou.ts`.
+- `fragment_x.single_room_info_button: true`: the room header has one Room info button, the room name. The separate info
+  icon next to the call buttons, which opened the same panel, is not shown.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
