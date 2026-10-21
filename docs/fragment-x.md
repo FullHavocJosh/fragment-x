@@ -47,7 +47,8 @@ What it sets, all through configuration with no code changes:
   lists direct messages like Discord's home. The People chip can be switched off to see every room again; other spaces
   are unaffected. See `applyHomeDefaultFilter` in `apps/web/src/viewmodels/room-list/RoomListViewModel.ts`.
 - `fragment_x.home_top_bar: true`: the Home page gets a top bar like Discord's Friends page: People (direct chats),
-  Pending (invites) and Blocked (ignored users, with Unblock) tabs, an Add Friend button that starts a direct chat, and
+  Servers (the spaces you are in, with member and room counts; a row selects the space, and Discover opens the room
+  directory), Pending (invites) and Blocked (ignored users, with Unblock) tabs, an Add Friend button that starts a direct chat, and
   buttons for a new group chat and help. A user with no direct chats still sees the welcome content. See
   `apps/web/src/components/structures/HomeTabs.tsx`.
 - `fragment_x.double_click_reply: true`: double clicking a message starts a reply to it, like Discord. Links, images, media

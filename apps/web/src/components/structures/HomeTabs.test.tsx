@@ -9,16 +9,28 @@ Please see LICENSE files in the repository root for full details.
 
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
-import { render, screen } from "test-utils-rtl";
+import { act, render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
+import { EventEmitter } from "events";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
 
-import { BlockedList, getDirectContacts, getPendingInvites, HomeTopBar, PeopleList, PendingList } from "./HomeTabs";
+import {
+    BlockedList,
+    getDirectContacts,
+    getPendingInvites,
+    HomeTopBar,
+    PeopleList,
+    PendingList,
+    ServersList,
+} from "./HomeTabs";
 import DMRoomMap from "../../utils/DMRoomMap";
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import { Action } from "../../dispatcher/actions";
 import MatrixClientContext from "../../contexts/MatrixClientContext";
+import { SDKContext } from "../../contexts/SDKContext";
+import { type SDKContextClass } from "../../contexts/SDKContextClass";
+import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
 
 describe("HomeTabs", () => {
     let cli: MatrixClient;
@@ -92,6 +104,57 @@ describe("HomeTabs", () => {
             expect(dispatch).toHaveBeenCalledWith(
                 expect.objectContaining({ action: Action.ViewRoom, room_id: "!dm1:server" }),
             );
+        });
+    });
+
+    describe("ServersList", () => {
+        const renderServers = (spaces: Room[], rooms: Record<string, number>) => {
+            const spaceStore = Object.assign(new EventEmitter(), {
+                spacePanelSpaces: spaces,
+                getChildRooms: (id: string) => new Array(rooms[id] ?? 0).fill(dm1),
+                setActiveSpace: vi.fn(),
+            });
+            render(<ServersList />, {
+                wrapper: ({ children }) => (
+                    <SDKContext.Provider value={{ spaceStore } as unknown as SDKContextClass}>
+                        {children}
+                    </SDKContext.Provider>
+                ),
+            });
+            return spaceStore;
+        };
+
+        it("lists the spaces with member and room counts and selects one", async () => {
+            const home = mkStubRoom("!s1:server", "Helios", cli);
+            vi.mocked(home.getJoinedMemberCount).mockReturnValue(11);
+            const other = mkStubRoom("!s2:server", "One-Shot", cli);
+            vi.mocked(other.getJoinedMemberCount).mockReturnValue(1);
+            const spaceStore = renderServers([home, other], { "!s1:server": 4, "!s2:server": 1 });
+
+            expect(screen.getByText("11 members \u00b7 4 rooms")).toBeInTheDocument();
+            expect(screen.getByText("1 member \u00b7 1 room")).toBeInTheDocument();
+            await userEvent.click(screen.getByText("Helios"));
+            expect(spaceStore.setActiveSpace).toHaveBeenCalledWith("!s1:server");
+        });
+
+        it("opens the room directory with Discover", async () => {
+            const fire = vi.spyOn(defaultDispatcher, "fire").mockImplementation(() => {});
+            renderServers([], {});
+
+            await userEvent.click(screen.getByText("Discover"));
+            expect(fire).toHaveBeenCalledWith(Action.ViewRoomDirectory);
+        });
+
+        it("shows a message when there are no servers and updates when spaces change", () => {
+            const spaceStore = renderServers([], {});
+            expect(screen.getByText("You have not joined any servers yet.")).toBeInTheDocument();
+
+            // the store emits when the top level spaces change; the list reads them again
+            spaceStore.spacePanelSpaces = [mkStubRoom("!s3:server", "New space", cli)];
+            act(() => {
+                spaceStore.emit(UPDATE_TOP_LEVEL_SPACES);
+            });
+            expect(screen.getByText("New space")).toBeInTheDocument();
         });
     });
 

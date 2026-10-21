@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, useReducer } from "react";
+import React, { type JSX, useContext, useReducer } from "react";
 import classNames from "classnames";
 import { ClientEvent, type MatrixClient, KnownMembership, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import { ChatNewIcon, HelpIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -20,14 +20,16 @@ import AccessibleButton from "../views/elements/AccessibleButton";
 import BaseAvatar from "../views/avatars/BaseAvatar";
 import RoomAvatar from "../views/avatars/RoomAvatar";
 import { UserTab } from "../views/dialogs/UserTab";
+import { SDKContext } from "../../contexts/SDKContext";
+import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
 
 /**
  * Fragment X: the tabs of the Home page top bar, like Discord's Friends page. Only used with the
  * `fragment_x.home_top_bar` config option.
  */
-export type HomeTab = "people" | "pending" | "blocked";
+export type HomeTab = "people" | "servers" | "pending" | "blocked";
 
-const TABS: HomeTab[] = ["people", "pending", "blocked"];
+const TABS: HomeTab[] = ["people", "servers", "pending", "blocked"];
 
 /** Re-renders when the data behind the lists may have changed: direct chats, invites, the ignored user list. */
 function useRefreshOnChanges(cli: MatrixClient): void {
@@ -77,8 +79,13 @@ interface TopBarProps {
 export function HomeTopBar({ cli, tab, onTabChange }: TopBarProps): JSX.Element {
     useRefreshOnChanges(cli);
     const pendingCount = getPendingInvites(cli).length;
-    const label = (t: HomeTab): string =>
-        t === "people" ? _t("common|people") : t === "pending" ? _t("fragment_x|pending") : _t("fragment_x|blocked");
+    const labels: Record<HomeTab, string> = {
+        people: _t("common|people"),
+        servers: _t("fragment_x|servers"),
+        pending: _t("fragment_x|pending"),
+        blocked: _t("fragment_x|blocked"),
+    };
+    const label = (t: HomeTab): string => labels[t];
 
     return (
         <header className="mx_HomeTopBar">
@@ -144,6 +151,49 @@ export function PeopleList({ contacts }: { contacts: DirectContact[] }): JSX.Ele
                 </li>
             ))}
         </ul>
+    );
+}
+
+/**
+ * The servers (spaces) the user has joined, with their member and room counts; a row selects the space. A Discover
+ * button opens the room directory.
+ */
+export function ServersList(): JSX.Element {
+    const spaceStore = useContext(SDKContext).spaceStore;
+    const [, refresh] = useReducer((n: number) => n + 1, 0);
+    useEventEmitter(spaceStore, UPDATE_TOP_LEVEL_SPACES, refresh);
+    const spaces = spaceStore.spacePanelSpaces;
+
+    return (
+        <div className="mx_HomeTabs_servers">
+            <div className="mx_HomeTabs_serversHeader">
+                <AccessibleButton className="mx_HomeTabs_discover" onClick={() => dis.fire(Action.ViewRoomDirectory)}>
+                    {_t("fragment_x|discover")}
+                </AccessibleButton>
+            </div>
+            {spaces.length === 0 ? (
+                <EmptyTab text={_t("fragment_x|no_servers")} />
+            ) : (
+                <ul className="mx_HomeTabs_list">
+                    {spaces.map((space) => (
+                        <li key={space.roomId}>
+                            <AccessibleButton
+                                className="mx_HomeTabs_row"
+                                onClick={() => spaceStore.setActiveSpace(space.roomId)}
+                            >
+                                <RoomAvatar room={space} size="36px" />
+                                <span className="mx_HomeTabs_name">{space.name}</span>
+                                <span className="mx_HomeTabs_detail">
+                                    {_t("common|n_members", { count: space.getJoinedMemberCount() })}
+                                    {" \u00b7 "}
+                                    {_t("common|n_rooms", { count: spaceStore.getChildRooms(space.roomId).length })}
+                                </span>
+                            </AccessibleButton>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 }
 

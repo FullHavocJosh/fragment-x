@@ -30,6 +30,7 @@ import {
     HomeTopBar,
     PeopleList,
     PendingList,
+    ServersList,
     getDirectContacts,
     useDirectContactCount,
 } from "./HomeTabs";
@@ -151,10 +152,12 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
         );
     }
 
-    // Fragment X: a top bar with the People, Pending and Blocked tabs. The welcome content stays for a user with no
+    // Fragment X: a top bar with the People, Servers, Pending and Blocked tabs. The welcome content stays for a user with no
     // direct chats yet.
     let tabContent: JSX.Element;
-    if (tab === "pending") {
+    if (tab === "servers") {
+        tabContent = <ServersList />;
+    } else if (tab === "pending") {
         tabContent = <PendingList cli={cli} />;
     } else if (tab === "blocked") {
         tabContent = <BlockedList cli={cli} />;
