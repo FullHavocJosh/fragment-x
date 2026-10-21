@@ -239,7 +239,9 @@ describe("RoomListViewModel", () => {
             homeResult();
             viewModel = create();
 
-            expect(RoomListStoreV3.instance.getSortedRoomsInActiveSpace).toHaveBeenCalledWith([FilterEnum.PeopleFilter]);
+            expect(RoomListStoreV3.instance.getSortedRoomsInActiveSpace).toHaveBeenCalledWith([
+                FilterEnum.PeopleFilter,
+            ]);
             await vi.waitFor(() => expect(viewModel.getSnapshot().activeFilterId).toBe("people"));
         });
 
