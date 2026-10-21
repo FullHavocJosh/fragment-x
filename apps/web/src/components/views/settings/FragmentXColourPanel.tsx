@@ -26,7 +26,7 @@ const NEUTRAL = "#808080";
 const SAVE_DELAY_MS = 600;
 
 /**
- * Fragment X: pick the accent, server rail and panel colours (`fragment_x.colour_editor`). A change is shown at once and
+ * Fragment X: pick the accent, server rail, panel and chat colours (`fragment_x.colour_editor`). A change is shown at once and
  * saved to the account a moment after the user stops dragging, so a colour picker does not write on every movement.
  */
 export function FragmentXColourPanel(): JSX.Element {
@@ -63,6 +63,7 @@ export function FragmentXColourPanel(): JSX.Element {
         accent: _t("fragment_x|colour_accent"),
         rail: _t("fragment_x|colour_rail"),
         panels: _t("fragment_x|colour_panels"),
+        chat: _t("fragment_x|colour_chat"),
     };
 
     return (

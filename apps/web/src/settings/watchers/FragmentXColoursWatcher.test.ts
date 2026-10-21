@@ -65,6 +65,22 @@ describe("FragmentXColoursWatcher", () => {
             expect(css).not.toContain("accent");
         });
 
+        it("overrides the chat background with an important body rule and its alpha variants", () => {
+            const css = generateColoursCSS({ chat: "#303030" });
+            expect(css).toContain("body {");
+            expect(css).toContain("--timeline-background-color: #303030 !important;");
+            expect(css).toContain("--timeline-background-color-0pct: #30303000 !important;");
+            expect(css).toContain("--timeline-background-color-15pct: #30303026 !important;");
+            expect(css).toContain("--timeline-background-color-50pct: #30303080 !important;");
+            expect(css).not.toContain(":root");
+        });
+
+        it("keeps the token rule and the chat rule apart when both are set", () => {
+            const css = generateColoursCSS({ rail: "#101010", chat: "#303030" });
+            expect(css).toContain(":root");
+            expect(css).toContain("body {");
+        });
+
         it("is not in a cascade layer, so it wins over the theme tokens", () => {
             expect(generateColoursCSS({ accent: "#7c6cf0" })).not.toContain("@layer");
         });
