@@ -38,7 +38,7 @@ describe("memberRoles", () => {
         expect(roleOf(0)).toBe("member");
     });
 
-    const members = [
+    const members: MemberWithSeparator[] = [
         member("@owner:s", Infinity),
         member("@admin:s", 100),
         member("@mod1:s", 50),
