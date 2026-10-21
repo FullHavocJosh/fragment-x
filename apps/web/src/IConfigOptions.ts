@@ -71,6 +71,11 @@ export interface ConfigOptions extends WebConfigJson {
          * section "Direct Messages", and section headings are small capitals.
          */
         discord_sections?: boolean;
+        /**
+         * When true, Appearance settings has a Colours section where the user picks the accent, server rail and panel
+         * colours; they are saved in the account and applied on top of the theme.
+         */
+        colour_editor?: boolean;
     };
 }
 

@@ -87,6 +87,7 @@
         "home_top_bar": true,
         "double_click_reply": true,
         "member_list_roles": true,
-        "discord_sections": true
+        "discord_sections": true,
+        "colour_editor": true
     }
 }

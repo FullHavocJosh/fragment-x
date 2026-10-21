@@ -22,6 +22,8 @@ import { LayoutSwitcher } from "../../LayoutSwitcher";
 import FontScalingPanel from "../../FontScalingPanel";
 import { ThemeChoicePanel } from "../../ThemeChoicePanel";
 import ImageSizePanel from "../../ImageSizePanel";
+import { FragmentXColourPanel } from "../../FragmentXColourPanel";
+import SdkConfig from "../../../../../SdkConfig";
 import SettingsTab from "../SettingsTab";
 import { SettingsSection } from "../../shared/SettingsSection";
 import { SettingsSubsection } from "../../shared/SettingsSubsection";
@@ -107,6 +109,7 @@ export default class AppearanceUserSettingsTab extends React.Component<EmptyObje
             <SettingsTab data-testid="mx_AppearanceUserSettingsTab">
                 <SettingsSection>
                     <ThemeChoicePanel />
+                    {SdkConfig.get().fragment_x?.colour_editor && <FragmentXColourPanel />}
                     <LayoutSwitcher />
                     <FontScalingPanel />
                     {this.renderAdvancedSection()}

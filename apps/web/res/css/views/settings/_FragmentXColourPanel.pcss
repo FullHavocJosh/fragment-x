@@ -1,0 +1,30 @@
+/*
+Copyright 2026 Fragment X contributors.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+/* Appearance settings: one row per colour the user can choose. */
+.mx_FragmentXColourPanel_row {
+    display: flex;
+    align-items: center;
+    gap: var(--cpd-space-4x);
+    margin-bottom: var(--cpd-space-3x);
+
+    label {
+        flex: 0 0 200px;
+        font: var(--cpd-font-body-md-regular);
+        color: var(--cpd-color-text-primary);
+    }
+
+    input[type="color"] {
+        width: 48px;
+        height: 32px;
+        padding: 0;
+        border: 1px solid var(--cpd-color-border-interactive-secondary);
+        border-radius: 6px;
+        background: none;
+        cursor: pointer;
+    }
+}
