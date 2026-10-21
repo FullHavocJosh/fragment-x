@@ -1437,6 +1437,32 @@ describe("RoomListViewModel", () => {
                 },
             );
 
+            it.each([
+                { tag: DefaultTagID.Favourite, title: "Pinned" },
+                { tag: DefaultTagID.DM, title: "Direct Messages" },
+                { tag: CHATS_TAG, title: "Rooms" },
+                { tag: DefaultTagID.LowPriority, title: "Low Priority" },
+            ])('should title the $tag section header "$title" with fragment_x.discord_sections', ({ tag, title }) => {
+                SdkConfig.put({ fragment_x: { discord_sections: true } });
+                try {
+                    const getValueSpy = vi.spyOn(SettingsStore, "getValue");
+                    const getValue = getValueSpy.getMockImplementation()!;
+                    getValueSpy.mockImplementation((setting, roomId, excludeDefault) =>
+                        setting === "RoomList.showPeopleSection" ? true : getValue(setting, roomId, excludeDefault),
+                    );
+
+                    viewModel = new RoomListViewModel({
+                        client: matrixClient,
+                        spaceStore: SDKContextClass.instance.spaceStore,
+                        roomViewStore: SDKContextClass.instance.roomViewStore,
+                    });
+
+                    expect(viewModel.getSectionHeaderViewModel(tag).getSnapshot().title).toBe(title);
+                } finally {
+                    SdkConfig.reset();
+                }
+            });
+
             it("should retitle the Chats section header when showPeopleSection changes", () => {
                 let showPeopleSection = false;
                 let watchCallback: () => void = () => {};

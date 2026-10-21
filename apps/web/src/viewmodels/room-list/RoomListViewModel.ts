@@ -105,15 +105,17 @@ function getVisibleFilterIds(): FilterId[] {
  * @param tag - The tag of the section.
  */
 function getSectionTitle(tag: string): string {
+    // Fragment X: with discord_sections the favourites are "Pinned" and the people section "Direct Messages".
+    const discordSections = Boolean(SdkConfig.get().fragment_x?.discord_sections);
     switch (tag) {
         case DefaultTagID.Invite:
             return _t("room_list|section|invites");
         case DefaultTagID.Favourite:
-            return _t("room_list|section|favourites");
+            return discordSections ? _t("fragment_x|pinned") : _t("room_list|section|favourites");
         case DefaultTagID.LowPriority:
             return _t("room_list|section|low_priority");
         case DefaultTagID.DM:
-            return _t("common|people");
+            return discordSections ? _t("fragment_x|direct_messages") : _t("common|people");
         case CHATS_TAG:
             // Without a People section, this section holds the direct messages too, so it keeps its
             // broader name.

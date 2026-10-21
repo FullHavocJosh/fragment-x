@@ -1291,10 +1291,12 @@
     "fragment_x": {
         "add_friend": "Add Friend",
         "blocked": "Blocked",
+        "direct_messages": "Direct Messages",
         "members": "Members",
         "no_blocked": "You have not blocked anyone.",
         "no_pending": "No pending invites.",
         "pending": "Pending",
+        "pinned": "Pinned",
         "unblock": "Unblock"
     },
     "identity_server": {

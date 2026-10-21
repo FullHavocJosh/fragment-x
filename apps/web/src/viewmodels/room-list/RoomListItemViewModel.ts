@@ -43,6 +43,7 @@ import { type Call, CallEvent } from "../../models/Call";
 import RoomListStoreV3 from "../../stores/room-list-v3/RoomListStoreV3";
 import { getCustomSectionData, isDefaultSectionTag } from "../../stores/room-list-v3/section";
 import { _t } from "../../languageHandler";
+import SdkConfig from "../../SdkConfig";
 import { fetchUserStatus } from "../../utils/userStatus";
 
 /**
@@ -558,7 +559,11 @@ export class RoomListItemViewModel
      * Get the display name for a section based on its tag.
      */
     private static getSectionName(tag: string, customSectionData: Record<string, { name: string }>): string {
-        if (tag === DefaultTagID.Favourite) return _t("room_list|section|favourites");
+        if (tag === DefaultTagID.Favourite) {
+            return SdkConfig.get().fragment_x?.discord_sections
+                ? _t("fragment_x|pinned")
+                : _t("room_list|section|favourites");
+        }
         if (tag === DefaultTagID.LowPriority) return _t("room_list|section|low_priority");
         return customSectionData[tag]?.name || tag;
     }
