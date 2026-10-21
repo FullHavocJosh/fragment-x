@@ -62,7 +62,9 @@ What it sets, all through configuration with no code changes:
   "Pinned", the people section "Direct Messages", and section headings are small capitals. Sections and the people section
   are Element settings that are on by default (Settings > Appearance); this option changes titles and styling only.
 - `fragment_x.colour_editor: true`: Appearance settings gets a Colours section where each user picks an accent colour,
-  a server rail colour and a room list and panels colour, with a reset for each. A change shows at once and is saved to
+  a server rail colour, a room list and panels colour and a chat background colour, with a reset for each. The chat
+  colour is the timeline, header and composer of a custom theme (the default one); a built-in theme has no separate
+  chat colour, there "Room list and panels" also changes the chat. A change shows at once and is saved to
   the account (the `FragmentX.colours` setting, so it follows the user to other devices) after a short delay. The colours
   are applied as Compound token overrides on top of the theme, see
   `apps/web/src/settings/watchers/FragmentXColoursWatcher.ts`. Without the option nothing is applied or shown.

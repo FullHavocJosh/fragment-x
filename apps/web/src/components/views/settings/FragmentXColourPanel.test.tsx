@@ -39,6 +39,7 @@ describe("FragmentXColourPanel", () => {
         expect(input("Accent").type).toBe("color");
         expect(input("Server rail")).toBeInTheDocument();
         expect(input("Room list and panels")).toBeInTheDocument();
+        expect(input("Chat background")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Reset all colours" })).toHaveAttribute("aria-disabled", "true");
     });
 

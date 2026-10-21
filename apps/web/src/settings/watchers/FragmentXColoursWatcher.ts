@@ -22,9 +22,11 @@ export type FragmentXColours = {
     rail?: string;
     /** The room list and other side panels. */
     panels?: string;
+    /** The chat: the timeline, the room header and the composer. Only a custom theme (the default one) has it. */
+    chat?: string;
 };
 
-export const COLOUR_KEYS: (keyof FragmentXColours)[] = ["accent", "rail", "panels"];
+export const COLOUR_KEYS: (keyof FragmentXColours)[] = ["accent", "rail", "panels", "chat"];
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -46,7 +48,8 @@ export function mixColours(hex: string, other: string, amount: number): string {
 /**
  * The CSS that applies the chosen colours as Compound token overrides, or an empty string when there are none. The rule
  * is not in a cascade layer, so it wins over the theme's tokens (which are layered) whatever the order of the style
- * elements.
+ * elements. The chat colour is a separate rule on the body: a custom theme sets its colour variables as inline styles
+ * on the body, which only an important declaration beats.
  */
 export function generateColoursCSS(colours: FragmentXColours | null | undefined): string {
     const properties: string[] = [];
@@ -63,8 +66,19 @@ export function generateColoursCSS(colours: FragmentXColours | null | undefined)
     }
     if (isHexColour(colours?.rail)) properties.push(`--cpd-color-bg-subtle-primary: ${colours.rail};`);
     if (isHexColour(colours?.panels)) properties.push(`--cpd-color-bg-canvas-default: ${colours.panels};`);
-    if (properties.length === 0) return "";
-    return `:root, [class*="cpd-theme-"] { ${properties.join(" ")} }`;
+    const rules: string[] = [];
+    if (properties.length > 0) rules.push(`:root, [class*="cpd-theme-"] { ${properties.join(" ")} }`);
+    if (isHexColour(colours?.chat)) {
+        // The variables a custom theme derives from its timeline colour: the colour at 0%, 15% and 50% alpha.
+        const chat = colours.chat;
+        rules.push(
+            `body { --timeline-background-color: ${chat} !important; ` +
+                `--timeline-background-color-0pct: ${chat}00 !important; ` +
+                `--timeline-background-color-15pct: ${chat}26 !important; ` +
+                `--timeline-background-color-50pct: ${chat}80 !important; }`,
+        );
+    }
+    return rules.join("\n");
 }
 
 // Not a `title` attribute: a style sheet with a title is an alternative style sheet, and the browser turns it off when
