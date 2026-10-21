@@ -46,6 +46,11 @@ export interface ConfigOptions extends WebConfigJson {
          * button during a call), and the space panel no longer shows the user menu.
          */
         user_panel?: boolean;
+        /**
+         * When true, Home is titled "Direct Messages" and lists only direct messages by default (the People filter is
+         * applied when Home opens and can be switched off).
+         */
+        home_direct_messages?: boolean;
     };
 }
 

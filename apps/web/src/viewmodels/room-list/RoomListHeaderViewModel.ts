@@ -16,7 +16,7 @@ import {
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import PosthogTrackers from "../../PosthogTrackers";
 import { Action } from "../../dispatcher/actions";
-import { getMetaSpaceName, type MetaSpace, UPDATE_HOME_BEHAVIOUR, UPDATE_SELECTED_SPACE } from "../../stores/spaces";
+import { getMetaSpaceName, MetaSpace, UPDATE_HOME_BEHAVIOUR, UPDATE_SELECTED_SPACE } from "../../stores/spaces";
 import type SpaceStore from "../../stores/spaces/SpaceStore";
 import {
     shouldShowSpaceSettings,
@@ -33,6 +33,8 @@ import { SortingAlgorithm } from "../../stores/room-list-v3/skip-list/sorters";
 import { SettingLevel } from "../../settings/SettingLevel";
 import { createRoom, hasCreateRoomRights } from "./utils";
 import { ReleaseAnnouncementStore } from "../../stores/ReleaseAnnouncementStore";
+import SdkConfig from "../../SdkConfig";
+import { _t } from "../../languageHandler";
 
 export interface Props {
     /**
@@ -303,6 +305,10 @@ function getInitialSnapshot(spaceStore: SpaceStore, matrixClient: MatrixClient):
 function getHeaderTitle(spaceStore: SpaceStore): string {
     const activeSpace = spaceStore.activeSpaceRoom;
     const spaceName = activeSpace?.name;
+    // Fragment X: Home lists direct messages, like Discord's, and is titled for it.
+    if (!spaceName && spaceStore.activeSpace === MetaSpace.Home && SdkConfig.get().fragment_x?.home_direct_messages) {
+        return _t("space|add_existing_room_space|dm_heading");
+    }
     return spaceName ?? getMetaSpaceName(spaceStore.activeSpace as MetaSpace, spaceStore.allRoomsInHome);
 }
 

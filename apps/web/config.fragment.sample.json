@@ -82,6 +82,7 @@
         "member_list_default_open": true,
         "rail_search_button": true,
         "room_list_toggle_button": true,
-        "user_panel": true
+        "user_panel": true,
+        "home_direct_messages": true
     }
 }
