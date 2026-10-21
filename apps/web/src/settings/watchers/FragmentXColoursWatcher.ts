@@ -13,14 +13,16 @@ import type IWatcher from "./Watcher";
  * Fragment X: the colours a user can choose in Appearance settings (`fragment_x.colour_editor`), on top of the theme.
  * Each is a `#rrggbb` hex colour; a missing one leaves the theme's colour.
  */
-export interface FragmentXColours {
+// A type alias, not an interface: an account setting value must be assignable to Record<string, unknown> (see
+// SettingValueType), which an interface is not.
+export type FragmentXColours = {
     /** Accent: buttons, selected items, links. */
     accent?: string;
     /** The server rail and the user panel. */
     rail?: string;
     /** The room list and other side panels. */
     panels?: string;
-}
+};
 
 export const COLOUR_KEYS: (keyof FragmentXColours)[] = ["accent", "rail", "panels"];
 
