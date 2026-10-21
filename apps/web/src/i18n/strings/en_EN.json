@@ -1288,6 +1288,14 @@
         "sending": "Sending",
         "sent": "Sent"
     },
+    "fragment_x": {
+        "add_friend": "Add Friend",
+        "blocked": "Blocked",
+        "no_blocked": "You have not blocked anyone.",
+        "no_pending": "No pending invites.",
+        "pending": "Pending",
+        "unblock": "Unblock"
+    },
     "identity_server": {
         "change": "Change identity server",
         "change_prompt": "Disconnect from the identity server <current /> and connect to <new /> instead?",
