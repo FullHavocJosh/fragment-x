@@ -16,6 +16,8 @@ import {
     SearchIcon,
     PreferencesIcon,
     UserAddIcon,
+    NotificationsOffIcon,
+    NotificationsIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import { type IProps as IContextMenuProps } from "../../structures/ContextMenu";
@@ -41,6 +43,11 @@ import { shouldShowComponent } from "../../../customisations/helpers/UIComponent
 import { UIComponent } from "../../../settings/UIFeature";
 import PosthogTrackers from "../../../PosthogTrackers";
 import { type ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
+import SdkConfig from "../../../SdkConfig";
+import { useAccountData } from "../../../hooks/useAccountData";
+import { MUTED_SPACES_EVENT, type MutedSpaces, muteSpace, unmuteSpace } from "../../../utils/muteSpace";
+import Modal from "../../../Modal";
+import ErrorDialog from "../dialogs/ErrorDialog";
 
 interface IProps extends IContextMenuProps {
     space?: Room;
@@ -52,8 +59,45 @@ const SpaceContextMenu: React.FC<IProps> = ({ space, hideHeader, onFinished, ...
     const userId = cli.getSafeUserId();
     const videoRoomsEnabled = useFeatureEnabled("feature_video_rooms");
     const elementCallVideoRoomsEnabled = useFeatureEnabled("feature_element_call_video_rooms");
+    // Fragment X: Mute server. The hook is called whatever the flag, to keep the order of hooks.
+    const mutedSpaces = useAccountData<MutedSpaces>(cli, MUTED_SPACES_EVENT);
 
     if (!space) return null;
+
+    let muteOption: JSX.Element | null = null;
+    if (SdkConfig.get().fragment_x?.mute_server) {
+        const muted = Boolean(mutedSpaces[space.roomId]);
+        const onMuteClick = (ev: ButtonEvent): void => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            onFinished();
+
+            // A space can have many rooms, so this runs on after the menu has closed.
+            (muted ? unmuteSpace(cli, space.roomId) : muteSpace(cli, space.roomId)).then(
+                (failed) => {
+                    if (failed.length === 0) return;
+                    Modal.createDialog(ErrorDialog, {
+                        title: _t("fragment_x|mute_server_failed_title"),
+                        description: _t("fragment_x|mute_server_failed", { count: failed.length }),
+                    });
+                },
+                (error) => {
+                    Modal.createDialog(ErrorDialog, {
+                        title: _t("fragment_x|mute_server_failed_title"),
+                        description: error instanceof Error ? error.message : String(error),
+                    });
+                },
+            );
+        };
+        muteOption = (
+            <IconizedContextMenuOption
+                data-testid="mute-server-option"
+                icon={muted ? <NotificationsIcon /> : <NotificationsOffIcon />}
+                label={muted ? _t("fragment_x|unmute_server") : _t("fragment_x|mute_server")}
+                onClick={onMuteClick}
+            />
+        );
+    }
 
     let inviteOption: JSX.Element | null = null;
     if (space.getJoinRule() === "public" || space.canInvite(userId)) {
@@ -258,6 +302,7 @@ const SpaceContextMenu: React.FC<IProps> = ({ space, hideHeader, onFinished, ...
                     label={_t("common|preferences")}
                     onClick={onPreferencesClick}
                 />
+                {muteOption}
                 {devtoolsOption}
                 {settingsOption}
                 {leaveOption}

@@ -97,6 +97,11 @@ export interface ConfigOptions extends WebConfigJson {
          * is not shown.
          */
         single_room_info_button?: boolean;
+        /**
+         * When true, the context menu of a space has Mute server and Unmute server. Muting mutes every joined room of the
+         * space and its sub-spaces and remembers each room's notification state in account data; unmuting puts them back.
+         */
+        mute_server?: boolean;
     };
 }
 

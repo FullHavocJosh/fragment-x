@@ -1307,6 +1307,12 @@
         "inbox_preview_toggle": "Show the unread messages in %(roomName)s",
         "mark_all_read": "Mark all read",
         "members": "Members",
+        "mute_server": "Mute server",
+        "mute_server_failed": {
+            "one": "One room could not be changed. Try again.",
+            "other": "%(count)s rooms could not be changed. Try again."
+        },
+        "mute_server_failed_title": "Could not change every room",
         "no_blocked": "You have not blocked anyone.",
         "no_mentions": "No unread mentions.",
         "no_pending": "No pending invites.",
@@ -1315,6 +1321,7 @@
         "pinned": "Pinned",
         "servers": "Servers",
         "unblock": "Unblock",
+        "unmute_server": "Unmute server",
         "unread_threads": "Unread threads"
     },
     "identity_server": {

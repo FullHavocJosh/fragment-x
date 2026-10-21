@@ -26,6 +26,8 @@ import {
 import { leaveSpace } from "../../../utils/leave-behaviour";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { UIComponent } from "../../../settings/UIFeature";
+import SdkConfig from "../../../SdkConfig";
+import { muteSpace, unmuteSpace } from "../../../utils/muteSpace";
 
 vi.mock("../../../customisations/helpers/UIComponents", () => ({
     shouldShowComponent: vi.fn(),
@@ -44,12 +46,22 @@ vi.mock("../../../utils/leave-behaviour", () => ({
     leaveSpace: vi.fn(),
 }));
 
+vi.mock("../../../utils/muteSpace", () => ({
+    MUTED_SPACES_EVENT: "io.fragmentx.muted_spaces",
+    muteSpace: vi.fn(),
+    unmuteSpace: vi.fn(),
+}));
+
 describe("<SpaceContextMenu />", () => {
     const userId = "@test:server";
 
     const mockClient = {
         getUserId: vi.fn().mockReturnValue(userId),
         getSafeUserId: vi.fn().mockReturnValue(userId),
+        getAccountData: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
+        removeListener: vi.fn(),
     } as unknown as Mocked<MatrixClient>;
 
     const makeMockSpace = (props = {}) =>
@@ -218,6 +230,50 @@ describe("<SpaceContextMenu />", () => {
             await userEvent.click(screen.getByTestId("new-subspace-option"));
             expect(showCreateNewSubspace).toHaveBeenCalledWith(space);
             expect(onFinished).toHaveBeenCalled();
+        });
+    });
+
+    describe("Mute server", () => {
+        const space = makeMockSpace({ roomId: "!space:server" });
+
+        beforeEach(() => {
+            vi.mocked(muteSpace).mockResolvedValue([]);
+            vi.mocked(unmuteSpace).mockResolvedValue([]);
+            mockClient.getAccountData.mockReturnValue(undefined);
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("is not shown without fragment_x.mute_server", () => {
+            renderComponent({ space });
+            expect(screen.queryByTestId("mute-server-option")).not.toBeInTheDocument();
+        });
+
+        it("mutes the space and closes the menu", async () => {
+            SdkConfig.put({ fragment_x: { mute_server: true } });
+            const onFinished = vi.fn();
+            renderComponent({ space, onFinished });
+
+            await userEvent.click(screen.getByRole("menuitem", { name: "Mute server" }));
+
+            expect(muteSpace).toHaveBeenCalledWith(mockClient, "!space:server");
+            expect(unmuteSpace).not.toHaveBeenCalled();
+            expect(onFinished).toHaveBeenCalled();
+        });
+
+        it("offers Unmute server for a muted space and unmutes it", async () => {
+            SdkConfig.put({ fragment_x: { mute_server: true } });
+            mockClient.getAccountData.mockReturnValue({
+                getContent: () => ({ "!space:server": { mutedAt: 1, rooms: {} } }),
+            } as never);
+            renderComponent({ space });
+
+            await userEvent.click(screen.getByRole("menuitem", { name: "Unmute server" }));
+
+            expect(unmuteSpace).toHaveBeenCalledWith(mockClient, "!space:server");
+            expect(muteSpace).not.toHaveBeenCalled();
         });
     });
 });

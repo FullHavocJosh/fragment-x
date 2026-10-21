@@ -16,6 +16,7 @@ import type { DeviceClientInformation } from "../utils/device/types.ts";
 import type { UserWidget } from "../utils/WidgetUtils-types.ts";
 import { type MediaPreviewConfig } from "./media_preview.ts";
 import { type INVITE_RULES_ACCOUNT_DATA_TYPE, type InviteConfigAccountData } from "./invite-rules.ts";
+import type { MutedSpaces } from "../utils/muteSpace";
 
 // Extend Matrix JS SDK types via Typescript declaration merging to support unspecced event fields and types
 declare module "matrix-js-sdk/src/types" {
@@ -74,6 +75,8 @@ declare module "matrix-js-sdk/src/types" {
         "im.vector.setting.integration_provisioning": { enabled: boolean };
         "im.vector.riot.breadcrumb_rooms": { rooms: string[] };
         "im.vector.web.settings": Record<string, any>;
+        // Fragment X: the muted spaces, with the notification state their rooms had before
+        "io.fragmentx.muted_spaces": MutedSpaces;
 
         // URL preview account data event
         "org.matrix.preview_urls": { disable: boolean };

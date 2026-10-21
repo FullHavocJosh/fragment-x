@@ -85,6 +85,12 @@ What it sets, all through configuration with no code changes:
   `inbox_mentions`. See `apps/web/src/components/views/spaces/threads-activity-centre/forYou.ts`.
 - `fragment_x.single_room_info_button: true`: the room header has one Room info button, the room name. The separate info
   icon next to the call buttons, which opened the same panel, is not shown.
+- `fragment_x.mute_server: true`: the context menu of a space has Mute server and Unmute server. Muting mutes every joined
+  room of the space and its sub-spaces (the usual per-room mute, so it also silences mentions and holds on other devices
+  and clients) and saves the notification state each room had in the account data event `io.fragmentx.muted_spaces`.
+  Unmuting puts every room back to that state; a room that was muted before, was changed by hand since or was left is
+  not touched, and a room that is also in another muted space stays muted until that space is unmuted too. A space of
+  many rooms takes a moment: the rules are written three at a time. See `apps/web/src/utils/muteSpace.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
