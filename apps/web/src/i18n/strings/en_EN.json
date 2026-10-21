@@ -1291,6 +1291,7 @@
     "fragment_x": {
         "add_friend": "Add Friend",
         "blocked": "Blocked",
+        "members": "Members",
         "no_blocked": "You have not blocked anyone.",
         "no_pending": "No pending invites.",
         "pending": "Pending",
