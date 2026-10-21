@@ -43,6 +43,7 @@ import Modal from "../../Modal";
 import { getKeyBindingsManager } from "../../KeyBindingsManager";
 import { type IOpts } from "../../createRoom";
 import SpacePanel from "../views/spaces/SpacePanel";
+import { isUnifiedTree } from "../views/spaces/SpaceRoomRows";
 import { LegacyCallHandlerEvent } from "../../LegacyCallHandler";
 import AudioFeedArrayForLegacyCall from "../views/voip/AudioFeedArrayForLegacyCall";
 import { OwnProfileStore } from "../../stores/OwnProfileStore";
@@ -692,7 +693,9 @@ class LoggedInView extends React.Component<IProps, IState> {
         const roomView = <div className="mx_RoomView_wrapper">{pageElement}</div>;
 
         let content: React.ReactNode;
-        const resizerViewModel = !moduleRenderer ? this.getResizerViewModel() : undefined;
+        // Fragment X: with the unified tree the rail lists the rooms and there is no room list column.
+        const unifiedTree = isUnifiedTree();
+        const resizerViewModel = !moduleRenderer && !unifiedTree ? this.getResizerViewModel() : undefined;
         if (resizerViewModel && !moduleRenderer) {
             // Resizable layout with a draggable separator. The SpacePanel lives inside GroupView
             // (leftPanel omits it).
@@ -719,7 +722,7 @@ class LoggedInView extends React.Component<IProps, IState> {
             content = (
                 <>
                     <SpacePanel />
-                    {leftPanel}
+                    {!unifiedTree && leftPanel}
                     {roomView}
                 </>
             );

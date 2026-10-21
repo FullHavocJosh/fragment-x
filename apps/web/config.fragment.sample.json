@@ -89,6 +89,7 @@
         "member_list_roles": true,
         "discord_sections": true,
         "colour_editor": true,
-        "inbox_mentions": true
+        "inbox_mentions": true,
+        "unified_tree": true
     }
 }

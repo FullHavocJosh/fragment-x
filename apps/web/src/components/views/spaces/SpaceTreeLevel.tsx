@@ -30,6 +30,7 @@ import {
 import RoomAvatar from "../avatars/RoomAvatar";
 import { type SpaceKey } from "../../../stores/spaces";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
+import { isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
 import { NotificationBadge } from "../rooms/NotificationBadge/NotificationBadge";
 import { _t } from "../../../languageHandler";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
@@ -203,6 +204,8 @@ interface IItemState {
     name: string;
     collapsed: boolean;
     childSpaces: Room[];
+    /** Fragment X unified tree: the number of joined rooms directly in the space. */
+    childRoomCount: number;
 }
 
 export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
@@ -224,6 +227,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             name: this.props.space.name,
             collapsed,
             childSpaces: this.childSpaces,
+            childRoomCount: this.childRoomCount,
         };
     }
 
@@ -240,6 +244,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
     private onSpaceUpdate = (): void => {
         this.setState({
             childSpaces: this.childSpaces,
+            childRoomCount: this.childRoomCount,
         });
     };
 
@@ -255,8 +260,15 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             .filter((s) => !this.props.parents?.has(s.roomId));
     }
 
+    private get childRoomCount(): number {
+        return isUnifiedTree()
+            ? sortRoomsForTree(this.context.spaceStore.getChildRooms(this.props.space.roomId)).length
+            : 0;
+    }
+
     private get isCollapsed(): boolean {
-        return this.state.collapsed || !!this.props.isPanelCollapsed;
+        // In the unified tree the rail keeps its tree when it shows icons only, so a narrow rail does not collapse it.
+        return this.state.collapsed || (!!this.props.isPanelCollapsed && !isUnifiedTree());
     }
 
     private toggleCollapse = (evt: ButtonEvent): void => {
@@ -279,7 +291,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
     private onKeyDown = (ev: React.KeyboardEvent): void => {
         let handled = true;
         const action = getKeyBindingsManager().getRoomListAction(ev);
-        const hasChildren = this.state.childSpaces?.length;
+        const hasChildren = this.state.childSpaces?.length || this.state.childRoomCount;
         switch (action) {
             case KeyBindingAction.CollapseRoomListSection:
                 if (hasChildren && !this.isCollapsed) {
@@ -332,7 +344,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             mx_SpaceItem: true,
             mx_SpaceItem_narrow: isPanelCollapsed,
             collapsed: collapsed,
-            hasSubSpaces: this.state.childSpaces?.length,
+            hasSubSpaces: this.state.childSpaces?.length || this.state.childRoomCount,
         });
 
         const isInvite = space.getMyMembership() === KnownMembership.Invite;
@@ -341,7 +353,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             ? StaticNotificationState.forSymbol("!", NotificationLevel.Highlight)
             : this.context.spaceStore.getNotificationState(space.roomId);
 
-        const hasChildren = this.state.childSpaces?.length;
+        const hasChildren = this.state.childSpaces?.length || this.state.childRoomCount;
 
         let childItems;
         if (hasChildren && !collapsed) {
@@ -351,6 +363,9 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
                     activeSpaces={activeSpaces}
                     isNested={true}
                     parents={new Set(parents).add(space.roomId)}
+                    // Fragment X unified tree: the rooms of the space are listed after its sub-spaces.
+                    roomsOf={isUnifiedTree() ? space : undefined}
+                    isPanelCollapsed={isPanelCollapsed}
                 />
             );
         }
@@ -407,9 +422,20 @@ interface ITreeLevelProps {
     activeSpaces: SpaceKey[];
     isNested?: boolean;
     parents: Set<string>;
+    /** Fragment X unified tree: list the rooms of this space after the sub-spaces. */
+    roomsOf?: Room;
+    /** Fragment X unified tree: the rail shows icons only. */
+    isPanelCollapsed?: boolean;
 }
 
-const SpaceTreeLevel: React.FC<ITreeLevelProps> = ({ spaces, activeSpaces, isNested, parents }) => {
+const SpaceTreeLevel: React.FC<ITreeLevelProps> = ({
+    spaces,
+    activeSpaces,
+    isNested,
+    parents,
+    roomsOf,
+    isPanelCollapsed,
+}) => {
     return (
         <ul className="mx_SpaceTreeLevel" role="group">
             {spaces.map((s) => {
@@ -420,9 +446,11 @@ const SpaceTreeLevel: React.FC<ITreeLevelProps> = ({ spaces, activeSpaces, isNes
                         space={s}
                         isNested={isNested}
                         parents={parents}
+                        isPanelCollapsed={roomsOf ? isPanelCollapsed : undefined}
                     />
                 );
             })}
+            {roomsOf && <SpaceRoomRows space={roomsOf} isNarrow={isPanelCollapsed} />}
         </ul>
     );
 };

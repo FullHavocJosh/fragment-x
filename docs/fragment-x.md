@@ -70,6 +70,12 @@ What it sets, all through configuration with no code changes:
   opens on) listing the rooms with unread mentions, with a counter each; a click opens the room. Muted rooms and spaces are
   left out, and a mention anywhere lights the rail button. This is the first step of an inbox limited to the conversations
   you follow. See `apps/web/src/components/views/spaces/threads-activity-centre/useMentionRooms.ts`.
+- `fragment_x.unified_tree: true`: the server rail is the whole navigation. Each space lists its sub-spaces and then its
+  rooms (pinned first, then by name, with unread badges) under it, as one tree, and the room list column is gone. The
+  rail's Expand and Collapse button (`room_list_toggle_button`) shows or hides the names, so the collapsed rail is the
+  same tree as avatars. Spaces collapse and expand per space. The user panel moves to the bottom of the rail. The room
+  list filters, sections and sorting are not available in this mode. See
+  `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

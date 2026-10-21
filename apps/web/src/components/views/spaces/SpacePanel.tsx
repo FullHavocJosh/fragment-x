@@ -37,6 +37,8 @@ import { _t } from "../../../languageHandler";
 import { useContextMenu } from "../../structures/ContextMenu";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
+import { isUnifiedTree } from "./SpaceRoomRows";
+import UserPanel from "./UserPanel";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
 import {
     getMetaSpaceName,
@@ -420,6 +422,8 @@ const SpacePanel: React.FC = () => {
                     <nav
                         className={classNames("mx_SpacePanel", {
                             collapsed: isPanelCollapsed,
+                            // Fragment X: the rail is the whole navigation, with the rooms listed under their spaces.
+                            mx_SpacePanel_unified: isUnifiedTree(),
                         })}
                         onKeyDown={(ev) => {
                             const navAction = getKeyBindingsManager().getNavigationAction(ev);
@@ -477,6 +481,7 @@ const SpacePanel: React.FC = () => {
                         <ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed} />
 
                         <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
+                        {isUnifiedTree() && <UserPanel compact={isPanelCollapsed} />}
                     </nav>
                 </DragDropContext>
             )}
