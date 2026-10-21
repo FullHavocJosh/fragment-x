@@ -46,6 +46,10 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.home_direct_messages: true`: Home is titled "Direct Messages" and opens with the People filter applied, so it
   lists direct messages like Discord's home. The People chip can be switched off to see every room again; other spaces
   are unaffected. See `applyHomeDefaultFilter` in `apps/web/src/viewmodels/room-list/RoomListViewModel.ts`.
+- `fragment_x.home_top_bar: true`: the Home page gets a top bar like Discord's Friends page: People (direct chats),
+  Pending (invites) and Blocked (ignored users, with Unblock) tabs, an Add Friend button that starts a direct chat, and
+  buttons for a new group chat and help. A user with no direct chats still sees the welcome content. See
+  `apps/web/src/components/structures/HomeTabs.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

@@ -51,6 +51,11 @@ export interface ConfigOptions extends WebConfigJson {
          * applied when Home opens and can be switched off).
          */
         home_direct_messages?: boolean;
+        /**
+         * When true, the Home page gets a top bar with People, Pending and Blocked tabs, an Add Friend button, and new
+         * group chat and help buttons.
+         */
+        home_top_bar?: boolean;
     };
 }
 

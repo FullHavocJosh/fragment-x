@@ -24,6 +24,15 @@ import MatrixClientContext, { useMatrixClientContext } from "../../contexts/Matr
 import MiniAvatarUploader, { AVATAR_SIZE } from "../views/elements/MiniAvatarUploader";
 import PosthogTrackers from "../../PosthogTrackers";
 import EmbeddedPage from "./EmbeddedPage";
+import {
+    BlockedList,
+    type HomeTab,
+    HomeTopBar,
+    PeopleList,
+    PendingList,
+    getDirectContacts,
+    useDirectContactCount,
+} from "./HomeTabs";
 
 const onClickSendDm = (ev: ButtonEvent): void => {
     PosthogTrackers.trackInteraction("WebHomeCreateChatButton", ev);
@@ -90,6 +99,9 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     const cli = useMatrixClientContext();
     const config = SdkConfig.get();
     const pageUrl = getHomePageUrl(config, cli);
+    const showTopBar = Boolean(config.fragment_x?.home_top_bar);
+    const [tab, setTab] = useState<HomeTab>("people");
+    const contactCount = useDirectContactCount(cli);
 
     if (pageUrl) {
         return <EmbeddedPage className="mx_HomePage" url={pageUrl} scrollbar={true} />;
@@ -111,26 +123,54 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
         );
     }
 
-    return (
-        <AutoHideScrollbar className="mx_AutoHideScrollbar mx_HomePage mx_HomePage_default" as="main">
-            <div className="mx_HomePage_default_wrapper">
-                {introSection}
-                <div className="mx_HomePage_default_buttons">
-                    <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
-                        <ChatSolidIcon />
-                        {_tDom("onboarding|send_dm")}
-                    </AccessibleButton>
-                    <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
-                        <ExploreIcon />
-                        {_tDom("onboarding|explore_rooms")}
-                    </AccessibleButton>
-                    <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
-                        <GroupIcon />
-                        {_tDom("onboarding|create_room")}
-                    </AccessibleButton>
-                </div>
+    const welcome = (
+        <div className="mx_HomePage_default_wrapper">
+            {introSection}
+            <div className="mx_HomePage_default_buttons">
+                <AccessibleButton onClick={onClickSendDm} className="mx_HomePage_button_sendDm">
+                    <ChatSolidIcon />
+                    {_tDom("onboarding|send_dm")}
+                </AccessibleButton>
+                <AccessibleButton onClick={onClickExplore} className="mx_HomePage_button_explore">
+                    <ExploreIcon />
+                    {_tDom("onboarding|explore_rooms")}
+                </AccessibleButton>
+                <AccessibleButton onClick={onClickNewRoom} className="mx_HomePage_button_createGroup">
+                    <GroupIcon />
+                    {_tDom("onboarding|create_room")}
+                </AccessibleButton>
             </div>
-        </AutoHideScrollbar>
+        </div>
+    );
+
+    if (!showTopBar) {
+        return (
+            <AutoHideScrollbar className="mx_AutoHideScrollbar mx_HomePage mx_HomePage_default" as="main">
+                {welcome}
+            </AutoHideScrollbar>
+        );
+    }
+
+    // Fragment X: a top bar with the People, Pending and Blocked tabs. The welcome content stays for a user with no
+    // direct chats yet.
+    let tabContent: JSX.Element;
+    if (tab === "pending") {
+        tabContent = <PendingList cli={cli} />;
+    } else if (tab === "blocked") {
+        tabContent = <BlockedList cli={cli} />;
+    } else if (contactCount > 0) {
+        tabContent = <PeopleList contacts={getDirectContacts()} />;
+    } else {
+        tabContent = <div className="mx_HomePage_default mx_HomePage_default_inTabs">{welcome}</div>;
+    }
+
+    return (
+        <div className="mx_HomePage_withTopBar">
+            <HomeTopBar cli={cli} tab={tab} onTabChange={setTab} />
+            <AutoHideScrollbar className="mx_AutoHideScrollbar mx_HomePage_tabContent" as="main">
+                {tabContent}
+            </AutoHideScrollbar>
+        </div>
     );
 };
 

@@ -1,0 +1,169 @@
+/*
+Copyright 2026 Fragment X contributors.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+/* The Home page with a top bar, like Discord's Friends page: the bar on top, the tab content below. */
+.mx_HomePage_withTopBar {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.mx_HomeTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+    gap: 16px;
+    min-height: 48px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--cpd-color-border-disabled);
+}
+
+.mx_HomeTopBar_tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.mx_HomeTopBar_tab,
+.mx_HomeTopBar_addFriend {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: var(--cpd-font-body-md-medium);
+    color: var(--cpd-color-text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.mx_HomeTopBar_tab:hover {
+    background-color: var(--cpd-color-bg-subtle-secondary);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_HomeTopBar_tab_selected {
+    background-color: var(--cpd-color-bg-subtle-secondary);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_HomeTopBar_addFriend {
+    background-color: var(--cpd-color-bg-accent-rest);
+    color: var(--cpd-color-text-on-solid-primary);
+
+    &:hover {
+        background-color: var(--cpd-color-bg-accent-hovered);
+    }
+}
+
+.mx_HomeTopBar_badge {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    box-sizing: border-box;
+    text-align: center;
+    font: var(--cpd-font-body-xs-semibold);
+    background-color: var(--cpd-color-bg-critical-primary);
+    color: var(--cpd-color-text-on-solid-primary);
+}
+
+.mx_HomeTopBar_actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mx_HomeTopBar_action {
+    display: inline-flex;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+
+    svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--cpd-color-icon-secondary);
+    }
+
+    &:hover {
+        background-color: var(--cpd-color-bg-subtle-secondary);
+
+        svg {
+            fill: var(--cpd-color-icon-primary);
+        }
+    }
+}
+
+.mx_HomePage_tabContent {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px;
+}
+
+.mx_HomePage_default_inTabs {
+    display: grid;
+    place-items: center;
+    min-height: 100%;
+}
+
+.mx_HomeTabs_list {
+    margin: 0 auto;
+    padding: 0;
+    max-width: 720px;
+    list-style: none;
+}
+
+.mx_HomeTabs_row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--cpd-color-bg-subtle-secondary);
+    }
+}
+
+.mx_HomeTabs_row_static {
+    cursor: default;
+}
+
+.mx_HomeTabs_name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: var(--cpd-font-body-md-semibold);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_HomeTabs_detail {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: var(--cpd-font-body-sm-regular);
+    color: var(--cpd-color-text-secondary);
+}
+
+.mx_HomeTabs_empty {
+    margin: 48px auto;
+    text-align: center;
+    font: var(--cpd-font-body-md-regular);
+    color: var(--cpd-color-text-secondary);
+}
