@@ -66,6 +66,10 @@ What it sets, all through configuration with no code changes:
   the account (the `FragmentX.colours` setting, so it follows the user to other devices) after a short delay. The colours
   are applied as Compound token overrides on top of the theme, see
   `apps/web/src/settings/watchers/FragmentXColoursWatcher.ts`. Without the option nothing is applied or shown.
+- `fragment_x.inbox_mentions: true`: the Threads activity centre in the server rail gets a Mentions tab (first, and the one it
+  opens on) listing the rooms with unread mentions, with a counter each; a click opens the room. Muted rooms and spaces are
+  left out, and a mention anywhere lights the rail button. This is the first step of an inbox limited to the conversations
+  you follow. See `apps/web/src/components/views/spaces/threads-activity-centre/useMentionRooms.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

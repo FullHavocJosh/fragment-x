@@ -25,6 +25,9 @@ import { getSenderName } from "../../../../stores/message-preview/previews/utils
 import PosthogTrackers from "../../../../PosthogTrackers";
 import { getKeyBindingsManager } from "../../../../KeyBindingsManager";
 import { KeyBindingAction } from "../../../../accessibility/KeyboardShortcuts";
+import SdkConfig from "../../../../SdkConfig";
+import { useMatrixClientContext } from "../../../../contexts/MatrixClientContext";
+import { type MentionRoom, useMentionRooms } from "./useMentionRooms";
 
 interface ThreadsActivityCentreProps {
     /**
@@ -36,7 +39,7 @@ interface ThreadsActivityCentreProps {
 /**
  * The two views available in the Threads Activity Centre popup.
  */
-type TACView = "my_threads" | "other_threads";
+type TACView = "mentions" | "my_threads" | "other_threads";
 
 /**
  * Get the threads to display for the active tab, and the caption shown when that tab is empty.
@@ -66,11 +69,21 @@ function getActiveTabContent(
  */
 export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCentreProps): JSX.Element {
     const [open, setOpen] = useState(false);
-    const [view, setView] = useState<TACView>("my_threads");
-    const roomsAndNotifications = useUnreadThreadRooms(open);
+    // Fragment X: with inbox_mentions the panel starts on a Mentions tab, the rooms where the user was mentioned.
+    const mentionsEnabled = Boolean(SdkConfig.get().fragment_x?.inbox_mentions);
+    const [view, setView] = useState<TACView>(mentionsEnabled ? "mentions" : "my_threads");
+    const cli = useMatrixClientContext();
+    const mentionRooms = useMentionRooms(cli, mentionsEnabled);
+    const threadRooms = useUnreadThreadRooms(open);
+    const roomsAndNotifications = {
+        ...threadRooms,
+        // A mention anywhere lights the button like a mention in a thread does.
+        greatestNotificationLevel:
+            mentionRooms.length > 0 ? NotificationLevel.Highlight : threadRooms.greatestNotificationLevel,
+    };
 
     const { threads: activeThreads, emptyCaption: activeEmptyCaption } = getActiveTabContent(
-        view,
+        view === "mentions" ? "my_threads" : view,
         roomsAndNotifications,
     );
 
@@ -115,6 +128,15 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                     role="tablist"
                     aria-label={_t("threads_activity_centre|header")}
                 >
+                    {mentionsEnabled && (
+                        <NavItem
+                            aria-controls="mx_ThreadsActivityCentre_panel"
+                            active={view === "mentions"}
+                            onClick={() => setView("mentions")}
+                        >
+                            {_t("fragment_x|inbox_mentions")}
+                        </NavItem>
+                    )}
                     <NavItem
                         aria-controls="mx_ThreadsActivityCentre_panel"
                         active={view === "my_threads"}
@@ -132,21 +154,90 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                 </NavBar>
                 {/* Make the content of the pop-up scrollable */}
                 <div id="mx_ThreadsActivityCentre_panel" role="tabpanel" className="mx_ThreadsActivityCentre_rows">
-                    {activeThreads.map((threadData) => (
-                        <ThreadsActivityCentreThreadRow
-                            key={`${threadData.room.roomId}:${threadData.thread.id}`}
-                            threadData={threadData}
-                            onClick={() => setOpen(false)}
-                        />
-                    ))}
-                    {activeThreads.length === 0 && (
-                        <Text as="div" size="sm" weight="regular" className="mx_ThreadsActivityCentre_emptyCaption">
-                            {activeEmptyCaption}
-                        </Text>
+                    {view === "mentions" ? (
+                        <>
+                            {mentionRooms.map((mention) => (
+                                <MentionRoomRow
+                                    key={mention.room.roomId}
+                                    mention={mention}
+                                    onClick={() => setOpen(false)}
+                                />
+                            ))}
+                            {mentionRooms.length === 0 && (
+                                <Text
+                                    as="div"
+                                    size="sm"
+                                    weight="regular"
+                                    className="mx_ThreadsActivityCentre_emptyCaption"
+                                >
+                                    {_t("fragment_x|no_mentions")}
+                                </Text>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            {activeThreads.map((threadData) => (
+                                <ThreadsActivityCentreThreadRow
+                                    key={`${threadData.room.roomId}:${threadData.thread.id}`}
+                                    threadData={threadData}
+                                    onClick={() => setOpen(false)}
+                                />
+                            ))}
+                            {activeThreads.length === 0 && (
+                                <Text
+                                    as="div"
+                                    size="sm"
+                                    weight="regular"
+                                    className="mx_ThreadsActivityCentre_emptyCaption"
+                                >
+                                    {activeEmptyCaption}
+                                </Text>
+                            )}
+                        </>
                     )}
                 </div>
             </Menu>
         </div>
+    );
+}
+
+/**
+ * Fragment X: a room the user was mentioned in, with the number of unread mentions; a click opens the room.
+ */
+function MentionRoomRow({ mention, onClick }: { mention: MentionRoom; onClick: () => void }): JSX.Element {
+    const { room, count } = mention;
+    return (
+        <MenuItem
+            className="mx_ThreadsActivityCentreThreadRow"
+            label={null}
+            hideChevron
+            aria-label={_t("threads_activity_centre|a11y|mention_no_sender", { roomName: room.name, count })}
+            Icon={<DecoratedRoomAvatar room={room} size="40px" />}
+            onSelect={() => {
+                onClick();
+                defaultDispatcher.dispatch<ViewRoomPayload>({
+                    action: Action.ViewRoom,
+                    show_room_tile: true,
+                    room_id: room.roomId,
+                    metricsTrigger: "WebThreadsActivityCentre",
+                });
+            }}
+        >
+            <div className="mx_ThreadsActivityCentreThreadRow_content">
+                <div className="mx_ThreadsActivityCentreThreadRow_header">
+                    <Text as="span" size="md" weight="semibold" className="mx_ThreadsActivityCentreThreadRow_roomName">
+                        {room.name}
+                    </Text>
+                </div>
+            </div>
+            <span
+                className="mx_ThreadsActivityCentreThreadRow_decoration"
+                data-notification-level="highlight"
+                data-testid="mention-count"
+            >
+                <NotificationDecoration {...threadDecorationProps(NotificationLevel.Highlight, count, false)} />
+            </span>
+        </MenuItem>
     );
 }
 

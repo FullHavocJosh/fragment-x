@@ -76,6 +76,11 @@ export interface ConfigOptions extends WebConfigJson {
          * colours; they are saved in the account and applied on top of the theme.
          */
         colour_editor?: boolean;
+        /**
+         * When true, the Threads activity centre in the rail gets a Mentions tab, listing the rooms with unread mentions
+         * with a counter each; a click opens the room. Muted rooms are left out.
+         */
+        inbox_mentions?: boolean;
     };
 }
 
