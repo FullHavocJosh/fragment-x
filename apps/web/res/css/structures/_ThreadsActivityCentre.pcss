@@ -176,3 +176,81 @@
     padding: var(--cpd-space-2x) var(--cpd-space-4x);
     border-top: 1px solid var(--cpd-color-border-disabled);
 }
+
+/* Fragment X inbox: a For you entry with a button that expands it to the latest unread messages. */
+.mx_ThreadsActivityCentre_entryRow {
+    display: flex;
+    align-items: center;
+}
+
+.mx_ThreadsActivityCentre_entryMain {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.mx_ThreadsActivityCentre_expand {
+    flex: 0 0 auto;
+    display: inline-flex;
+    margin: 0 var(--cpd-space-2x);
+    padding: var(--cpd-space-1x);
+    border-radius: 6px;
+    cursor: pointer;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--cpd-color-icon-secondary);
+    }
+
+    &:hover {
+        background-color: var(--cpd-color-bg-subtle-secondary);
+
+        svg {
+            fill: var(--cpd-color-icon-primary);
+        }
+    }
+}
+
+.mx_ThreadsActivityCentre_previews {
+    margin: 0;
+    padding: 0 var(--cpd-space-4x) var(--cpd-space-2x) 56px;
+    list-style: none;
+}
+
+.mx_ThreadsActivityCentre_preview {
+    display: flex;
+    gap: var(--cpd-space-2x);
+    width: 100%;
+    padding: var(--cpd-space-1x) var(--cpd-space-2x);
+    box-sizing: border-box;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    font: var(--cpd-font-body-sm-regular);
+    color: var(--cpd-color-text-secondary);
+
+    &:hover {
+        background-color: var(--cpd-color-bg-subtle-secondary);
+        color: var(--cpd-color-text-primary);
+    }
+}
+
+.mx_ThreadsActivityCentre_previewSender {
+    flex: 0 0 auto;
+    font-weight: var(--cpd-font-weight-semibold);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_ThreadsActivityCentre_previewText {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mx_ThreadsActivityCentre_previewEmpty {
+    padding: var(--cpd-space-1x) var(--cpd-space-2x);
+    font: var(--cpd-font-body-sm-regular);
+    color: var(--cpd-color-text-secondary);
+}
