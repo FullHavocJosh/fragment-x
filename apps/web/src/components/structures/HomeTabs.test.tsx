@@ -11,7 +11,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { act, render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
-import { EventEmitter } from "events";
+import EventEmitter from "node:events";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
 
