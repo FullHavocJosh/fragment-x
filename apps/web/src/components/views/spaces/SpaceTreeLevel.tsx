@@ -272,7 +272,9 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
     }
 
     private toggleCollapse = (evt: ButtonEvent): void => {
-        if (this.props.onExpand && this.isCollapsed) {
+        // Fragment X unified tree: opening a space only opens that space; the rail's own Expand and Collapse button
+        // is what shows or hides the names, so a space must not widen an icons-only rail.
+        if (this.props.onExpand && this.isCollapsed && !isUnifiedTree()) {
             this.props.onExpand();
         }
         const newCollapsedState = !this.isCollapsed;
