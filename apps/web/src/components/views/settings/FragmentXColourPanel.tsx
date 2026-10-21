@@ -31,7 +31,7 @@ const SAVE_DELAY_MS = 600;
  */
 export function FragmentXColourPanel(): JSX.Element {
     const [colours, setColours] = useState<FragmentXColours>(() => ({
-        ...(SettingsStore.getValue("FragmentX.colours") ?? {}),
+        ...SettingsStore.getValue("FragmentX.colours"),
     }));
 
     const save = useMemo(
@@ -42,9 +42,15 @@ export function FragmentXColourPanel(): JSX.Element {
             }, SAVE_DELAY_MS),
         [],
     );
-    // Do not lose a change made just before the dialog closes.
+    // Do not lose a change made just before the dialog closes: save it now, then make sure nothing is left pending.
     const latest = useRef(colours);
-    useEffect(() => () => save.flush(), [save]);
+    useEffect(
+        () => () => {
+            save.flush();
+            save.cancel();
+        },
+        [save],
+    );
 
     const update = (next: FragmentXColours): void => {
         latest.current = next;
