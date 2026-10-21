@@ -81,6 +81,11 @@ export interface ConfigOptions extends WebConfigJson {
          * with a counter each; a click opens the room. Muted rooms are left out.
          */
         inbox_mentions?: boolean;
+        /**
+         * When true, the server rail is the whole navigation: the rooms of each space are listed under it in one tree and
+         * the room list column is gone. The rail's expand and collapse button shows or hides the names.
+         */
+        unified_tree?: boolean;
     };
 }
 

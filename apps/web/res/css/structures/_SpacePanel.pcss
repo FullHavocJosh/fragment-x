@@ -400,3 +400,70 @@ Please see LICENSE files in the repository root for full details.
         text-transform: capitalize;
     }
 }
+
+/* Fragment X unified tree: the rail is the whole navigation and lists the rooms under their spaces. */
+.mx_SpacePanel.mx_SpacePanel_unified {
+    &:not(.collapsed) {
+        width: 272px;
+    }
+
+    .mx_SpaceTreeLevel {
+        width: 100%;
+    }
+
+    .mx_SpaceRoomItem {
+        list-style: none;
+        width: 100%;
+    }
+
+    .mx_SpaceRoomRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 3px 8px 3px 36px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--cpd-color-text-secondary);
+
+        &:hover {
+            background-color: var(--cpd-color-bg-subtle-secondary);
+            color: var(--cpd-color-text-primary);
+        }
+
+        &.mx_SpaceRoomRow_selected {
+            background-color: var(--cpd-color-bg-subtle-secondary);
+            color: var(--cpd-color-text-primary);
+        }
+
+        &.mx_SpaceRoomRow_narrow {
+            justify-content: center;
+            padding: 3px 0;
+        }
+    }
+
+    .mx_SpaceRoomRow_name {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font: var(--cpd-font-body-md-regular);
+    }
+
+    .mx_SpaceRoomRow_badge {
+        flex: 0 0 auto;
+    }
+
+    /* the user panel sits at the bottom of the rail */
+    .mx_UserPanel {
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .mx_UserPanel_compact {
+        flex-direction: column;
+        padding: 8px 0;
+    }
+}

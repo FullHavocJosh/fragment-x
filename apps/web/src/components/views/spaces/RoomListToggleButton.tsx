@@ -15,6 +15,7 @@ import defaultDispatcher from "../../../dispatcher/dispatcher";
 import { Action } from "../../../dispatcher/actions";
 import SdkConfig from "../../../SdkConfig";
 import { useSettingValue } from "../../../hooks/useSettings";
+import { isUnifiedTree } from "./SpaceRoomRows";
 
 /**
  * Fragment X: a button in the space panel that collapses or expands the room list next to it, so the chat can use the
@@ -23,15 +24,19 @@ import { useSettingValue } from "../../../hooks/useSettings";
 const RoomListToggleButton: React.FC<{
     isPanelCollapsed: boolean;
 }> = ({ isPanelCollapsed }): JSX.Element | null => {
-    const isRoomListCollapsed = useSettingValue("RoomList.isPanelCollapsed");
+    const roomListCollapsed = useSettingValue("RoomList.isPanelCollapsed");
     if (!SdkConfig.get().fragment_x?.room_list_toggle_button) return null;
 
+    // With the unified tree there is no room list column: the button expands and collapses the rail itself, which
+    // shows or hides the names of the spaces and rooms.
+    const unified = isUnifiedTree();
+    const isRoomListCollapsed = unified ? isPanelCollapsed : roomListCollapsed;
     const label = isRoomListCollapsed ? _t("action|expand") : _t("action|collapse");
     let button = (
         <IconButton
             aria-label={label}
             className={classNames("mx_RailButton", { expanded: !isPanelCollapsed })}
-            onClick={() => defaultDispatcher.fire(Action.ToggleRoomListPanel)}
+            onClick={() => defaultDispatcher.fire(unified ? Action.ToggleSpacePanel : Action.ToggleRoomListPanel)}
         >
             <>
                 {isRoomListCollapsed ? <LeftPanelOpenIcon /> : <LeftPanelCloseIcon />}

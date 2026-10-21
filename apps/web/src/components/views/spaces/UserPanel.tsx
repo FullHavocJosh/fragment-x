@@ -5,7 +5,8 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, useContext } from "react";
+import React, { type JSX, useContext, useEffect } from "react";
+import classNames from "classnames";
 import { MicOffSolidIcon, MicOnSolidIcon, SettingsSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { IconButton, Tooltip } from "@vector-im/compound-web";
 import { useCreateAutoDisposedViewModel, UserMenu } from "@element-hq/web-shared-components";
@@ -63,7 +64,7 @@ const CallMuteButton: React.FC<{ call: ElementCall }> = ({ call }) => {
  * button, at the bottom of the room list column like Discord's user area. Only shown with the
  * `fragment_x.user_panel` config option; the space panel then no longer shows the user menu.
  */
-const UserPanel: React.FC = (): JSX.Element | null => {
+const UserPanel: React.FC<{ compact?: boolean }> = ({ compact }): JSX.Element | null => {
     const sdkContext = useContext(SDKContext);
     const client = sdkContext.client!;
     const call = useConnectedElementCall();
@@ -76,23 +77,29 @@ const UserPanel: React.FC = (): JSX.Element | null => {
             userMenuVm.setOpen(!userMenuVm.getSnapshot().open);
         }
     });
+    // In a narrow rail (the unified tree) only the avatar is shown, not the name.
+    useEffect(() => {
+        userMenuVm.setExpanded(!compact);
+    }, [userMenuVm, compact]);
 
     if (!SdkConfig.get().fragment_x?.user_panel) return null;
 
     return (
-        <div className="mx_UserPanel">
+        <div className={classNames("mx_UserPanel", { mx_UserPanel_compact: compact })}>
             <UserMenu vm={userMenuVm} className="mx_UserPanel_menu" />
             <div className="mx_UserPanel_buttons">
                 {call && <CallMuteButton call={call} />}
-                <Tooltip label={_t("common|settings")}>
-                    <IconButton
-                        aria-label={_t("common|settings")}
-                        className="mx_UserPanel_button"
-                        onClick={() => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
-                    >
-                        <SettingsSolidIcon />
-                    </IconButton>
-                </Tooltip>
+                {!compact && (
+                    <Tooltip label={_t("common|settings")}>
+                        <IconButton
+                            aria-label={_t("common|settings")}
+                            className="mx_UserPanel_button"
+                            onClick={() => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
+                        >
+                            <SettingsSolidIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </div>
         </div>
     );
