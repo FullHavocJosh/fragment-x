@@ -90,7 +90,10 @@ What it sets, all through configuration with no code changes:
   and clients) and saves the notification state each room had in the account data event `io.fragmentx.muted_spaces`.
   Unmuting puts every room back to that state; a room that was muted before, was changed by hand since or was left is
   not touched, and a room that is also in another muted space stays muted until that space is unmuted too. A space of
-  many rooms takes a moment: the rules are written three at a time. See `apps/web/src/utils/muteSpace.ts`.
+  many rooms takes a moment: the rules are written three at a time. See `apps/web/src/utils/muteSpace.ts`. A watcher
+  (`FragmentXMutedSpacesWatcher`) keeps muted spaces in line with their rooms: a room that joins a muted space is muted and
+  recorded, a room that leaves it is dropped (and put back to its recorded state if it is still joined and muted), and a
+  mute that was interrupted is finished. It runs in every open app a couple of seconds after a change.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

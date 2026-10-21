@@ -45,7 +45,8 @@ import PosthogTrackers from "../../../PosthogTrackers";
 import { type ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import SdkConfig from "../../../SdkConfig";
 import { useAccountData } from "../../../hooks/useAccountData";
-import { MUTED_SPACES_EVENT, type MutedSpaces, muteSpace, unmuteSpace } from "../../../utils/muteSpace";
+import { type MutedSpaces } from "../../../@types/muted-spaces";
+import { MUTED_SPACES_EVENT, muteSpace, unmuteSpace } from "../../../utils/muteSpace";
 import Modal from "../../../Modal";
 import ErrorDialog from "../dialogs/ErrorDialog";
 
