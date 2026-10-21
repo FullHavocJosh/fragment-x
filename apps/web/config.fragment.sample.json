@@ -92,6 +92,7 @@
         "inbox_mentions": true,
         "unified_tree": true,
         "inbox_for_you": true,
-        "single_room_info_button": true
+        "single_room_info_button": true,
+        "mute_server": true
     }
 }
