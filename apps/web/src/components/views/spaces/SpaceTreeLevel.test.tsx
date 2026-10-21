@@ -8,7 +8,7 @@ Please see LICENSE files in the repository root for full details.
 
 // @vitest-environment happy-dom
 
-import { vi, describe, it, expect, afterEach } from "vitest";
+import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
 import React from "react";
 import { fireEvent, getByTestId, render } from "test-utils-rtl";
 import { clientAndSDKContextRenderOptions, mkRoom, stubClient } from "test-utils";
@@ -21,6 +21,7 @@ import { MetaSpace, type SpaceKey } from "../../../stores/spaces";
 import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
 import { SDKContextClass } from "../../../contexts/SDKContextClass";
+import SdkConfig from "../../../SdkConfig";
 
 vi.mock("../../../stores/spaces/SpaceStore", async () => {
     const EventEmitter = (await vi.importActual("events")).EventEmitter as typeof import("events").EventEmitter;
@@ -162,5 +163,46 @@ describe("SpaceItem", () => {
         expect(queryByText("Root Space")).toBeVisible();
         expect(queryByText("Subspace")).toBeVisible();
         expect(asFragment()).toMatchSnapshot();
+    });
+
+    describe("opening a space in an icons-only rail", () => {
+        const renderNarrow = (onExpand: () => void) => {
+            vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>
+                spaceId === space.roomId ? [subspace] : [],
+            );
+            Object.assign(SDKContextClass.instance.spaceStore, { getChildRooms: vi.fn().mockReturnValue([]) });
+            return render(
+                <SpaceItem space={space} activeSpaces={[]} isPanelCollapsed={true} onExpand={onExpand} />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+        };
+
+        beforeEach(() => {
+            // a space's open or closed state is remembered in local storage, including by the tests above
+            localStorage.clear();
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("asks the rail to widen by default", () => {
+            const onExpand = vi.fn();
+            const { getByLabelText } = renderNarrow(onExpand);
+
+            fireEvent.click(getByLabelText("Expand"));
+            expect(onExpand).toHaveBeenCalledOnce();
+        });
+
+        it("only opens the space in the unified tree, leaving the rail as it is", () => {
+            SdkConfig.put({ fragment_x: { unified_tree: true } });
+            const onExpand = vi.fn();
+            const { getByLabelText, container } = renderNarrow(onExpand);
+            expect(container.querySelector(".mx_SpaceTreeLevel")).toBeNull();
+
+            fireEvent.click(getByLabelText("Expand"));
+            expect(onExpand).not.toHaveBeenCalled();
+            expect(container.querySelector(".mx_SpaceTreeLevel")).not.toBeNull();
+        });
     });
 });

@@ -1298,7 +1298,11 @@
         "colours_reset_all": "Reset all colours",
         "direct_messages": "Direct Messages",
         "discover": "Discover",
+        "for_you": "For you",
+        "inbox": "Inbox",
+        "inbox_empty": "You're all caught up.",
         "inbox_mentions": "Mentions",
+        "mark_all_read": "Mark all read",
         "members": "Members",
         "no_blocked": "You have not blocked anyone.",
         "no_mentions": "No unread mentions.",
@@ -1307,7 +1311,8 @@
         "pending": "Pending",
         "pinned": "Pinned",
         "servers": "Servers",
-        "unblock": "Unblock"
+        "unblock": "Unblock",
+        "unread_threads": "Unread threads"
     },
     "identity_server": {
         "change": "Change identity server",

@@ -86,6 +86,12 @@ export interface ConfigOptions extends WebConfigJson {
          * the room list column is gone. The rail's expand and collapse button shows or hides the names.
          */
         unified_tree?: boolean;
+        /**
+         * When true, the Threads activity centre in the rail is the inbox: it is called Inbox, opens on a For you tab
+         * that merges the rooms with unread mentions and the unread threads the user took part in (newest first, one
+         * collapsed row each with a counter), has an Unread threads tab, and a Mark all read button.
+         */
+        inbox_for_you?: boolean;
     };
 }
 

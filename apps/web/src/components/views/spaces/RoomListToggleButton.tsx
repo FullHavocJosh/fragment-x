@@ -16,6 +16,7 @@ import { Action } from "../../../dispatcher/actions";
 import SdkConfig from "../../../SdkConfig";
 import { useSettingValue } from "../../../hooks/useSettings";
 import { isUnifiedTree } from "./SpaceRoomRows";
+import { KeyboardShortcut } from "../settings/KeyboardShortcut";
 
 /**
  * Fragment X: a button in the space panel that collapses or expands the room list next to it, so the chat can use the
@@ -51,7 +52,14 @@ const RoomListToggleButton: React.FC<{
 
     if (isPanelCollapsed) {
         button = (
-            <Tooltip label={label} placement="right">
+            <Tooltip
+                label={label}
+                placement="right"
+                // With the unified tree this button is the only one that expands the rail, so it shows the shortcut.
+                caption={
+                    unified ? <KeyboardShortcut value={{ ctrlOrCmdKey: true, shiftKey: true, key: "d" }} /> : undefined
+                }
+            >
                 {button}
             </Tooltip>
         );
