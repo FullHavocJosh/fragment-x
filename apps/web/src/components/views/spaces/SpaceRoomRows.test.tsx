@@ -28,6 +28,53 @@ import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNo
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
 import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
 
+// The room list's own view model needs a real room; the menus only need its snapshot and actions.
+const roomItem = vi.hoisted(() => ({
+    onMarkAsUnread: vi.fn(),
+    onToggleFavorite: vi.fn(),
+    onLeaveRoom: vi.fn(),
+    onSetRoomNotifState: vi.fn(),
+    created: [] as unknown[],
+    snapshot: {
+        canMarkAsRead: false,
+        canMarkAsUnread: true,
+        canChangeSection: true,
+        isFavourite: false,
+        isLowPriority: false,
+        canInvite: true,
+        canCopyRoomLink: true,
+        areSectionsEnabled: false,
+        sections: [],
+        roomNotifState: "all_messages",
+    },
+}));
+
+vi.mock("../../../viewmodels/room-list/RoomListItemViewModel", () => ({
+    RoomListItemViewModel: class {
+        public isDisposed = false;
+        public onMarkAsUnread = roomItem.onMarkAsUnread;
+        public onToggleFavorite = roomItem.onToggleFavorite;
+        public onLeaveRoom = roomItem.onLeaveRoom;
+        public onSetRoomNotifState = roomItem.onSetRoomNotifState;
+        public constructor(props: unknown) {
+            roomItem.created.push(props);
+        }
+
+        // The same object every time: a new one on each call would make the subscription loop.
+        public getSnapshot(): object {
+            return roomItem.snapshot;
+        }
+
+        public subscribe(): () => void {
+            return () => {};
+        }
+
+        public dispose(): void {
+            this.isDisposed = true;
+        }
+    },
+}));
+
 describe("SpaceRoomRows", () => {
     let cli: MatrixClient;
     let space: Room;
@@ -244,5 +291,62 @@ describe("SpaceRoomRows", () => {
         );
         expect(screen.queryByText("Announcements")).not.toBeInTheDocument();
         expect(screen.getByText("General")).toBeInTheDocument();
+    });
+
+    describe("fragment_x.room_context_menu", () => {
+        const moreOptions = (): HTMLElement[] => screen.queryAllByRole("button", { name: "More Options" });
+
+        beforeEach(() => {
+            roomItem.created.length = 0;
+            roomItem.onMarkAsUnread.mockClear();
+            roomItem.onToggleFavorite.mockClear();
+            roomItem.onLeaveRoom.mockClear();
+        });
+
+        it("has no room menu without the option", () => {
+            renderRows();
+            expect(moreOptions()).toHaveLength(0);
+            expect(roomItem.created).toHaveLength(0);
+        });
+
+        it("gives each room a more options button, made with the room list's view model for that room", () => {
+            SdkConfig.put({ fragment_x: { room_context_menu: true } });
+            renderRows();
+
+            expect(moreOptions()).toHaveLength(2);
+            expect(roomItem.created).toEqual(
+                expect.arrayContaining([expect.objectContaining({ room: general, client: cli })]),
+            );
+        });
+
+        it("has no button in the icons only rail", () => {
+            SdkConfig.put({ fragment_x: { room_context_menu: true } });
+            renderRows(true);
+            expect(moreOptions()).toHaveLength(0);
+        });
+
+        it("shows the room actions from the button and runs them", async () => {
+            SdkConfig.put({ fragment_x: { room_context_menu: true } });
+            renderRows();
+
+            await userEvent.click(moreOptions()[0]);
+            expect(await screen.findByRole("menuitem", { name: "Mark as unread" })).toBeInTheDocument();
+            expect(screen.getByRole("menuitemcheckbox", { name: "Favourited" })).toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("menuitem", { name: "Leave room" }));
+            expect(roomItem.onLeaveRoom).toHaveBeenCalled();
+        });
+
+        it("still opens the room when the row is clicked", async () => {
+            SdkConfig.put({ fragment_x: { room_context_menu: true } });
+            const dispatch = vi.spyOn(defaultDispatcher, "dispatch").mockImplementation(() => {});
+            renderRows();
+
+            await userEvent.click(screen.getByText("General"));
+
+            expect(dispatch).toHaveBeenCalledWith(
+                expect.objectContaining({ action: Action.ViewRoom, room_id: "!general:server" }),
+            );
+        });
     });
 });

@@ -71,6 +71,53 @@ vi.mock("../../../../hooks/right-panel/useCurrentPhase", () => ({
 }));
 vi.mock("../../../../Modal");
 
+// The room list's own view model needs a real room; the menus only need its snapshot and actions.
+const roomItem = vi.hoisted(() => ({
+    onMarkAsUnread: vi.fn(),
+    onToggleFavorite: vi.fn(),
+    onLeaveRoom: vi.fn(),
+    onSetRoomNotifState: vi.fn(),
+    created: [] as unknown[],
+    snapshot: {
+        canMarkAsRead: false,
+        canMarkAsUnread: true,
+        canChangeSection: true,
+        isFavourite: false,
+        isLowPriority: false,
+        canInvite: true,
+        canCopyRoomLink: true,
+        areSectionsEnabled: false,
+        sections: [],
+        roomNotifState: "all_messages",
+    },
+}));
+
+vi.mock("../../../../viewmodels/room-list/RoomListItemViewModel.ts", () => ({
+    RoomListItemViewModel: class {
+        public isDisposed = false;
+        public onMarkAsUnread = roomItem.onMarkAsUnread;
+        public onToggleFavorite = roomItem.onToggleFavorite;
+        public onLeaveRoom = roomItem.onLeaveRoom;
+        public onSetRoomNotifState = roomItem.onSetRoomNotifState;
+        public constructor(props: unknown) {
+            roomItem.created.push(props);
+        }
+
+        // The same object every time: a new one on each call would make the subscription loop.
+        public getSnapshot(): object {
+            return roomItem.snapshot;
+        }
+
+        public subscribe(): () => void {
+            return () => {};
+        }
+
+        public dispose(): void {
+            this.isDisposed = true;
+        }
+    },
+}));
+
 describe("RoomHeader", () => {
     filterConsole(
         "[getType] Room !1:example.org does not have an m.room.create event",
@@ -234,6 +281,30 @@ describe("RoomHeader", () => {
         it("keeps both buttons without the option", () => {
             const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
             expect(getAllByRole("button", { name: "Room info" })).toHaveLength(2);
+        });
+    });
+
+    describe("Fragment X room_context_menu", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+            roomItem.created.length = 0;
+        });
+
+        it("has no notification bell without the option", () => {
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+            expect(queryByRole("button", { name: "Notification options" })).not.toBeInTheDocument();
+        });
+
+        it("has a bell with the room's notification settings, made with the room list's view model", async () => {
+            SdkConfig.put({ fragment_x: { room_context_menu: true } });
+            const user = userEvent.setup();
+            const { getByRole, findByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(roomItem.created).toEqual([expect.objectContaining({ room })]);
+            await user.click(getByRole("button", { name: "Notification options" }));
+            await user.click(await findByRole("menuitem", { name: "Mute room" }));
+
+            expect(roomItem.onSetRoomNotifState).toHaveBeenCalledWith("mute");
         });
     });
 

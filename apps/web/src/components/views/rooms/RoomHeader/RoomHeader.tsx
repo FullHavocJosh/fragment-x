@@ -20,7 +20,13 @@ import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import { HistoryVisibility, JoinRule, type Room } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
-import { Flex, Box, StatusTextView } from "@element-hq/web-shared-components";
+import {
+    Flex,
+    Box,
+    StatusTextView,
+    RoomListItemNotificationMenu,
+    useCreateAutoDisposedViewModel,
+} from "@element-hq/web-shared-components";
 import { CallType } from "matrix-js-sdk/src/webrtc/call";
 import { HistoryIcon, UserProfileSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 
@@ -57,6 +63,16 @@ import { LocalRoom } from "../../../../models/LocalRoom.ts";
 import { useIsEncrypted } from "../../../../hooks/useIsEncrypted.ts";
 import { useUserStatus } from "../../../../hooks/useUserStatus.ts";
 import { SDKContext } from "../../../../contexts/SDKContext.ts";
+import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomListItemViewModel.ts";
+
+/**
+ * Fragment X (`fragment_x.room_context_menu`): a bell with the room's notification settings, the same menu as the room
+ * list's. The view model is the room list's own, created for this room (the header is keyed by the room).
+ */
+function RoomNotificationBell({ room }: { room: Room }): JSX.Element {
+    const vm = useCreateAutoDisposedViewModel(() => new RoomListItemViewModel({ room, client: room.client }));
+    return <RoomListItemNotificationMenu vm={vm} />;
+}
 
 function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: JSX.Element }): JSX.Element {
     const sdkContext = useContext(SDKContext);
@@ -320,6 +336,7 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     <ToggleableIcon Icon={ThreadsIcon} phase={RightPanelPhases.ThreadPanel} />
                 </IconButton>
             </Tooltip>
+            {SdkConfig.get().fragment_x?.room_context_menu && <RoomNotificationBell key={room.roomId} room={room} />}
             {notificationsEnabled && (
                 <Tooltip label={_t("notifications|enable_prompt_toast_title")}>
                     <IconButton
