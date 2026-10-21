@@ -17,6 +17,7 @@ import { SDKContext } from "../../../contexts/SDKContext";
 import { useMatrixClientContext } from "../../../contexts/MatrixClientContext";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
 import { UPDATE_EVENT } from "../../../stores/AsyncStore";
+import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import AccessibleButton from "../elements/AccessibleButton";
 import RoomAvatar from "../avatars/RoomAvatar";
@@ -49,13 +50,14 @@ export function useSpaceRooms(space: Room): Room[] {
 
 interface RowProps {
     room: Room;
-    space: Room;
+    /** The space (or meta space, such as Home) the room is listed under; it becomes the context when the room is opened. */
+    spaceKey: string;
     /** The rail shows icons only: the name is left out (and given as the tooltip). */
     isNarrow?: boolean;
 }
 
 /** A room under its space in the rail tree: avatar, name, unread badge. A click opens the room. */
-export function SpaceRoomRow({ room, space, isNarrow }: RowProps): JSX.Element {
+export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Element {
     const sdkContext = useContext(SDKContext);
     const [, refresh] = useReducer((n: number) => n + 1, 0);
     useEventEmitter(room, RoomEvent.Name, refresh);
@@ -76,7 +78,7 @@ export function SpaceRoomRow({ room, space, isNarrow }: RowProps): JSX.Element {
                 title={isNarrow ? room.name : undefined}
                 onClick={() => {
                     // Keep the space as the context without jumping to its last viewed room, then open this room.
-                    sdkContext.spaceStore.setActiveSpace(space.roomId, false);
+                    sdkContext.spaceStore.setActiveSpace(spaceKey, false);
                     dis.dispatch<ViewRoomPayload>({
                         action: Action.ViewRoom,
                         show_room_tile: true,
@@ -101,7 +103,40 @@ export function SpaceRoomRows({ space, isNarrow }: { space: Room; isNarrow?: boo
     return (
         <>
             {rooms.map((room) => (
-                <SpaceRoomRow key={room.roomId} room={room} space={space} isNarrow={isNarrow} />
+                <SpaceRoomRow key={room.roomId} room={room} spaceKey={space.roomId} isNarrow={isNarrow} />
+            ))}
+        </>
+    );
+}
+
+/**
+ * The rooms of the Home meta space for the tree: the direct messages and the rooms that are in no space (or every room,
+ * with the "show all rooms in Home" setting), pinned first.
+ */
+export function useHomeRooms(enabled = true): Room[] {
+    const spaceStore = useContext(SDKContext).spaceStore;
+    const cli = useMatrixClientContext();
+    const [, refresh] = useReducer((n: number) => n + 1, 0);
+    useEventEmitter(spaceStore, MetaSpace.Home, refresh);
+    useEventEmitter(spaceStore, UPDATE_HOME_BEHAVIOUR, refresh);
+    useEventEmitter(cli, RoomEvent.Tags, refresh);
+    useEventEmitter(cli, RoomEvent.MyMembership, refresh);
+
+    const rooms: Room[] = [];
+    if (!enabled) return rooms;
+    for (const roomId of spaceStore.getSpaceFilteredRoomIds(MetaSpace.Home)) {
+        const room = cli.getRoom(roomId);
+        if (room && !room.isSpaceRoom()) rooms.push(room);
+    }
+    return sortRoomsForTree(rooms);
+}
+
+/** The room rows of Home, to be placed inside its tree level list. */
+export function HomeRoomRows({ rooms, isNarrow }: { rooms: Room[]; isNarrow?: boolean }): JSX.Element {
+    return (
+        <>
+            {rooms.map((room) => (
+                <SpaceRoomRow key={room.roomId} room={room} spaceKey={MetaSpace.Home} isNarrow={isNarrow} />
             ))}
         </>
     );

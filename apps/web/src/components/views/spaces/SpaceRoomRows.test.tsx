@@ -10,12 +10,12 @@ Please see LICENSE files in the repository root for full details.
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 import EventEmitter from "node:events";
-import { render, screen } from "test-utils-rtl";
+import { act, render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
 
-import { isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
+import { HomeRoomRows, isUnifiedTree, SpaceRoomRows, sortRoomsForTree, useHomeRooms } from "./SpaceRoomRows";
 import { SDKContext } from "../../../contexts/SDKContext";
 import { type SDKContextClass } from "../../../contexts/SDKContextClass";
 import MatrixClientContext from "../../../contexts/MatrixClientContext";
@@ -26,6 +26,7 @@ import { Action } from "../../../dispatcher/actions";
 import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
+import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
 
 describe("SpaceRoomRows", () => {
     let cli: MatrixClient;
@@ -141,6 +142,83 @@ describe("SpaceRoomRows", () => {
         expect(screen.getAllByRole("treeitem")).toHaveLength(2);
         // AccessibleButton gives a title as the accessible name and shows it as a tooltip
         expect(screen.getByRole("button", { name: "General" })).toBeInTheDocument();
+    });
+
+    describe("Home", () => {
+        let dm: Room;
+        let orphan: Room;
+        let homeIds: Set<string>;
+
+        const HomeList = (): React.JSX.Element => {
+            const rooms = useHomeRooms();
+            return (
+                <ul>
+                    <HomeRoomRows rooms={rooms} />
+                </ul>
+            );
+        };
+
+        const renderHome = () =>
+            render(
+                <MatrixClientContext.Provider value={cli}>
+                    <SDKContext.Provider
+                        value={
+                            {
+                                spaceStore,
+                                roomViewStore: Object.assign(new EventEmitter(), { getRoomId: () => null }),
+                            } as unknown as SDKContextClass
+                        }
+                    >
+                        <HomeList />
+                    </SDKContext.Provider>
+                </MatrixClientContext.Provider>,
+            );
+
+        beforeEach(() => {
+            dm = named("!dm:server", "Dana");
+            orphan = named("!orphan:server", "Lobby");
+            homeIds = new Set([dm.roomId, orphan.roomId, space.roomId, archived.roomId]);
+            Object.assign(spaceStore, { getSpaceFilteredRoomIds: vi.fn(() => homeIds) });
+            const known = new Map<string, Room>(
+                [dm, orphan, space, archived].map((room) => [room.roomId, room] as [string, Room]),
+            );
+            vi.spyOn(cli, "getRoom").mockImplementation((id) => (id ? (known.get(id) ?? null) : null));
+            vi.mocked(space.isSpaceRoom).mockReturnValue(true);
+        });
+
+        it("lists the direct messages and rooms in no space, by name, without spaces or rooms the user left", () => {
+            renderHome();
+            expect(screen.getAllByRole("treeitem").map((row) => row.textContent)).toEqual([
+                expect.stringContaining("Dana"),
+                expect.stringContaining("Lobby"),
+            ]);
+        });
+
+        it("opens a room with Home as the context", async () => {
+            const dispatch = vi.spyOn(defaultDispatcher, "dispatch").mockImplementation(() => {});
+            renderHome();
+
+            await userEvent.click(screen.getByText("Dana"));
+            expect(spaceStore.setActiveSpace).toHaveBeenCalledWith(MetaSpace.Home, false);
+            expect(dispatch).toHaveBeenCalledWith(
+                expect.objectContaining({ action: Action.ViewRoom, room_id: "!dm:server" }),
+            );
+        });
+
+        it("lists the rooms again when Home changes or the show all rooms setting changes", () => {
+            renderHome();
+            homeIds = new Set([orphan.roomId]);
+            act(() => {
+                spaceStore.emit(MetaSpace.Home);
+            });
+            expect(screen.queryByText("Dana")).not.toBeInTheDocument();
+
+            homeIds = new Set([dm.roomId, orphan.roomId]);
+            act(() => {
+                spaceStore.emit(UPDATE_HOME_BEHAVIOUR);
+            });
+            expect(screen.getByText("Dana")).toBeInTheDocument();
+        });
     });
 
     it("lists the rooms again when the space's children change", () => {
