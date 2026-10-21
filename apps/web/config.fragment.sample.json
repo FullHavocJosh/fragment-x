@@ -91,6 +91,7 @@
         "colour_editor": true,
         "inbox_mentions": true,
         "unified_tree": true,
-        "inbox_for_you": true
+        "inbox_for_you": true,
+        "single_room_info_button": true
     }
 }

@@ -214,6 +214,29 @@ describe("RoomHeader", () => {
         expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.RoomSummary });
     });
 
+    describe("Fragment X single_room_info_button", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("has the room name as the only Room info button", async () => {
+            SdkConfig.put({ fragment_x: { single_room_info_button: true } });
+            const user = userEvent.setup();
+            const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            const buttons = getAllByRole("button", { name: "Room info" });
+            expect(buttons).toHaveLength(1);
+
+            await user.click(buttons[0]);
+            expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.RoomSummary });
+        });
+
+        it("keeps both buttons without the option", () => {
+            const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
+            expect(getAllByRole("button", { name: "Room info" })).toHaveLength(2);
+        });
+    });
+
     it("opens the thread panel", async () => {
         const user = userEvent.setup();
         render(<RoomHeader room={room} />, getWrapper());
