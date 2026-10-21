@@ -39,6 +39,7 @@ import { MetaSpace } from "../stores/spaces";
 import SdkConfig from "../SdkConfig";
 import SlidingSyncController from "./controllers/SlidingSyncController";
 import { FontWatcher } from "./watchers/FontWatcher";
+import { type FragmentXColours } from "./watchers/FragmentXColoursWatcher";
 import ServerSupportUnstableFeatureController from "./controllers/ServerSupportUnstableFeatureController";
 import { WatchManager } from "./WatchManager";
 import { type CustomTheme } from "../theme";
@@ -247,6 +248,7 @@ export interface Settings {
     "RoomList.backgroundImage": IBaseSetting<string | null>;
     "sendReadReceipts": IBaseSetting<boolean>;
     "fontSizeDelta": IBaseSetting<number>;
+    "FragmentX.colours": IBaseSetting<FragmentXColours | null>;
     "useCustomFontSize": IBaseSetting<boolean>;
     "MessageComposerInput.suggestEmoji": IBaseSetting<boolean>;
     "MessageComposerInput.showStickersButton": IBaseSetting<boolean>;
@@ -693,6 +695,11 @@ export const SETTINGS: Settings = {
         supportedLevels: [SettingLevel.DEVICE],
         default: FontWatcher.DEFAULT_DELTA,
         controller: new FontSizeController(),
+    },
+    "FragmentX.colours": {
+        // Fragment X: colours the user chose in Appearance settings, see FragmentXColoursWatcher
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        default: null,
     },
     "useCustomFontSize": {
         displayName: _td("settings|appearance|custom_font_size"),

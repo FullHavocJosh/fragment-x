@@ -61,6 +61,11 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.discord_sections: true`: the room list sections look like Discord's: the favourites section is titled
   "Pinned", the people section "Direct Messages", and section headings are small capitals. Sections and the people section
   are Element settings that are on by default (Settings > Appearance); this option changes titles and styling only.
+- `fragment_x.colour_editor: true`: Appearance settings gets a Colours section where each user picks an accent colour,
+  a server rail colour and a room list and panels colour, with a reset for each. A change shows at once and is saved to
+  the account (the `FragmentX.colours` setting, so it follows the user to other devices) after a short delay. The colours
+  are applied as Compound token overrides on top of the theme, see
+  `apps/web/src/settings/watchers/FragmentXColoursWatcher.ts`. Without the option nothing is applied or shown.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

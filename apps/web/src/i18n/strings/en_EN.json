@@ -1291,6 +1291,11 @@
     "fragment_x": {
         "add_friend": "Add Friend",
         "blocked": "Blocked",
+        "colour_accent": "Accent",
+        "colour_panels": "Room list and panels",
+        "colour_rail": "Server rail",
+        "colours": "Colours",
+        "colours_reset_all": "Reset all colours",
         "direct_messages": "Direct Messages",
         "discover": "Discover",
         "members": "Members",

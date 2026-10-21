@@ -61,6 +61,7 @@ import AutoDiscoveryUtils from "../../utils/AutoDiscoveryUtils";
 import { calculateRoomVia, makeRoomPermalink } from "../../utils/permalinks/Permalinks";
 import ThemeWatcher, { ThemeWatcherEvent } from "../../settings/watchers/ThemeWatcher";
 import { FontWatcher } from "../../settings/watchers/FontWatcher";
+import { FragmentXColoursWatcher } from "../../settings/watchers/FragmentXColoursWatcher";
 import { storeRoomAliasInCache } from "../../RoomAliasCache";
 import ToastStore from "../../stores/ToastStore";
 import * as StorageManager from "../../utils/StorageManager";
@@ -240,6 +241,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     private blacklistUnverifiedDevicesWatcherRef?: string;
     private themeWatcher?: ThemeWatcher;
     private fontWatcher?: FontWatcher;
+    private fragmentXColoursWatcher?: FragmentXColoursWatcher;
     private readonly stores: SDKContextClass;
     private loadSessionAbortController = new AbortController();
 
@@ -487,9 +489,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
 
         this.themeWatcher = new ThemeWatcher();
         this.fontWatcher = new FontWatcher();
+        this.fragmentXColoursWatcher = new FragmentXColoursWatcher();
         this.themeWatcher.start();
         this.themeWatcher.on(ThemeWatcherEvent.Change, setTheme);
         void this.fontWatcher.start();
+        this.fragmentXColoursWatcher.start();
 
         void initSentry(SdkConfig.get("sentry"));
         window.addEventListener("resize", this.onWindowResized);
@@ -530,6 +534,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.themeWatcher?.off(ThemeWatcherEvent.Change, setTheme);
         this.themeWatcher?.stop();
         this.fontWatcher?.stop();
+        this.fragmentXColoursWatcher?.stop();
         UIStore.destroy();
         this.stores.resizeNotifier.removeListener("middlePanelResized", this.dispatchTimelineResize);
         RoomNotificationStateStore.instance.off(UPDATE_STATUS_INDICATOR, this.onUpdateStatusIndicator);
