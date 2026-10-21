@@ -463,7 +463,8 @@ Please see LICENSE files in the repository root for full details.
     }
 
     .mx_UserPanel_compact {
-        flex-direction: column;
+        /* icons only: the buttons (mute, settings) are stacked above the avatar, which stays at the very bottom */
+        flex-direction: column-reverse;
         padding: 8px 0;
     }
 }
