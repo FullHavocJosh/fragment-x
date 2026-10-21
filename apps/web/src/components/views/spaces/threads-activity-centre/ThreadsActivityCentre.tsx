@@ -8,6 +8,8 @@
 
 import React, { type JSX, useMemo, useState } from "react";
 import { Menu, MenuItem, NavBar, NavItem, Text } from "@vector-im/compound-web";
+import { ChevronDownIcon, ChevronRightIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
+import { type MatrixEvent } from "matrix-js-sdk/src/matrix";
 import { NotificationDecoration, type NotificationDecorationData } from "@element-hq/web-shared-components";
 
 import { ThreadsActivityCentreButton } from "./ThreadsActivityCentreButton";
@@ -28,7 +30,7 @@ import { KeyBindingAction } from "../../../../accessibility/KeyboardShortcuts";
 import SdkConfig from "../../../../SdkConfig";
 import { useMatrixClientContext } from "../../../../contexts/MatrixClientContext";
 import { type MentionRoom, useMentionRooms } from "./useMentionRooms";
-import { buildForYou, forYouKey, forYouRooms } from "./forYou";
+import { type ForYouItem, buildForYou, forYouKey, forYouRoom, forYouRooms, unreadPreviewEvents } from "./forYou";
 import { clearRoomNotification } from "../../../../utils/notifications";
 import AccessibleButton from "../../elements/AccessibleButton";
 
@@ -184,21 +186,9 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
                 <div id="mx_ThreadsActivityCentre_panel" role="tabpanel" className="mx_ThreadsActivityCentre_rows">
                     {view === "for_you" ? (
                         <>
-                            {forYou.map((item) =>
-                                item.kind === "thread" ? (
-                                    <ThreadsActivityCentreThreadRow
-                                        key={forYouKey(item)}
-                                        threadData={item.thread}
-                                        onClick={() => setOpen(false)}
-                                    />
-                                ) : (
-                                    <MentionRoomRow
-                                        key={forYouKey(item)}
-                                        mention={item.mention}
-                                        onClick={() => setOpen(false)}
-                                    />
-                                ),
-                            )}
+                            {forYou.map((item) => (
+                                <ForYouEntry key={forYouKey(item)} item={item} onClose={() => setOpen(false)} />
+                            ))}
                             {forYou.length === 0 && (
                                 <Text
                                     as="div"
@@ -304,6 +294,103 @@ function MentionRoomRow({ mention, onClick }: { mention: MentionRoom; onClick: (
     );
 }
 
+/**
+ * Open a thread in its room's right panel and navigate to the room. Sets a two-card stack (thread list beneath the
+ * thread view) so the thread view gets a working back button, mirroring the canonical Action.ShowThread path.
+ */
+function openThread({ thread, room }: ThreadData): void {
+    if (thread.rootEvent) {
+        RightPanelStore.instance.setCards(
+            [
+                { phase: RightPanelPhases.ThreadPanel },
+                {
+                    phase: RightPanelPhases.ThreadView,
+                    state: { threadHeadEvent: thread.rootEvent },
+                },
+            ],
+            true,
+            room.roomId,
+        );
+    }
+
+    defaultDispatcher.dispatch<ViewRoomPayload>({
+        action: Action.ViewRoom,
+        show_room_tile: true,
+        room_id: room.roomId,
+        metricsTrigger: "WebThreadsActivityCentre",
+        focusNext: "threadsPanel",
+    });
+}
+
+/**
+ * Fragment X: one conversation of the inbox's For you tab with a button that expands it to the latest unread messages, so
+ * they can be read without leaving the panel. A preview opens the conversation: the message in its room, or the thread.
+ */
+function ForYouEntry({ item, onClose }: { item: ForYouItem; onClose: () => void }): JSX.Element {
+    const cli = useMatrixClientContext();
+    const [expanded, setExpanded] = useState(false);
+    const previews = expanded ? unreadPreviewEvents(item, cli.getSafeUserId()) : [];
+    const room = forYouRoom(item);
+
+    const openPreview = (event: MatrixEvent): void => {
+        onClose();
+        if (item.kind === "thread") {
+            openThread(item.thread);
+        } else {
+            defaultDispatcher.dispatch<ViewRoomPayload>({
+                action: Action.ViewRoom,
+                show_room_tile: true,
+                room_id: room.roomId,
+                event_id: event.getId(),
+                highlighted: true,
+                metricsTrigger: "WebThreadsActivityCentre",
+            });
+        }
+    };
+
+    return (
+        <div className="mx_ThreadsActivityCentre_entry">
+            <div className="mx_ThreadsActivityCentre_entryRow">
+                <div className="mx_ThreadsActivityCentre_entryMain">
+                    {item.kind === "thread" ? (
+                        <ThreadsActivityCentreThreadRow threadData={item.thread} onClick={onClose} />
+                    ) : (
+                        <MentionRoomRow mention={item.mention} onClick={onClose} />
+                    )}
+                </div>
+                <AccessibleButton
+                    className="mx_ThreadsActivityCentre_expand"
+                    aria-expanded={expanded}
+                    aria-label={_t("fragment_x|inbox_preview_toggle", { roomName: room.name })}
+                    onClick={() => setExpanded(!expanded)}
+                >
+                    {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                </AccessibleButton>
+            </div>
+            {expanded && (
+                <ul className="mx_ThreadsActivityCentre_previews">
+                    {previews.map((event) => (
+                        <li key={event.getId()}>
+                            <AccessibleButton
+                                className="mx_ThreadsActivityCentre_preview"
+                                onClick={() => openPreview(event)}
+                            >
+                                <span className="mx_ThreadsActivityCentre_previewSender">{getSenderName(event)}</span>
+                                <span className="mx_ThreadsActivityCentre_previewText">
+                                    {MessagePreviewStore.instance.generatePreviewForEvent(event)}
+                                </span>
+                            </AccessibleButton>
+                        </li>
+                    ))}
+                    {previews.length === 0 && (
+                        <li className="mx_ThreadsActivityCentre_previewEmpty">{_t("fragment_x|inbox_no_preview")}</li>
+                    )}
+                </ul>
+            )}
+        </div>
+    );
+}
+
 interface ThreadsActivityThreadRow {
     /**
      * The thread data including the thread, room, and notification level.
@@ -405,35 +492,10 @@ function ThreadsActivityCentreThreadRow({ threadData, onClick }: ThreadsActivity
             Icon={<DecoratedRoomAvatar room={room} size="40px" />}
             onSelect={(event: Event) => {
                 onClick();
-
-                // Open the specific thread in that room's right panel. Set a two-card
-                // stack (thread list beneath the thread view) so the thread view gets a
-                // working back button, mirroring the canonical Action.ShowThread path.
-                if (thread.rootEvent) {
-                    RightPanelStore.instance.setCards(
-                        [
-                            { phase: RightPanelPhases.ThreadPanel },
-                            {
-                                phase: RightPanelPhases.ThreadView,
-                                state: { threadHeadEvent: thread.rootEvent },
-                            },
-                        ],
-                        true,
-                        room.roomId,
-                    );
-                }
+                openThread(threadData);
 
                 // Track the click
                 PosthogTrackers.trackInteraction("WebThreadsActivityCentreRoomItem", event);
-
-                // Navigate to the room
-                defaultDispatcher.dispatch<ViewRoomPayload>({
-                    action: Action.ViewRoom,
-                    show_room_tile: true,
-                    room_id: room.roomId,
-                    metricsTrigger: "WebThreadsActivityCentre",
-                    focusNext: "threadsPanel",
-                });
             }}
         >
             <div className="mx_ThreadsActivityCentreThreadRow_content">

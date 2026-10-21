@@ -1302,6 +1302,8 @@
         "inbox": "Inbox",
         "inbox_empty": "You're all caught up.",
         "inbox_mentions": "Mentions",
+        "inbox_no_preview": "Nothing to preview.",
+        "inbox_preview_toggle": "Show the unread messages in %(roomName)s",
         "mark_all_read": "Mark all read",
         "members": "Members",
         "no_blocked": "You have not blocked anyone.",

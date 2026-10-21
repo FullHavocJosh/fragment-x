@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import { type Room } from "matrix-js-sdk/src/matrix";
+import { type MatrixEvent, type Room } from "matrix-js-sdk/src/matrix";
 
 import { type MentionRoom } from "./useMentionRooms";
 import { type ThreadData } from "./useUnreadThreadRooms";
@@ -55,4 +55,30 @@ export function forYouKey(item: ForYouItem): string {
     return item.kind === "thread"
         ? `thread:${item.thread.room.roomId}:${item.thread.thread.id}`
         : `mention:${item.mention.room.roomId}`;
+}
+
+/** The room behind an item. */
+export function forYouRoom(item: ForYouItem): Room {
+    return item.kind === "thread" ? item.thread.room : item.mention.room;
+}
+
+/**
+ * The newest messages of a conversation that the user has not read, oldest first, for the preview under an expanded row.
+ * The user's own messages, redacted ones and ones without an id are left out. A thread uses its own events, a room its
+ * live timeline.
+ */
+export function unreadPreviewEvents(item: ForYouItem, myUserId: string, limit = 3): MatrixEvent[] {
+    const room = forYouRoom(item);
+    const events = item.kind === "thread" ? item.thread.thread.events : room.getLiveTimeline().getEvents();
+    return events
+        .filter((event) => {
+            const id = event.getId();
+            return (
+                Boolean(id) &&
+                event.getSender() !== myUserId &&
+                !event.isRedacted() &&
+                !room.hasUserReadEvent(myUserId, id!)
+            );
+        })
+        .slice(-limit);
 }

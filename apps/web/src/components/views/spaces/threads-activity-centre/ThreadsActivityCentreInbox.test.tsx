@@ -11,7 +11,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
-import { stubClient } from "test-utils";
+import { mkMessage, stubClient } from "test-utils";
 import { PendingEventOrdering, Room } from "matrix-js-sdk/src/matrix";
 
 import { ThreadsActivityCentre } from "./ThreadsActivityCentre";
@@ -21,6 +21,8 @@ import MatrixClientContext from "../../../../contexts/MatrixClientContext";
 import DMRoomMap from "../../../../utils/DMRoomMap";
 import SdkConfig from "../../../../SdkConfig";
 import * as notifications from "../../../../utils/notifications";
+import defaultDispatcher from "../../../../dispatcher/dispatcher";
+import { Action } from "../../../../dispatcher/actions";
 
 describe("ThreadsActivityCentre as the inbox (inbox_for_you)", () => {
     const cli = stubClient();
@@ -74,6 +76,69 @@ describe("ThreadsActivityCentre as the inbox (inbox_for_you)", () => {
 
         expect(screen.getByText("Design")).toBeInTheDocument();
         expect(screen.getByTestId("mention-count")).toBeInTheDocument();
+    });
+
+    describe("previews", () => {
+        const first = mkMessage({
+            room: "!mentioned:server",
+            user: "@alice:example.org",
+            msg: "first unread",
+            event: true,
+        });
+        const second = mkMessage({
+            room: "!mentioned:server",
+            user: "@bob:example.org",
+            msg: "second unread",
+            event: true,
+        });
+        const mine = mkMessage({ room: "!mentioned:server", user: userId, msg: "my own reply", event: true });
+
+        beforeEach(() => {
+            vi.spyOn(mentioned, "getLiveTimeline").mockReturnValue({
+                getEvents: () => [first, second, mine],
+            } as unknown as ReturnType<Room["getLiveTimeline"]>);
+            vi.spyOn(mentioned, "hasUserReadEvent").mockReturnValue(false);
+        });
+
+        it("shows no previews until a row is expanded, then the unread messages of others", async () => {
+            renderInbox();
+            await userEvent.click(screen.getByRole("button", { name: "Inbox" }));
+            expect(screen.queryByText("first unread")).not.toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("button", { name: "Show the unread messages in Design" }));
+            expect(screen.getByText("first unread")).toBeInTheDocument();
+            expect(screen.getByText("second unread")).toBeInTheDocument();
+            expect(screen.queryByText("my own reply")).not.toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("button", { name: "Show the unread messages in Design" }));
+            expect(screen.queryByText("first unread")).not.toBeInTheDocument();
+        });
+
+        it("opens the room at the message when a preview is clicked", async () => {
+            const dispatch = vi.spyOn(defaultDispatcher, "dispatch").mockImplementation(() => {});
+            renderInbox();
+            await userEvent.click(screen.getByRole("button", { name: "Inbox" }));
+            await userEvent.click(screen.getByRole("button", { name: "Show the unread messages in Design" }));
+
+            await userEvent.click(screen.getByText("second unread"));
+            expect(dispatch).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    action: Action.ViewRoom,
+                    room_id: "!mentioned:server",
+                    event_id: second.getId(),
+                    highlighted: true,
+                }),
+            );
+        });
+
+        it("says so when there is nothing to preview", async () => {
+            vi.mocked(mentioned.hasUserReadEvent).mockReturnValue(true);
+            renderInbox();
+            await userEvent.click(screen.getByRole("button", { name: "Inbox" }));
+            await userEvent.click(screen.getByRole("button", { name: "Show the unread messages in Design" }));
+
+            expect(screen.getByText("Nothing to preview.")).toBeInTheDocument();
+        });
     });
 
     it("marks the rooms behind the rows read with Mark all read", async () => {
