@@ -29,6 +29,7 @@ import {
     RoomIcon,
     VideoCallSolidIcon,
     PlusIcon,
+    ChevronDownIcon,
     ChevronRightIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { useCreateAutoDisposedViewModel, UserMenu } from "@element-hq/web-shared-components";
@@ -37,7 +38,8 @@ import { _t } from "../../../languageHandler";
 import { useContextMenu } from "../../structures/ContextMenu";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
-import { isUnifiedTree } from "./SpaceRoomRows";
+import { HomeRoomRows, isUnifiedTree, useHomeRooms } from "./SpaceRoomRows";
+import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
 import UserPanel from "./UserPanel";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
 import {
@@ -74,7 +76,7 @@ import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { UIComponent } from "../../../settings/UIFeature";
 import { ThreadsActivityCentre } from "./threads-activity-centre/";
-import AccessibleButton from "../elements/AccessibleButton";
+import AccessibleButton, { type ButtonEvent } from "../elements/AccessibleButton";
 import { Landmark, LandmarkNavigation } from "../../../accessibility/LandmarkNavigation";
 import { KeyboardShortcut } from "../settings/KeyboardShortcut";
 import { ModuleApi } from "../../../modules/Api.ts";
@@ -170,18 +172,76 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
     useEffect(updateNotificationState, [updateNotificationState, allRoomsInHome]);
     useEventEmitter(sdkContext.roomNotificationStateStore, UPDATE_STATUS_INDICATOR, updateNotificationState);
 
+    // Fragment X unified tree: Home lists its rooms (direct messages and rooms in no space) under it.
+    const unified = isUnifiedTree();
+    const homeRooms = useHomeRooms(unified);
+    const [treeCollapsed, setTreeCollapsed] = useState(() =>
+        SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(MetaSpace.Home, undefined, false),
+    );
+
+    if (!unified) {
+        return (
+            <MetaSpaceButton
+                spaceKey={MetaSpace.Home}
+                selected={selected}
+                isPanelCollapsed={isPanelCollapsed}
+                label={getMetaSpaceName(MetaSpace.Home, allRoomsInHome)}
+                notificationState={notificationState}
+                ContextMenuComponent={HomeButtonContextMenu}
+                contextMenuTooltip={_t("common|options")}
+                size="32px"
+                icon={<HomeSolidIcon />}
+            />
+        );
+    }
+
+    const hasRooms = homeRooms.length > 0;
+    const toggle = hasRooms ? (
+        <AccessibleButton
+            className="mx_SpaceButton_toggleCollapse"
+            tabIndex={-1}
+            aria-label={treeCollapsed ? _t("action|expand") : _t("action|collapse")}
+            onClick={(ev: ButtonEvent) => {
+                SpaceTreeLevelLayoutStore.instance.setSpaceCollapsedState(MetaSpace.Home, undefined, !treeCollapsed);
+                setTreeCollapsed(!treeCollapsed);
+                // don't also select Home
+                ev.stopPropagation();
+            }}
+        >
+            {treeCollapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
+        </AccessibleButton>
+    ) : null;
+
     return (
-        <MetaSpaceButton
-            spaceKey={MetaSpace.Home}
-            selected={selected}
-            isPanelCollapsed={isPanelCollapsed}
-            label={getMetaSpaceName(MetaSpace.Home, allRoomsInHome)}
-            notificationState={notificationState}
-            ContextMenuComponent={HomeButtonContextMenu}
-            contextMenuTooltip={_t("common|options")}
-            size="32px"
-            icon={<HomeSolidIcon />}
-        />
+        <li
+            className={classNames("mx_SpaceItem", {
+                collapsed: treeCollapsed,
+                hasSubSpaces: hasRooms,
+                mx_SpaceItem_narrow: isPanelCollapsed,
+            })}
+            role="treeitem"
+            aria-selected={selected}
+            aria-expanded={hasRooms ? !treeCollapsed : undefined}
+        >
+            <SpaceButton
+                spaceKey={MetaSpace.Home}
+                selected={selected}
+                isNarrow={isPanelCollapsed}
+                label={getMetaSpaceName(MetaSpace.Home, allRoomsInHome)}
+                notificationState={notificationState}
+                ContextMenuComponent={HomeButtonContextMenu}
+                contextMenuTooltip={_t("common|options")}
+                size="32px"
+                icon={<HomeSolidIcon />}
+            >
+                {toggle}
+            </SpaceButton>
+            {hasRooms && !treeCollapsed && (
+                <ul className="mx_SpaceTreeLevel" role="group">
+                    <HomeRoomRows rooms={homeRooms} isNarrow={isPanelCollapsed} />
+                </ul>
+            )}
+        </li>
     );
 };
 
