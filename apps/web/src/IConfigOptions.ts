@@ -102,6 +102,12 @@ export interface ConfigOptions extends WebConfigJson {
          * space and its sub-spaces and remembers each room's notification state in account data; unmuting puts them back.
          */
         mute_server?: boolean;
+        /**
+         * When true, a room in the rail tree has Element's room menu (mark read or unread, favourite, low priority,
+         * invite, copy link, leave) on right click and on a button that shows on hover, and the room header has a
+         * notification bell with the room's notification settings. The room list column, which had both, is not there.
+         */
+        room_context_menu?: boolean;
     };
 }
 

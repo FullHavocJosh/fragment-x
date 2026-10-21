@@ -5,9 +5,14 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, useContext, useReducer } from "react";
+import React, { type JSX, type PropsWithChildren, useContext, useReducer } from "react";
 import classNames from "classnames";
 import { KnownMembership, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
+import {
+    RoomListItemContextMenu,
+    RoomListItemMoreOptionsMenu,
+    useCreateAutoDisposedViewModel,
+} from "@element-hq/web-shared-components";
 
 import SdkConfig from "../../../SdkConfig";
 import dis from "../../../dispatcher/dispatcher";
@@ -18,6 +23,7 @@ import { useMatrixClientContext } from "../../../contexts/MatrixClientContext";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
 import { UPDATE_EVENT } from "../../../stores/AsyncStore";
 import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
+import { RoomListItemViewModel } from "../../../viewmodels/room-list/RoomListItemViewModel";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import AccessibleButton from "../elements/AccessibleButton";
 import RoomAvatar from "../avatars/RoomAvatar";
@@ -56,6 +62,27 @@ interface RowProps {
     isNarrow?: boolean;
 }
 
+/**
+ * Fragment X (`fragment_x.room_context_menu`): Element's room menu for a room in the tree, on right click and on a button
+ * that shows on hover (not in the icons only rail, where there is no room for it). The view model is the room list's own.
+ */
+function RoomRowMenu({ room, isNarrow, children }: PropsWithChildren<{ room: Room; isNarrow?: boolean }>): JSX.Element {
+    const client = useMatrixClientContext();
+    const vm = useCreateAutoDisposedViewModel(() => new RoomListItemViewModel({ room, client }));
+    return (
+        <RoomListItemContextMenu vm={vm}>
+            <div className="mx_SpaceRoomRow_menuWrapper">
+                {children}
+                {!isNarrow && (
+                    <div className="mx_SpaceRoomRow_menu">
+                        <RoomListItemMoreOptionsMenu vm={vm} />
+                    </div>
+                )}
+            </div>
+        </RoomListItemContextMenu>
+    );
+}
+
 /** A room under its space in the rail tree: avatar, name, unread badge. A click opens the room. */
 export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Element {
     const sdkContext = useContext(SDKContext);
@@ -68,31 +95,41 @@ export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Elemen
     );
     const notificationState = RoomNotificationStateStore.instance.getRoomState(room);
 
+    const button = (
+        <AccessibleButton
+            className={classNames("mx_SpaceRoomRow", {
+                mx_SpaceRoomRow_selected: selected,
+                mx_SpaceRoomRow_narrow: isNarrow,
+            })}
+            title={isNarrow ? room.name : undefined}
+            onClick={() => {
+                // Keep the space as the context without jumping to its last viewed room, then open this room.
+                sdkContext.spaceStore.setActiveSpace(spaceKey, false);
+                dis.dispatch<ViewRoomPayload>({
+                    action: Action.ViewRoom,
+                    show_room_tile: true,
+                    room_id: room.roomId,
+                    metricsTrigger: undefined,
+                });
+            }}
+        >
+            <RoomAvatar room={room} size="24px" />
+            {!isNarrow && <span className="mx_SpaceRoomRow_name">{room.name}</span>}
+            <span className="mx_SpaceRoomRow_badge">
+                <NotificationBadge notification={notificationState} />
+            </span>
+        </AccessibleButton>
+    );
+
     return (
         <li role="treeitem" aria-selected={selected} className="mx_SpaceRoomItem">
-            <AccessibleButton
-                className={classNames("mx_SpaceRoomRow", {
-                    mx_SpaceRoomRow_selected: selected,
-                    mx_SpaceRoomRow_narrow: isNarrow,
-                })}
-                title={isNarrow ? room.name : undefined}
-                onClick={() => {
-                    // Keep the space as the context without jumping to its last viewed room, then open this room.
-                    sdkContext.spaceStore.setActiveSpace(spaceKey, false);
-                    dis.dispatch<ViewRoomPayload>({
-                        action: Action.ViewRoom,
-                        show_room_tile: true,
-                        room_id: room.roomId,
-                        metricsTrigger: undefined,
-                    });
-                }}
-            >
-                <RoomAvatar room={room} size="24px" />
-                {!isNarrow && <span className="mx_SpaceRoomRow_name">{room.name}</span>}
-                <span className="mx_SpaceRoomRow_badge">
-                    <NotificationBadge notification={notificationState} />
-                </span>
-            </AccessibleButton>
+            {SdkConfig.get().fragment_x?.room_context_menu ? (
+                <RoomRowMenu room={room} isNarrow={isNarrow}>
+                    {button}
+                </RoomRowMenu>
+            ) : (
+                button
+            )}
         </li>
     );
 }

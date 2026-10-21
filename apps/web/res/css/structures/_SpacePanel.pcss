@@ -484,6 +484,28 @@ Please see LICENSE files in the repository root for full details.
         flex: 0 0 auto;
     }
 
+    /* Fragment X room_context_menu: the three dot button sits over the badge on hover, focus or while its menu is open. */
+    .mx_SpaceRoomRow_menuWrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .mx_SpaceRoomRow_menu {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        background-color: var(--cpd-color-bg-subtle-secondary);
+        border-radius: 6px;
+    }
+
+    .mx_SpaceRoomRow_menuWrapper:hover .mx_SpaceRoomRow_menu,
+    .mx_SpaceRoomRow_menuWrapper:focus-within .mx_SpaceRoomRow_menu,
+    .mx_SpaceRoomRow_menu:has([aria-expanded="true"]) {
+        display: block;
+    }
+
     /* the user panel sits at the bottom of the rail */
     .mx_UserPanel {
         width: 100%;

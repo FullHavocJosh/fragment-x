@@ -95,6 +95,11 @@ What it sets, all through configuration with no code changes:
   recorded, a room that leaves it is dropped (and put back to its recorded state if it is still joined and muted), and a
   mute that was interrupted is finished. It runs in every open app a couple of seconds after a change. A muted space shows a small muted bell on
   its icon, in the rail and in the tree, and its icon and name are dimmed.
+- `fragment_x.room_context_menu: true`: with the unified tree there is no room list column, which had the room menu. A room
+  row in the tree gets the same menu (mark as read or unread, favourite, low priority, invite, copy link, leave) on right
+  click and on a three dot button that shows on hover, and the room header gets a bell with the room's notification
+  settings (default, all messages, mentions and keywords, mute). Both reuse Element's room list item menus, see
+  `apps/web/src/components/views/spaces/SpaceRoomRows.tsx` and `RoomHeader.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
