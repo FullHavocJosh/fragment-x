@@ -1320,6 +1320,7 @@
         "pending": "Pending",
         "pinned": "Pinned",
         "servers": "Servers",
+        "space_muted": "Muted",
         "unblock": "Unblock",
         "unmute_server": "Unmute server",
         "unread_threads": "Unread threads"

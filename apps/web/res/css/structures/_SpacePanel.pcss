@@ -246,6 +246,34 @@ Please see LICENSE files in the repository root for full details.
         line-height: 0;
     }
 
+    /* Fragment X: a server muted with Mute server is dimmed and has a small muted bell at the bottom right of its icon. */
+    .mx_SpaceButton_muted {
+        .mx_SpaceButton_avatarWrapper .mx_BaseAvatar,
+        .mx_SpaceButton_icon,
+        .mx_SpaceButton_name {
+            opacity: 0.55;
+        }
+    }
+
+    .mx_SpaceButton_mutedIndicator {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: $spacePanel-bg-color;
+
+        svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--cpd-color-icon-secondary);
+        }
+    }
+
     /* Fragment X: server icons are circles that become rounded squares on hover and when selected. */
     .mx_SpaceButton .mx_SpaceButton_avatarWrapper .mx_BaseAvatar,
     .mx_SpaceButton .mx_SpaceButton_icon {
