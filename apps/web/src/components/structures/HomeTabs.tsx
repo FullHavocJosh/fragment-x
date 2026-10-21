@@ -70,7 +70,7 @@ const viewRoom = (roomId: string): void => {
 interface TopBarProps {
     cli: MatrixClient;
     tab: HomeTab;
-    onTabChange(tab: HomeTab): void;
+    onTabChange: (tab: HomeTab) => void;
 }
 
 /** The bar over the Home page: the tabs, an Add Friend button, and new group chat and help buttons. */
