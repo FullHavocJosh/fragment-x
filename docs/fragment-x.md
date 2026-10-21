@@ -53,6 +53,10 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.double_click_reply: true`: double clicking a message starts a reply to it, like Discord. Links, images, media
   and buttons inside the message keep their own behaviour, and nothing happens while editing the message or when the
   user cannot send messages. See `onDoubleClick` in `apps/web/src/components/views/rooms/EventTile.tsx`.
+- `fragment_x.member_list_roles: true`: the member list groups people under role headings (Owner, Admin, Moderator,
+  Members, with counts) that collapse and expand, and highlights the user's own entry. Power levels are grouped into tiers:
+  an infinite level is Owner, 100 and up Admin, 50 and up Moderator, the rest Members. Which headings are collapsed is
+  remembered in the browser. See `apps/web/src/components/views/rooms/MemberList/memberRoles.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

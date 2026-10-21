@@ -61,6 +61,11 @@ export interface ConfigOptions extends WebConfigJson {
          * their own behaviour).
          */
         double_click_reply?: boolean;
+        /**
+         * When true, the member list groups members under collapsible role headings (owner, admin, moderator, members)
+         * and highlights the user's own entry.
+         */
+        member_list_roles?: boolean;
     };
 }
 

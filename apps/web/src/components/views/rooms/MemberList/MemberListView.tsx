@@ -6,7 +6,8 @@ Please see LICENSE files in the repository root for full details.
 */
 
 import { Form } from "@vector-im/compound-web";
-import React, { type JSX, useCallback } from "react";
+import React, { type JSX, useCallback, useMemo, useState } from "react";
+import { ChevronDownIcon, ChevronRightIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { Flex, type VirtualizedListContext, FlatVirtualizedList } from "@element-hq/web-shared-components";
 
 import {
@@ -19,6 +20,9 @@ import { ThreePidInviteTileView } from "./tiles/ThreePidInviteTileView";
 import { MemberListHeaderView } from "./MemberListHeaderView";
 import BaseCard from "../../right_panel/BaseCard";
 import { _t } from "../../../../languageHandler";
+import SdkConfig from "../../../../SdkConfig";
+import { useMatrixClientContext } from "../../../../contexts/MatrixClientContext";
+import { groupMembersByRole, isRoleHeader, type MemberListItem, type MemberRole, type RoleHeader } from "./memberRoles";
 
 interface IProps {
     roomId: string;
@@ -35,12 +39,75 @@ const MEMBER_LIST_ITEM_HEIGHT = 56;
  */
 const EXTENDED_VIEWPORT_HEIGHT = 15 * MEMBER_LIST_ITEM_HEIGHT;
 
+const COLLAPSED_ROLES_KEY = "mx_fragment_x_member_roles_collapsed";
+
+function loadCollapsedRoles(): Set<MemberRole> {
+    try {
+        const stored = JSON.parse(window.localStorage.getItem(COLLAPSED_ROLES_KEY) ?? "[]");
+        return new Set(Array.isArray(stored) ? stored : []);
+    } catch {
+        return new Set();
+    }
+}
+
+function saveCollapsedRoles(roles: ReadonlySet<MemberRole>): void {
+    try {
+        window.localStorage.setItem(COLLAPSED_ROLES_KEY, JSON.stringify([...roles]));
+    } catch {
+        // storage can be unavailable; the collapsed state then lasts until the panel closes
+    }
+}
+
+function roleLabel(role: MemberRole): string {
+    switch (role) {
+        case "owner":
+            return _t("power_level|creator");
+        case "admin":
+            return _t("power_level|admin");
+        case "moderator":
+            return _t("power_level|moderator");
+        default:
+            return _t("fragment_x|members");
+    }
+}
+
+/** Fragment X: a role heading in the member list; it collapses and expands the members of that role. */
+const RoleHeaderView: React.FC<{ header: RoleHeader; onToggle: (role: MemberRole) => void }> = ({
+    header,
+    onToggle,
+}) => (
+    <button
+        type="button"
+        className="mx_MemberListView_roleHeader"
+        aria-expanded={!header.collapsed}
+        onClick={() => onToggle(header.role)}
+    >
+        {header.collapsed ? <ChevronRightIcon /> : <ChevronDownIcon />}
+        <span>{`${roleLabel(header.role)} — ${header.count}`}</span>
+    </button>
+);
+
 const MemberListView: React.FC<IProps> = (props: IProps) => {
     const vm = useMemberListViewModel(props.roomId);
     const { isPresenceEnabled, memberCount } = vm;
+    const ownUserId = useMatrixClientContext().getSafeUserId();
 
-    const getItemKey = useCallback((item: MemberWithSeparator): string => {
-        if (item === SEPARATOR) {
+    // Fragment X: group the members under collapsible role headings.
+    const rolesEnabled = Boolean(SdkConfig.get().fragment_x?.member_list_roles);
+    const [collapsedRoles, setCollapsedRoles] = useState<Set<MemberRole>>(loadCollapsedRoles);
+    const onToggleRole = useCallback((role: MemberRole): void => {
+        setCollapsedRoles((previous) => {
+            const next = new Set(previous);
+            if (!next.delete(role)) next.add(role);
+            saveCollapsedRoles(next);
+            return next;
+        });
+    }, []);
+
+    const getItemKey = useCallback((item: MemberListItem): string => {
+        if (isRoleHeader(item)) {
+            return `role-${item.role}`;
+        } else if (item === SEPARATOR) {
             return "separator";
         } else if (item.member) {
             return `member-${item.member.userId}`;
@@ -49,30 +116,49 @@ const MemberListView: React.FC<IProps> = (props: IProps) => {
         }
     }, []);
 
+    const grouped = useMemo(
+        () => (rolesEnabled ? groupMembersByRole(vm.members, collapsedRoles, getItemKey) : undefined),
+        [rolesEnabled, vm.members, collapsedRoles, getItemKey],
+    );
+    const items: MemberListItem[] = grouped?.items ?? vm.members;
+
     const getItemComponent = useCallback(
         (
             index: number,
-            item: MemberWithSeparator,
+            item: MemberListItem,
             context: VirtualizedListContext<any>,
             onFocus: (item: MemberWithSeparator, e: React.FocusEvent) => void,
         ): JSX.Element => {
+            if (isRoleHeader(item)) {
+                return <RoleHeaderView header={item} onToggle={onToggleRole} />;
+            }
             const itemKey = getItemKey(item);
             const isRovingItem = itemKey === context.tabIndexKey;
             const focused = isRovingItem && context.focused;
+            // With role headings the list index no longer matches the position among the members.
+            const position = grouped?.positions.get(itemKey);
             if (item === SEPARATOR) {
                 return <hr className="mx_MemberListView_separator" />;
             } else if (item.member) {
-                return (
+                const tile = (
                     <RoomMemberTileView
                         item={item}
                         member={item.member}
                         showPresence={isPresenceEnabled}
                         focused={focused}
                         tabIndex={isRovingItem ? 0 : -1}
-                        index={index}
+                        index={position ?? index}
                         memberCount={memberCount}
                         onFocus={onFocus}
                     />
+                );
+                // Fragment X: your own entry is highlighted in whichever role you are in.
+                return rolesEnabled && item.member.userId === ownUserId ? (
+                    <div className="mx_MemberListView_self" role="presentation">
+                        {tile}
+                    </div>
+                ) : (
+                    tile
                 );
             } else {
                 return (
@@ -81,18 +167,18 @@ const MemberListView: React.FC<IProps> = (props: IProps) => {
                         threePidInvite={item.threePidInvite}
                         focused={focused}
                         tabIndex={isRovingItem ? 0 : -1}
-                        memberIndex={index - 1} // Adjust as invites are below the separator
+                        memberIndex={position ?? index - 1} // Adjust as invites are below the separator
                         memberCount={memberCount}
                         onFocus={onFocus}
                     />
                 );
             }
         },
-        [isPresenceEnabled, getItemKey, memberCount],
+        [isPresenceEnabled, getItemKey, memberCount, grouped, rolesEnabled, ownUserId, onToggleRole],
     );
 
-    const isItemFocusable = useCallback((item: MemberWithSeparator): boolean => {
-        return item !== SEPARATOR;
+    const isItemFocusable = useCallback((item: MemberListItem): boolean => {
+        return item !== SEPARATOR && !isRoleHeader(item);
     }, []);
 
     return (
@@ -109,13 +195,14 @@ const MemberListView: React.FC<IProps> = (props: IProps) => {
                     <MemberListHeaderView vm={vm} />
                 </Form.Root>
                 <FlatVirtualizedList
-                    items={vm.members}
+                    items={items}
                     getItemComponent={getItemComponent}
                     getItemKey={getItemKey}
                     isItemFocusable={isItemFocusable}
                     role="listbox"
                     aria-label={_t("member_list|list_title")}
-                    fixedItemHeight={MEMBER_LIST_ITEM_HEIGHT}
+                    // Role headings are shorter than member rows, so the rows have no fixed height with them.
+                    fixedItemHeight={rolesEnabled ? undefined : MEMBER_LIST_ITEM_HEIGHT}
                     increaseViewportBy={{
                         bottom: EXTENDED_VIEWPORT_HEIGHT,
                         top: EXTENDED_VIEWPORT_HEIGHT,

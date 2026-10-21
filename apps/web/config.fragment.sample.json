@@ -85,6 +85,7 @@
         "user_panel": true,
         "home_direct_messages": true,
         "home_top_bar": true,
-        "double_click_reply": true
+        "double_click_reply": true,
+        "member_list_roles": true
     }
 }
