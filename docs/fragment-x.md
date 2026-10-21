@@ -57,6 +57,9 @@ What it sets, all through configuration with no code changes:
   Members, with counts) that collapse and expand, and highlights the user's own entry. Power levels are grouped into tiers:
   an infinite level is Owner, 100 and up Admin, 50 and up Moderator, the rest Members. Which headings are collapsed is
   remembered in the browser. See `apps/web/src/components/views/rooms/MemberList/memberRoles.ts`.
+- `fragment_x.discord_sections: true`: the room list sections look like Discord's: the favourites section is titled
+  "Pinned", the people section "Direct Messages", and section headings are small capitals. Sections and the people section
+  are Element settings that are on by default (Settings > Appearance); this option changes titles and styling only.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

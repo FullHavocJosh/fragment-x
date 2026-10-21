@@ -66,6 +66,11 @@ export interface ConfigOptions extends WebConfigJson {
          * and highlights the user's own entry.
          */
         member_list_roles?: boolean;
+        /**
+         * When true, the room list sections are Discord-style: the favourites section is titled "Pinned", the people
+         * section "Direct Messages", and section headings are small capitals.
+         */
+        discord_sections?: boolean;
     };
 }
 

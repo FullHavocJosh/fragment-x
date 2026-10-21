@@ -6,6 +6,7 @@ Please see LICENSE files in the repository root for full details.
 */
 
 import React, { useState, useCallback, useContext } from "react";
+import classNames from "classnames";
 import { Flex, RoomListHeaderView, useCreateAutoDisposedViewModel } from "@element-hq/web-shared-components";
 
 import { shouldShowComponent } from "../../../../customisations/helpers/UIComponents";
@@ -20,6 +21,7 @@ import { type IState as IRovingTabIndexState } from "../../../../accessibility/R
 import { RoomListHeaderViewModel } from "../../../../viewmodels/room-list/RoomListHeaderViewModel";
 import { useMatrixClientContext } from "../../../../contexts/MatrixClientContext";
 import { SDKContext } from "../../../../contexts/SDKContext.ts";
+import SdkConfig from "../../../../SdkConfig";
 
 type RoomListPanelProps = {
     /**
@@ -69,7 +71,10 @@ export const RoomListPanel: React.FC<RoomListPanelProps> = ({ activeSpace }) => 
     return (
         <Flex
             as="nav"
-            className="mx_RoomListPanel"
+            className={classNames("mx_RoomListPanel", {
+                // Fragment X: Discord-style section headings, see RoomListSectionHeaderView.module.css
+                mx_RoomListPanel_discordSections: SdkConfig.get().fragment_x?.discord_sections,
+            })}
             direction="column"
             align="stretch"
             aria-label={_t("room_list|list_title")}

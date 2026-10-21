@@ -95,6 +95,14 @@
     text-overflow: ellipsis;
 }
 
+/* Fragment X: Discord-style section headings, small and in capitals. The class is set on the room list panel by the web
+   app with the fragment_x.discord_sections option. */
+:global(.mx_RoomListPanel_discordSections) .title {
+    text-transform: uppercase;
+    font: var(--cpd-font-body-xs-semibold);
+    letter-spacing: 0.02em;
+}
+
 .firstHeader {
     padding-top: 0;
 }
