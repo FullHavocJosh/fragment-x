@@ -62,6 +62,7 @@ import { calculateRoomVia, makeRoomPermalink } from "../../utils/permalinks/Perm
 import ThemeWatcher, { ThemeWatcherEvent } from "../../settings/watchers/ThemeWatcher";
 import { FontWatcher } from "../../settings/watchers/FontWatcher";
 import { FragmentXColoursWatcher } from "../../settings/watchers/FragmentXColoursWatcher";
+import { FragmentXMutedSpacesWatcher } from "../../settings/watchers/FragmentXMutedSpacesWatcher";
 import { storeRoomAliasInCache } from "../../RoomAliasCache";
 import ToastStore from "../../stores/ToastStore";
 import * as StorageManager from "../../utils/StorageManager";
@@ -242,6 +243,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     private themeWatcher?: ThemeWatcher;
     private fontWatcher?: FontWatcher;
     private fragmentXColoursWatcher?: FragmentXColoursWatcher;
+    private fragmentXMutedSpacesWatcher?: FragmentXMutedSpacesWatcher;
     private readonly stores: SDKContextClass;
     private loadSessionAbortController = new AbortController();
 
@@ -535,6 +537,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.themeWatcher?.stop();
         this.fontWatcher?.stop();
         this.fragmentXColoursWatcher?.stop();
+        this.fragmentXMutedSpacesWatcher?.stop();
         UIStore.destroy();
         this.stores.resizeNotifier.removeListener("middlePanelResized", this.dispatchTimelineResize);
         RoomNotificationStateStore.instance.off(UPDATE_STATUS_INDICATOR, this.onUpdateStatusIndicator);
@@ -1802,6 +1805,10 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
      */
     private async onClientStarted(): Promise<void> {
         const cli = MatrixClientPeg.safeGet();
+
+        // Fragment X: keep the muted spaces (mute_server) in line with their rooms; a new client replaces the old watcher
+        this.fragmentXMutedSpacesWatcher ??= new FragmentXMutedSpacesWatcher();
+        this.fragmentXMutedSpacesWatcher.start(cli);
 
         const crypto = cli.getCrypto();
         // Replace any watcher from a previous client, which would otherwise pile up with each client start
