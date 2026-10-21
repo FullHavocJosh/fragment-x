@@ -45,6 +45,7 @@ import { type RoomContextType, TimelineRenderingType } from "../../../contexts/R
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import DMRoomMap from "../../../utils/DMRoomMap";
 import dis from "../../../dispatcher/dispatcher";
+import SdkConfig from "../../../SdkConfig";
 import { Action } from "../../../dispatcher/actions";
 import PinningUtils from "../../../utils/PinningUtils";
 import { Layout } from "../../../settings/enums/Layout";
@@ -235,6 +236,58 @@ describe("EventTile", () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+    });
+
+    describe("Fragment X double click reply", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("replies to the message on double click with the option on", () => {
+            SdkConfig.put({ fragment_x: { double_click_reply: true } });
+            vi.spyOn(dis, "dispatch").mockImplementation(() => {});
+            const { getByTestId } = getComponent({}, TimelineRenderingType.Room, { canSendMessages: true });
+
+            fireEvent.doubleClick(getByTestId("event-tile"));
+
+            expect(dis.dispatch).toHaveBeenCalledWith({
+                action: "reply_to_event",
+                event: mxEvent,
+                context: TimelineRenderingType.Room,
+            });
+        });
+
+        it("does nothing with the option off", () => {
+            vi.spyOn(dis, "dispatch").mockImplementation(() => {});
+            const { getByTestId } = getComponent({}, TimelineRenderingType.Room, { canSendMessages: true });
+
+            fireEvent.doubleClick(getByTestId("event-tile"));
+
+            expect(dis.dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ action: "reply_to_event" }));
+        });
+
+        it("does nothing when the user cannot send messages", () => {
+            SdkConfig.put({ fragment_x: { double_click_reply: true } });
+            vi.spyOn(dis, "dispatch").mockImplementation(() => {});
+            const { getByTestId } = getComponent({}, TimelineRenderingType.Room, { canSendMessages: false });
+
+            fireEvent.doubleClick(getByTestId("event-tile"));
+
+            expect(dis.dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ action: "reply_to_event" }));
+        });
+
+        it("leaves a link in the message alone", () => {
+            SdkConfig.put({ fragment_x: { double_click_reply: true } });
+            vi.spyOn(dis, "dispatch").mockImplementation(() => {});
+            const { getByTestId } = getComponent({}, TimelineRenderingType.Room, { canSendMessages: true });
+            const link = document.createElement("a");
+            link.href = "https://example.org";
+            getByTestId("event-tile").appendChild(link);
+
+            fireEvent.doubleClick(link);
+
+            expect(dis.dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ action: "reply_to_event" }));
+        });
     });
 
     describe("layout and tile attributes", () => {

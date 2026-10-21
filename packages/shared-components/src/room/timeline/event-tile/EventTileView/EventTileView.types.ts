@@ -162,6 +162,8 @@ export interface EventTileViewHandlers {
     onBlur?: React.FocusEventHandler<HTMLElement>;
     /** Event click. */
     onClick?: React.MouseEventHandler<HTMLElement>;
+    /** Event double click. */
+    onDoubleClick?: React.MouseEventHandler<HTMLElement>;
     /** Event context menu. */
     onContextMenu?: React.MouseEventHandler<HTMLElement>;
     /** Permalink click. */

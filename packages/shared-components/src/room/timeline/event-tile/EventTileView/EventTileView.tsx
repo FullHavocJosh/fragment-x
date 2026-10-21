@@ -32,6 +32,7 @@ export function EventTileView({
     onFocus,
     onBlur,
     onClick,
+    onDoubleClick,
     onContextMenu,
     onPermalinkClick,
     onPermalinkContextMenu,
@@ -137,6 +138,7 @@ export function EventTileView({
             onFocus={onFocus}
             onBlur={onBlur}
             onClick={rootClickHandler}
+            onDoubleClick={onDoubleClick}
         >
             {children}
         </Root>
