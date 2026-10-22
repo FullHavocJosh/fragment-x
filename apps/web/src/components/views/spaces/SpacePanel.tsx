@@ -350,7 +350,8 @@ const ServersEntry: React.FC<{ isPanelCollapsed: boolean; selected: boolean }> =
                 <hr className="mx_SpacePanel_divider" />
             </li>
             <li
-                className={classNames("mx_SpaceItem", { collapsed: isPanelCollapsed })}
+                // narrow, not collapsed: collapsed hides the rooms listed under the entry
+                className={classNames("mx_SpaceItem", { mx_SpaceItem_narrow: isPanelCollapsed })}
                 role="treeitem"
                 aria-selected={selected && tab === "servers"}
             >

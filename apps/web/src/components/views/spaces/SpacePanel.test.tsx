@@ -290,6 +290,9 @@ describe("<SpacePanel />", () => {
             expect(rows(messages as HTMLElement, "Lobby")).toHaveLength(0);
 
             const servers = screen.getByTestId("servers-entry").closest("[role=treeitem]")! as HTMLElement;
+            // collapsed hides the rooms under an entry (a narrow rail is not that), so they stay visible in this narrow rail
+            expect(servers).not.toHaveClass("collapsed");
+            expect(servers).toHaveClass("mx_SpaceItem_narrow");
             expect(within(servers).getByRole("group", { name: "Other rooms" })).toBeInTheDocument();
             expect(rows(servers, "Lobby")).toHaveLength(1);
             expect(rows(servers, "Dana")).toHaveLength(0);

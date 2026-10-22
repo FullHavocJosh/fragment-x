@@ -76,6 +76,8 @@ Please see LICENSE files in the repository root for full details.
             width: 36px;
             margin: 0 auto;
             padding: 3px 0;
+            /* no gap before the (empty) badge, so nothing pushes the avatar off the axis */
+            gap: 0;
         }
 
         .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {
@@ -86,6 +88,22 @@ Please see LICENSE files in the repository root for full details.
 
         .mx_SpaceRoomGroupLabel {
             padding-left: var(--fragmentXRailText);
+        }
+
+        /*
+         * A room's icon often fills its square, so it keeps its corners: the square avatar type rounds by 25% (8px at
+         * this size), which cuts the corners off. People (direct messages) stay round.
+         */
+        .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_withPreview) .mx_BaseAvatar {
+            --cpd-avatar-radius: 4px;
+        }
+
+        /*
+         * An avatar is never squeezed: in the icons only rail a row is 36px wide and held the 32px avatar, an 8px gap and
+         * the (empty) badge, so the avatar shrank to about 28px wide and kept its 32px height, which crops its sides.
+         */
+        .mx_SpaceRoomRow .mx_BaseAvatar {
+            flex: none;
         }
 
         /* The bottom column (Inbox, settings, the user's avatar) is on the same axis as the rail's icons. */
