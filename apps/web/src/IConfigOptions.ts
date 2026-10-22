@@ -115,6 +115,12 @@ export interface ConfigOptions extends WebConfigJson {
          * that size.
          */
         unified_frame?: boolean;
+        /**
+         * When true, the rail has a Servers entry (a grid icon) above the servers, after a divider, instead of the plus
+         * button below them. It opens Home on the Servers tab, where the servers are listed and Create a space and
+         * Discover are.
+         */
+        servers_entry?: boolean;
     };
 }
 

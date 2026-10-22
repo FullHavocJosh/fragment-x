@@ -106,6 +106,10 @@ What it sets, all through configuration with no code changes:
   small dot on its left, and a room in the tree has half that size (16px). The styles are in
   `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
   adds.
+- `fragment_x.servers_entry: true`: the rail has a Servers entry (a grid icon) above the servers, after a divider, in place of
+  the plus button below them, like Discord's. It opens Home on the Servers tab (needs `home_top_bar`), which lists the
+  servers and has Create a space and Discover buttons. The tab shown on Home is shared state, see `useHomeTab` in
+  `apps/web/src/components/structures/HomeTabs.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

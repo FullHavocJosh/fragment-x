@@ -95,6 +95,7 @@
         "single_room_info_button": true,
         "mute_server": true,
         "room_context_menu": true,
-        "unified_frame": true
+        "unified_frame": true,
+        "servers_entry": true
     }
 }

@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, useContext, useReducer } from "react";
+import React, { type JSX, useContext, useReducer, useSyncExternalStore } from "react";
 import classNames from "classnames";
 import { ClientEvent, type MatrixClient, KnownMembership, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import { ChatNewIcon, HelpIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -22,6 +22,8 @@ import RoomAvatar from "../views/avatars/RoomAvatar";
 import { UserTab } from "../views/dialogs/UserTab";
 import { SDKContext } from "../../contexts/SDKContext";
 import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
+import { useContextMenu } from "./ContextMenu";
+import SpaceCreateMenu from "../views/spaces/SpaceCreateMenu";
 
 /**
  * Fragment X: the tabs of the Home page top bar, like Discord's Friends page. Only used with the
@@ -30,6 +32,28 @@ import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
 export type HomeTab = "people" | "servers" | "pending" | "blocked";
 
 const TABS: HomeTab[] = ["people", "servers", "pending", "blocked"];
+
+// The tab shown on Home is shared state, not the page's own: the rail's Servers entry opens Home on the Servers tab.
+let currentTab: HomeTab = "people";
+const tabListeners = new Set<() => void>();
+
+export function setHomeTab(tab: HomeTab): void {
+    if (tab === currentTab) return;
+    currentTab = tab;
+    tabListeners.forEach((listener) => listener());
+}
+
+/** The tab shown on Home, and a function to change it. */
+export function useHomeTab(): [HomeTab, (tab: HomeTab) => void] {
+    const tab = useSyncExternalStore(
+        (listener) => {
+            tabListeners.add(listener);
+            return () => void tabListeners.delete(listener);
+        },
+        () => currentTab,
+    );
+    return [tab, setHomeTab];
+}
 
 /** Re-renders when the data behind the lists may have changed: direct chats, invites, the ignored user list. */
 function useRefreshOnChanges(cli: MatrixClient): void {
@@ -163,13 +187,23 @@ export function ServersList(): JSX.Element {
     const [, refresh] = useReducer((n: number) => n + 1, 0);
     useEventEmitter(spaceStore, UPDATE_TOP_LEVEL_SPACES, refresh);
     const spaces = spaceStore.spacePanelSpaces;
+    const [createMenuDisplayed, createHandle, openCreateMenu, closeCreateMenu] = useContextMenu<HTMLDivElement>();
 
     return (
         <div className="mx_HomeTabs_servers">
             <div className="mx_HomeTabs_serversHeader">
+                <AccessibleButton
+                    className="mx_HomeTabs_discover"
+                    data-testid="create-server-button"
+                    ref={createHandle}
+                    onClick={createMenuDisplayed ? closeCreateMenu : openCreateMenu}
+                >
+                    {_t("create_space|label")}
+                </AccessibleButton>
                 <AccessibleButton className="mx_HomeTabs_discover" onClick={() => dis.fire(Action.ViewRoomDirectory)}>
                     {_t("fragment_x|discover")}
                 </AccessibleButton>
+                {createMenuDisplayed && <SpaceCreateMenu onFinished={closeCreateMenu} />}
             </div>
             {spaces.length === 0 ? (
                 <EmptyTab text={_t("fragment_x|no_servers")} />

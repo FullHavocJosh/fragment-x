@@ -9,7 +9,7 @@ Please see LICENSE files in the repository root for full details.
 
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
-import { act, render, screen } from "test-utils-rtl";
+import { act, render, renderHook, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
 import EventEmitter from "node:events";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
@@ -23,6 +23,8 @@ import {
     PeopleList,
     PendingList,
     ServersList,
+    setHomeTab,
+    useHomeTab,
 } from "./HomeTabs";
 import DMRoomMap from "../../utils/DMRoomMap";
 import defaultDispatcher from "../../dispatcher/dispatcher";
@@ -31,6 +33,14 @@ import MatrixClientContext from "../../contexts/MatrixClientContext";
 import { SDKContext } from "../../contexts/SDKContext";
 import { type SDKContextClass } from "../../contexts/SDKContextClass";
 import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
+
+vi.mock("../views/spaces/SpaceCreateMenu", () => ({
+    default: ({ onFinished }: { onFinished: () => void }) => (
+        <div data-testid="space-create-menu">
+            <button onClick={onFinished}>Close create menu</button>
+        </div>
+    ),
+}));
 
 describe("HomeTabs", () => {
     let cli: MatrixClient;
@@ -137,6 +147,17 @@ describe("HomeTabs", () => {
             expect(spaceStore.setActiveSpace).toHaveBeenCalledWith("!s1:server");
         });
 
+        it("has a Create a space button that opens and closes the create menu", async () => {
+            renderServers([], {});
+            expect(screen.queryByTestId("space-create-menu")).not.toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("button", { name: "Create a space" }));
+            expect(screen.getByTestId("space-create-menu")).toBeInTheDocument();
+
+            await userEvent.click(screen.getByRole("button", { name: "Close create menu" }));
+            expect(screen.queryByTestId("space-create-menu")).not.toBeInTheDocument();
+        });
+
         it("opens the room directory with Discover", async () => {
             const fire = vi.spyOn(defaultDispatcher, "fire").mockImplementation(() => {});
             renderServers([], {});
@@ -190,6 +211,25 @@ describe("HomeTabs", () => {
             vi.mocked(cli.getIgnoredUsers).mockReturnValue([]);
             render(<BlockedList cli={cli} />, { wrapper: withClient });
             expect(screen.getByText("You have not blocked anyone.")).toBeInTheDocument();
+        });
+    });
+
+    describe("useHomeTab", () => {
+        afterEach(() => {
+            act(() => setHomeTab("people"));
+        });
+
+        it("starts on People and follows a change made from anywhere, including a second user of the hook", () => {
+            const first = renderHook(() => useHomeTab());
+            const second = renderHook(() => useHomeTab());
+            expect(first.result.current[0]).toBe("people");
+
+            act(() => second.result.current[1]("servers"));
+            expect(first.result.current[0]).toBe("servers");
+            expect(second.result.current[0]).toBe("servers");
+
+            act(() => setHomeTab("blocked"));
+            expect(first.result.current[0]).toBe("blocked");
         });
     });
 });

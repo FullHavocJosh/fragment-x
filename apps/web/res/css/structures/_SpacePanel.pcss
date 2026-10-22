@@ -518,3 +518,21 @@ Please see LICENSE files in the repository root for full details.
         padding: 8px 0;
     }
 }
+
+/* Fragment X servers_entry: a short line between the Home tree and the Servers entry. */
+.mx_SpacePanel .mx_SpacePanel_dividerItem {
+    list-style: none;
+}
+
+.mx_SpacePanel .mx_SpacePanel_divider {
+    border: 0;
+    height: 2px;
+    width: 32px;
+    margin: 6px auto;
+    border-radius: 1px;
+    background-color: var(--cpd-color-bg-subtle-secondary);
+}
+
+.mx_SpacePanel.mx_SpacePanel_unified:not(.collapsed) .mx_SpacePanel_divider {
+    width: calc(100% - 24px);
+}

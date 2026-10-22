@@ -26,13 +26,13 @@ import PosthogTrackers from "../../PosthogTrackers";
 import EmbeddedPage from "./EmbeddedPage";
 import {
     BlockedList,
-    type HomeTab,
     HomeTopBar,
     PeopleList,
     PendingList,
     ServersList,
     getDirectContacts,
     useDirectContactCount,
+    useHomeTab,
 } from "./HomeTabs";
 
 const onClickSendDm = (ev: ButtonEvent): void => {
@@ -101,7 +101,7 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     const config = SdkConfig.get();
     const pageUrl = getHomePageUrl(config, cli);
     const showTopBar = Boolean(config.fragment_x?.home_top_bar);
-    const [tab, setTab] = useState<HomeTab>("people");
+    const [tab, setTab] = useHomeTab();
     const contactCount = useDirectContactCount(cli);
 
     if (pageUrl) {
