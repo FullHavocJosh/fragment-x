@@ -29,6 +29,7 @@ import {
     RoomIcon,
     VideoCallSolidIcon,
     PlusIcon,
+    GridIcon,
     ChevronDownIcon,
     ChevronRightIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -36,6 +37,7 @@ import { useCreateAutoDisposedViewModel, UserMenu } from "@element-hq/web-shared
 
 import { _t } from "../../../languageHandler";
 import { useContextMenu } from "../../structures/ContextMenu";
+import { useHomeTab } from "../../structures/HomeTabs";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
 import { HomeRoomRows, isUnifiedTree, useHomeRooms } from "./SpaceRoomRows";
@@ -325,6 +327,42 @@ const CreateSpaceButton: React.FC<Pick<IInnerSpacePanelProps, "isPanelCollapsed"
     );
 };
 
+/**
+ * Fragment X (`fragment_x.servers_entry`): the Servers entry, a grid icon above the servers, after a divider. It opens Home
+ * on the Servers tab, where the servers are listed and Create a space and Discover are.
+ */
+const ServersEntry: React.FC<{ isPanelCollapsed: boolean; selected: boolean }> = ({ isPanelCollapsed, selected }) => {
+    const sdkContext = useContext(SDKContext);
+    const [tab, setTab] = useHomeTab();
+
+    return (
+        <>
+            <li className="mx_SpacePanel_dividerItem" role="presentation">
+                <hr className="mx_SpacePanel_divider" />
+            </li>
+            <li
+                className={classNames("mx_SpaceItem", { collapsed: isPanelCollapsed })}
+                role="treeitem"
+                aria-selected={selected && tab === "servers"}
+            >
+                <SpaceButton
+                    data-testid="servers-entry"
+                    label={_t("fragment_x|servers")}
+                    selected={selected && tab === "servers"}
+                    isNarrow={isPanelCollapsed}
+                    size="32px"
+                    icon={<GridIcon />}
+                    onClick={() => {
+                        setTab("servers");
+                        sdkContext.spaceStore.setActiveSpace(MetaSpace.Home);
+                        defaultDispatcher.fire(Action.ViewHomePage);
+                    }}
+                />
+            </li>
+        </>
+    );
+};
+
 const metaSpaceComponentMap: Record<MetaSpace, typeof HomeButton> = {
     [MetaSpace.Home]: HomeButton,
     [MetaSpace.Orphans]: OrphansButton,
@@ -381,6 +419,9 @@ const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(
                         onExpand={() => setPanelCollapsed(false)}
                     />
                 ))}
+                {SdkConfig.get().fragment_x?.servers_entry && (
+                    <ServersEntry isPanelCollapsed={isPanelCollapsed} selected={activeSpace === MetaSpace.Home} />
+                )}
                 {actualSpaces.map((s, i) => (
                     <Draggable key={s.roomId} draggableId={s.roomId} index={i}>
                         {(provided, snapshot) => (
@@ -420,7 +461,7 @@ const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(
                         />
                     </li>
                 ))}
-                {shouldShowComponent(UIComponent.CreateSpaces) && (
+                {shouldShowComponent(UIComponent.CreateSpaces) && !SdkConfig.get().fragment_x?.servers_entry && (
                     <CreateSpaceButton isPanelCollapsed={isPanelCollapsed} setPanelCollapsed={setPanelCollapsed} />
                 )}
             </IndicatorScrollbar>

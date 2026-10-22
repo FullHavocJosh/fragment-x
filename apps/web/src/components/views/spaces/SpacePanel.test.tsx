@@ -11,7 +11,7 @@ Please see LICENSE files in the repository root for full details.
 
 import { vi, describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, act, cleanup, waitFor, within } from "test-utils-rtl";
+import { render, renderHook, screen, fireEvent, act, cleanup, waitFor, within } from "test-utils-rtl";
 import { type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, wrapInMatrixClientContext, wrapInSdkContext, TestSDKContext } from "test-utils";
 
@@ -24,6 +24,8 @@ import { type SpaceNotificationState } from "../../../stores/notifications/Space
 import SettingsStore from "../../../settings/SettingsStore";
 import UnwrappedSpacePanel from "./SpacePanel";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
+import SdkConfig from "../../../SdkConfig";
+import { setHomeTab, useHomeTab } from "../../structures/HomeTabs";
 import { Action } from "../../../dispatcher/actions";
 
 // DND test utilities based on
@@ -183,6 +185,42 @@ describe("<SpacePanel />", () => {
             render(<SpacePanel />);
             fireEvent.click(screen.getByTestId("create-space-button"));
             expect(screen.getByTestId("create-space-button")).toBeVisible();
+        });
+    });
+
+    describe("fragment_x.servers_entry", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+            act(() => setHomeTab("people"));
+        });
+
+        it("has no Servers entry or divider without the option", () => {
+            render(<SpacePanel />);
+            expect(screen.queryByTestId("servers-entry")).not.toBeInTheDocument();
+            expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+            expect(screen.getByTestId("create-space-button")).toBeVisible();
+        });
+
+        it("shows a Servers entry after a divider in place of the plus button", () => {
+            SdkConfig.put({ fragment_x: { servers_entry: true } });
+            render(<SpacePanel />);
+
+            expect(screen.getByTestId("servers-entry")).toBeVisible();
+            expect(screen.getByRole("separator")).toBeInTheDocument();
+            expect(screen.queryByTestId("create-space-button")).not.toBeInTheDocument();
+        });
+
+        it("opens Home on the Servers tab when clicked", () => {
+            SdkConfig.put({ fragment_x: { servers_entry: true } });
+            const fire = vi.spyOn(defaultDispatcher, "fire").mockImplementation(() => {});
+            const setActiveSpace = vi.spyOn(sdkContext.spaceStore, "setActiveSpace").mockResolvedValue();
+            render(<SpacePanel />);
+
+            fireEvent.click(screen.getByTestId("servers-entry"));
+
+            expect(setActiveSpace).toHaveBeenCalledWith(MetaSpace.Home);
+            expect(fire).toHaveBeenCalledWith(Action.ViewHomePage);
+            expect(renderHook(() => useHomeTab()).result.current[0]).toBe("servers");
         });
     });
 
