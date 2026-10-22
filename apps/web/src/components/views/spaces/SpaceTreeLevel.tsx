@@ -31,7 +31,7 @@ import {
 import RoomAvatar from "../avatars/RoomAvatar";
 import { type SpaceKey } from "../../../stores/spaces";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
-import { isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
+import { isUnifiedFrame, isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
 import { NotificationBadge } from "../rooms/NotificationBadge/NotificationBadge";
 import { _t } from "../../../languageHandler";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
@@ -361,6 +361,8 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             mx_SpaceItem_narrow: isPanelCollapsed,
             collapsed: collapsed,
             hasSubSpaces: this.state.childSpaces?.length || this.state.childRoomCount,
+            // Fragment X unified frame: a subspace is as large as a space and is marked with a dot instead
+            mx_SpaceItem_subspace: isNested && isUnifiedFrame(),
         });
 
         const isInvite = space.getMyMembership() === KnownMembership.Invite;
@@ -418,7 +420,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
                     contextMenuTooltip={_t("space|context_menu|options")}
                     notificationState={notificationState}
                     isNarrow={isPanelCollapsed}
-                    size={isNested ? "24px" : "32px"}
+                    size={isNested && !isUnifiedFrame() ? "24px" : "32px"}
                     onKeyDown={this.onKeyDown}
                     ContextMenuComponent={
                         this.props.space.getMyMembership() === KnownMembership.Join ? SpaceContextMenu : undefined

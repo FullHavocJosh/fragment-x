@@ -83,6 +83,11 @@ function RoomRowMenu({ room, isNarrow, children }: PropsWithChildren<{ room: Roo
     );
 }
 
+/** Fragment X: `fragment_x.unified_frame` is on (one icon size in the bars, rooms half the size of spaces). */
+export function isUnifiedFrame(): boolean {
+    return Boolean(SdkConfig.get().fragment_x?.unified_frame);
+}
+
 /** A room under its space in the rail tree: avatar, name, unread badge. A click opens the room. */
 export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Element {
     const sdkContext = useContext(SDKContext);
@@ -113,7 +118,7 @@ export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Elemen
                 });
             }}
         >
-            <RoomAvatar room={room} size="24px" />
+            <RoomAvatar room={room} size={isUnifiedFrame() ? "16px" : "24px"} />
             {!isNarrow && <span className="mx_SpaceRoomRow_name">{room.name}</span>}
             <span className="mx_SpaceRoomRow_badge">
                 <NotificationBadge notification={notificationState} />

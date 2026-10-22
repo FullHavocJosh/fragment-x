@@ -71,7 +71,7 @@ import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomList
  */
 function RoomNotificationBell({ room }: { room: Room }): JSX.Element {
     const vm = useCreateAutoDisposedViewModel(() => new RoomListItemViewModel({ room, client: room.client }));
-    return <RoomListItemNotificationMenu vm={vm} />;
+    return <RoomListItemNotificationMenu vm={vm} size="32px" />;
 }
 
 function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: JSX.Element }): JSX.Element {

@@ -80,8 +80,8 @@ export function UploadButton({
 
     const trigger = (
         <IconButton
-            {...rootButtonProps}
             size="26px"
+            {...rootButtonProps}
             tooltip={i18n.translate("common|attachment")}
             onClick={onMenuClick}
             title={i18n.translate("common|attachment")}

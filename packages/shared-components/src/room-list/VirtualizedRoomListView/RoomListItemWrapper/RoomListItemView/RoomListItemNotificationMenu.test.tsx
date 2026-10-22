@@ -39,6 +39,23 @@ describe("<RoomListItemNotificationMenu />", () => {
         expect(screen.getByRole("button", { name: "Notification options" })).toBeInTheDocument();
     });
 
+    it("should have the small padded button by default and the toolbar size on request", () => {
+        const { unmount } = renderMenu();
+        const small = screen.getByRole("button", { name: "Notification options" });
+        expect(small.style.padding).toBe("2px");
+        unmount();
+
+        const TestComponent = (): JSX.Element => {
+            const vm = useMockedViewModel(
+                { ...defaultSnapshot, showNotificationMenu: true } as RoomListItemViewSnapshot,
+                mockCallbacks,
+            );
+            return <RoomListItemNotificationMenu vm={vm} size="32px" />;
+        };
+        render(<TestComponent />);
+        expect(screen.getByRole("button", { name: "Notification options" }).style.padding).toBe("");
+    });
+
     it("should show muted icon when notifications are muted", () => {
         renderMenu(RoomNotifState.Mute);
         const button = screen.getByRole("button", { name: "Notification options" });

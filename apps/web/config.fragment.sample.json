@@ -94,6 +94,7 @@
         "inbox_for_you": true,
         "single_room_info_button": true,
         "mute_server": true,
-        "room_context_menu": true
+        "room_context_menu": true,
+        "unified_frame": true
     }
 }

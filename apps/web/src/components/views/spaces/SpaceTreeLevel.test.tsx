@@ -233,6 +233,50 @@ describe("SpaceItem", () => {
         expect(asFragment()).toMatchSnapshot();
     });
 
+    describe("fragment_x.unified_frame", () => {
+        const avatarWidths = (container: HTMLElement): string[] =>
+            [...container.querySelectorAll(".mx_SpaceButton .mx_BaseAvatar")].map((avatar) =>
+                (avatar as HTMLElement).style.getPropertyValue("--cpd-avatar-size"),
+            );
+
+        const renderTree = (): ReturnType<typeof render> => {
+            vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>
+                spaceId === space.roomId ? [subspace] : [],
+            );
+            Object.assign(SDKContextClass.instance.spaceStore, { getChildRooms: vi.fn().mockReturnValue([]) });
+            const result = render(
+                <SpaceItem space={space} activeSpaces={[]} />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+            fireEvent.click(result.getByLabelText("Expand"));
+            return result;
+        };
+
+        beforeEach(() => {
+            localStorage.clear();
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("makes a subspace smaller than a space by default", () => {
+            const { container } = renderTree();
+            expect(avatarWidths(container)).toEqual(["32px", "24px"]);
+            expect(container.querySelector(".mx_SpaceItem_subspace")).not.toBeInTheDocument();
+        });
+
+        it("gives a space and a subspace the same size, and marks the subspace", () => {
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            const { container } = renderTree();
+
+            expect(avatarWidths(container)).toEqual(["32px", "32px"]);
+            const marked = container.querySelectorAll(".mx_SpaceItem_subspace");
+            expect(marked).toHaveLength(1);
+            expect(marked[0]).toHaveTextContent("Subspace");
+        });
+    });
+
     describe("opening a space in an icons-only rail", () => {
         const renderNarrow = (onExpand: () => void) => {
             vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>

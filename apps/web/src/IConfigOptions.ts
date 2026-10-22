@@ -108,6 +108,13 @@ export interface ConfigOptions extends WebConfigJson {
          * notification bell with the room's notification settings. The room list column, which had both, is not there.
          */
         room_context_menu?: boolean;
+        /**
+         * When true, the room's top bar has the colour of the server rail (one frame around the chat; the colour editor's
+         * Server rail colour sets both), every icon in the rail, the room header and the composer is a 24px glyph in a 32px
+         * button, spaces and subspaces have the same icon size with a dot on a subspace, and rooms in the tree have half
+         * that size.
+         */
+        unified_frame?: boolean;
     };
 }
 
