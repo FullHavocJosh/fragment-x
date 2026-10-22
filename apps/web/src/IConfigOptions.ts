@@ -111,8 +111,8 @@ export interface ConfigOptions extends WebConfigJson {
         /**
          * When true, the room's top bar has the colour of the server rail (one frame around the chat; the colour editor's
          * Server rail colour sets both), every icon in the rail, the room header and the composer is a 24px glyph in a 32px
-         * button, spaces and subspaces have the same icon size with a dot on a subspace, and rooms in the tree have half
-         * that size.
+         * button, spaces and subspaces have the same icon size and rooms in the tree have half that size, and every icon
+         * in the rail is centred on one axis (no indent; an open space and its rows share a background).
          */
         unified_frame?: boolean;
         /**

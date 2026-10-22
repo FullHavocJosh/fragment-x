@@ -361,7 +361,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             mx_SpaceItem_narrow: isPanelCollapsed,
             collapsed: collapsed,
             hasSubSpaces: this.state.childSpaces?.length || this.state.childRoomCount,
-            // Fragment X unified frame: a subspace is as large as a space and is marked with a dot instead
+            // Fragment X unified frame: a subspace is as large as a space, and is not indented (the rail styles tell a subspace apart)
             mx_SpaceItem_subspace: isNested && isUnifiedFrame(),
         });
 

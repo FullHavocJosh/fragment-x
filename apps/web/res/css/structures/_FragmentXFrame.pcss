@@ -31,16 +31,50 @@ Please see LICENSE files in the repository root for full details.
         padding: 4px;
     }
 
-    /* A subspace is as large as a space; a small dot on its left marks it. */
-    .mx_SpaceItem_subspace > .mx_SpaceButton .mx_SpaceButton_avatarWrapper::before {
-        content: "";
-        position: absolute;
-        left: -7px;
-        top: 50%;
-        width: 4px;
-        height: 4px;
-        transform: translateY(-50%);
-        border-radius: 50%;
-        background-color: var(--cpd-color-icon-tertiary);
+    /*
+     * One icon axis: the icon of every row, whatever its depth, is centred on the same vertical line, so the rail reads as
+     * one column. A space, a subspace, Messages, Servers and a direct message share a 32px slot; a room is half of that
+     * and centres in the same slot. There is no indent; an open space and its rows share a background instead.
+     */
+    .mx_SpacePanel {
+        /* the centre of the slot: the gutter (14px), the selection padding (4px) and half the icon (16px) */
+        --fragmentXRailAxis: 34px;
+        /* where names start: after the slot and a gap */
+        --fragmentXRailText: 58px;
+
+        .mx_SpaceTreeLevel .mx_SpaceTreeLevel {
+            padding-left: 0;
+        }
+
+        .mx_SpaceItem.hasSubSpaces:not(.collapsed):not(.mx_SpaceItem_subspace) {
+            position: relative;
+            isolation: isolate;
+
+            /* behind the rows, inset from the rail's edges without moving them */
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0 6px;
+                z-index: -1;
+                border-radius: 16px;
+                background-color: var(--cpd-color-bg-subtle-secondary);
+            }
+        }
+
+        .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {
+            /* a 16px avatar centres on the axis, and the name lines up with the names of the spaces */
+            padding-left: calc(var(--fragmentXRailAxis) - 8px);
+            gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 8px);
+
+            &.mx_SpaceRoomRow_withPreview {
+                /* a direct message has a 24px avatar */
+                padding-left: calc(var(--fragmentXRailAxis) - 12px);
+                gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 12px);
+            }
+        }
+
+        .mx_SpaceRoomGroupLabel {
+            padding-left: var(--fragmentXRailText);
+        }
     }
 }
