@@ -106,6 +106,20 @@ Please see LICENSE files in the repository root for full details.
             flex: none;
         }
 
+        /*
+         * No arrows and no pills in the left column: a space opens when the selection is in it (see SpaceItem), the
+         * selected server shows as a rounded square, and what is unread shows in the badge and the summary line.
+         */
+        .mx_SpaceButton_toggleCollapse {
+            /* hidden, not removed: its width keeps the gutter that puts the icon on the axis */
+            visibility: hidden;
+        }
+
+        .mx_SpaceButton.mx_SpaceButton_active .mx_SpaceButton_selectionWrapper::before,
+        .mx_SpaceButton.mx_SpaceButton_unread .mx_SpaceButton_selectionWrapper::before {
+            display: none;
+        }
+
         /* The bottom column (Inbox, settings, the user's avatar) is on the same axis as the rail's icons. */
         .mx_ThreadsActivityCentreButton.expanded {
             /* 4px of button padding, then the 24px glyph, centred on the axis */

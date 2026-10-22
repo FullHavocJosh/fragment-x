@@ -41,7 +41,14 @@ import { useContextMenu } from "../../structures/ContextMenu";
 import { useHomeTab } from "../../structures/HomeTabs";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
-import { HomeRoomRows, isMessagesEntry, isUnifiedTree, partitionHomeRooms, useHomeRooms } from "./SpaceRoomRows";
+import {
+    HomeRoomRows,
+    isMessagesEntry,
+    isUnifiedFrame,
+    isUnifiedTree,
+    partitionHomeRooms,
+    useHomeRooms,
+} from "./SpaceRoomRows";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
 import UserPanel from "./UserPanel";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
@@ -182,9 +189,11 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
     const messages = isMessagesEntry();
     const homeRooms = messages ? partitionHomeRooms(allHomeRooms).dms : allHomeRooms;
     const homeLabel = messages ? _t("fragment_x|messages") : getMetaSpaceName(MetaSpace.Home, allRoomsInHome);
-    const [treeCollapsed, setTreeCollapsed] = useState(() =>
+    const [storedTreeCollapsed, setTreeCollapsed] = useState(() =>
         SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(MetaSpace.Home, undefined, false),
     );
+    // Fragment X unified frame: there are no arrows, so Messages always lists its conversations.
+    const treeCollapsed = isUnifiedFrame() ? false : storedTreeCollapsed;
 
     if (!unified) {
         return (
