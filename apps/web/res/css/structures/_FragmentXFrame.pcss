@@ -10,11 +10,117 @@ Please see LICENSE files in the repository root for full details.
  * size. LoggedInView puts the class on the app wrapper.
  */
 .mx_MatrixChat_fragmentXFrame {
+    /*
+     * The frame is a grid of square cells as wide as the rail. The top bar is one cell high, so the search icon sits at
+     * the centre of both the rail column and the bar next to it, and an icon at the right end of the bar is as far from
+     * the edge as the search icon is from the left one.
+     */
+    --fragmentXFrameCell: 68px;
+    /* the corner where the rail and the top bar meet the chat */
+    --fragmentXFrameRadius: 16px;
+    /* an icon button is 32px, with 8px around it in a small cell */
+    --fragmentXIconPad: 8px;
+
+    /*
+     * The corner where the rail and the top bar meet the chat is rounded. It is a notch in the frame's colour laid over
+     * the chat's own corner, so it does not depend on what colour the chat has.
+     */
+    .mx_RoomView_timeline {
+        position: relative;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            width: var(--fragmentXFrameRadius);
+            height: var(--fragmentXFrameRadius);
+            pointer-events: none;
+            background-color: var(--cpd-color-bg-subtle-primary);
+            mask: radial-gradient(
+                circle at 100% 100%,
+                transparent var(--fragmentXFrameRadius),
+                #000 calc(var(--fragmentXFrameRadius) + 0.5px)
+            );
+        }
+    }
+
+    /*
+     * The composer row is centred in a cell as high as the top bar, which puts it level with the user's avatar at the
+     * bottom of the rail. A composer with several lines grows upwards from there.
+     */
+    .mx_RoomView .mx_MessageComposer {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-sizing: border-box;
+        min-height: var(--fragmentXFrameCell);
+        padding-bottom: 0;
+    }
+
+    .mx_MessageComposer_wrapper {
+        margin: 0;
+    }
+
+    /*
+     * One hover for every icon that is not a person, a space or a room: no box behind it, the icon brightens and
+     * glows. (Search, Collapse, Inbox, settings and the icons in the top bar.)
+     */
+    .mx_RailButton,
+    .mx_ThreadsActivityCentreButton,
+    .mx_UserPanel_button,
+    .mx_RoomHeader [class*="_icon-button_"] {
+        &:hover,
+        &:focus-visible {
+            background-color: transparent !important;
+        }
+
+        svg {
+            transition:
+                filter 0.15s ease,
+                fill 0.15s ease;
+        }
+
+        &:hover svg,
+        &:focus-visible svg {
+            fill: var(--cpd-color-icon-primary) !important;
+            filter: drop-shadow(0 0 5px var(--cpd-color-icon-primary));
+        }
+    }
+
+    /* the avatar's centre is 34px from the bottom, and the settings icon is one icon pitch above it */
+    .mx_SpacePanel.mx_SpacePanel_unified .mx_UserPanel.mx_UserPanel_compact {
+        padding: var(--fragmentXIconPad) 0 calc((var(--fragmentXFrameCell) - 32px) / 2);
+        gap: calc(var(--fragmentXIconPad) * 2);
+    }
+
+    /* the icon buttons of the rail set their own box with !important on :not(.expanded):hover, so these match that */
+    .mx_RailButton:not(.expanded):hover,
+    .mx_ThreadsActivityCentreButton:not(.expanded):hover,
+    .mx_ThreadsActivityCentreButton:not(.expanded):hover .mx_ThreadsActivityCentreButton_Icon {
+        background-color: transparent !important;
+    }
+
+    .mx_ThreadsActivityCentreButton:hover .mx_ThreadsActivityCentreButton_Icon {
+        background-color: transparent !important;
+    }
+
     /* The top bar has the rail's colour (the colour editor's Server rail colour sets both), and no line under it. */
     .mx_RoomHeader,
     .mx_RoomHeader:hover {
         background-color: var(--cpd-color-bg-subtle-primary);
         border-bottom-color: transparent;
+    }
+
+    .mx_RoomHeader {
+        height: var(--fragmentXFrameCell);
+        /* no line under it, so the icons are centred on the whole height */
+        border-bottom-width: 0;
+        /* icon buttons 32px apart from each other: the small padding twice */
+        gap: calc(var(--fragmentXIconPad) * 2);
+        /* the icon at the right end is as far from the edge as the search icon is from the left one: 34px to its centre */
+        padding-right: calc(var(--fragmentXFrameCell) / 2 - 16px);
     }
 
     /* Every icon in the bars is a 24px glyph in a 32px button. */
@@ -53,6 +159,9 @@ Please see LICENSE files in the repository root for full details.
         .mx_SpaceItem.hasSubSpaces:not(.collapsed) {
             position: relative;
             isolation: isolate;
+            /* the same 4px between a highlight and whatever is next to it or inside it, on every side */
+            margin-block: 4px;
+            padding-block: 4px;
 
             /* behind the rows, inset from the rail's edges without moving them */
             &::before {
@@ -120,6 +229,29 @@ Please see LICENSE files in the repository root for full details.
             display: none;
         }
 
+        /*
+         * Search sits in the first cell, as high as the top bar, so it is centred on the bar next to it as well as on the
+         * column. Collapse and the other icon buttons below have the small padding all round.
+         */
+        > .mx_RailButton {
+            margin-top: var(--fragmentXIconPad);
+            margin-bottom: var(--fragmentXIconPad);
+        }
+
+        /* expanded: the glyph is centred on the axis (4px of button padding, then the 24px glyph) */
+        > .mx_RailButton.expanded {
+            margin-left: calc(var(--fragmentXRailAxis) - 16px);
+        }
+
+        > .mx_RailButton:first-of-type {
+            margin-top: calc((var(--fragmentXFrameCell) - 32px) / 2);
+        }
+
+        .mx_ThreadsActivityCentreButton {
+            margin-top: var(--fragmentXIconPad);
+            margin-bottom: var(--fragmentXIconPad);
+        }
+
         /* The bottom column (Inbox, settings, the user's avatar) is on the same axis as the rail's icons. */
         .mx_ThreadsActivityCentreButton.expanded {
             /* 4px of button padding, then the 24px glyph, centred on the axis */
@@ -129,6 +261,12 @@ Please see LICENSE files in the repository root for full details.
             .mx_ThreadsActivityCentreButton_Icon {
                 margin-right: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 12px);
             }
+        }
+
+        /* The user's avatar sits in a cell as high as the top bar, centred, level with the composer row. */
+        .mx_UserPanel {
+            min-height: var(--fragmentXFrameCell);
+            box-sizing: border-box;
         }
 
         .mx_UserPanel:not(.mx_UserPanel_compact) {
