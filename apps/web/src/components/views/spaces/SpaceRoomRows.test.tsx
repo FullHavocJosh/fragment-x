@@ -398,10 +398,10 @@ describe("SpaceRoomRows", () => {
             expect(roomAvatarWidth()).toBe("24px");
         });
 
-        it("makes the room avatar half the size of a space, 16px", () => {
+        it("makes the room avatar the size of a space, 32px", () => {
             SdkConfig.put({ fragment_x: { unified_frame: true } });
             renderRows();
-            expect(roomAvatarWidth()).toBe("16px");
+            expect(roomAvatarWidth()).toBe("32px");
         });
     });
 
