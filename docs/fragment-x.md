@@ -116,6 +116,11 @@ What it sets, all through configuration with no code changes:
   the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
   line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
   Other rooms. The Home page and its tabs are unchanged.
+- `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
+  in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
+  rooms have only unread activity and no count). The numbers are added up from the notification state of each joined
+  room of the space and its subspaces, so muted rooms count for nothing; see `useSpaceUnread` in
+  `apps/web/src/hooks/useSpaceUnread.ts`. A selected server keeps its tall pill.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

@@ -305,6 +305,41 @@ Please see LICENSE files in the repository root for full details.
         }
     }
 
+    /* Fragment X server_unread: a short pill on the left edge of a server with unread messages (a selected server has the tall one). */
+    .mx_SpaceButton.mx_SpaceButton_unread .mx_SpaceButton_selectionWrapper::before {
+        content: "";
+        position: absolute;
+        left: calc(-1 * var(--gutterSize));
+        top: 50%;
+        width: 4px;
+        height: 8px;
+        transform: translateY(-50%);
+        border-radius: 0 4px 4px 0;
+        background-color: var(--cpd-color-text-primary);
+    }
+
+    /* Fragment X server_unread: the name with a line of what is new under it. */
+    .mx_SpaceButton_textColumn {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+        margin-left: 8px;
+
+        .mx_SpaceButton_name {
+            flex: none;
+            margin-left: 0;
+        }
+    }
+
+    .mx_SpaceButton_summary {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--cpd-color-text-secondary);
+        font: var(--cpd-font-body-xs-regular);
+    }
+
     .mx_SpacePanel_badgeContainer {
         /* Create a flexbox to make aligning dot badges easier */
         display: flex;

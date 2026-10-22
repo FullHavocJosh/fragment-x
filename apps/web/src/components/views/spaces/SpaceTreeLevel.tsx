@@ -51,6 +51,7 @@ import { useRovingTabIndex } from "../../../accessibility/RovingTabIndex";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
 import { useIsSpaceMuted } from "../../../hooks/useIsSpaceMuted";
+import { hasUnread, unreadSummaryText, useSpaceUnread } from "../../../hooks/useSpaceUnread";
 
 type ButtonProps<T extends keyof HTMLElementTagNameMap> = Omit<
     AccessibleButtonProps<T>,
@@ -95,6 +96,10 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
     const spaceKey = _spaceKey ?? space?.roomId;
     // Fragment X: a space muted with Mute server shows a muted indicator
     const muted = useIsSpaceMuted(space?.roomId);
+    // Fragment X (`fragment_x.server_unread`): a pill on the left edge and a line under the name when there is news
+    const unread = useSpaceUnread(space?.roomId, notificationState);
+    const unreadPill = hasUnread(unread) && !selected;
+    const unreadSummary = !isNarrow && unread ? unreadSummaryText(unread) : undefined;
 
     let avatar = (
         <div className="mx_SpaceButton_avatarPlaceholder">
@@ -160,6 +165,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                 mx_SpaceButton_narrow: isNarrow,
                 mx_SpaceButton_withIcon: Boolean(icon),
                 mx_SpaceButton_muted: muted,
+                mx_SpaceButton_unread: unreadPill,
             })}
             aria-label={label}
             title={!isNarrow || menuDisplayed ? undefined : label}
@@ -184,7 +190,15 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
                         </div>
                     )}
                 </div>
-                {!isNarrow && <span className="mx_SpaceButton_name">{label}</span>}
+                {!isNarrow &&
+                    (unreadSummary ? (
+                        <span className="mx_SpaceButton_textColumn">
+                            <span className="mx_SpaceButton_name">{label}</span>
+                            <span className="mx_SpaceButton_summary">{unreadSummary}</span>
+                        </span>
+                    ) : (
+                        <span className="mx_SpaceButton_name">{label}</span>
+                    ))}
 
                 {ContextMenuComponent && (
                     <ContextMenuTooltipButton

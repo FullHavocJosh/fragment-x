@@ -127,6 +127,11 @@ export interface ConfigOptions extends WebConfigJson {
          * under the Servers entry (needs `servers_entry`) as Other rooms.
          */
         messages_entry?: boolean;
+        /**
+         * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
+         * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
+         */
+        server_unread?: boolean;
     };
 }
 

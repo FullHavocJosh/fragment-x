@@ -9,10 +9,10 @@ Please see LICENSE files in the repository root for full details.
 // @vitest-environment happy-dom
 
 import { vi, describe, it, expect, afterEach, beforeEach } from "vitest";
-import { ClientEvent, type MatrixEvent } from "matrix-js-sdk/src/matrix";
+import { ClientEvent, type MatrixEvent, type Room } from "matrix-js-sdk/src/matrix";
 import React from "react";
 import { act, fireEvent, getByTestId, render, screen } from "test-utils-rtl";
-import { clientAndSDKContextRenderOptions, mkRoom, stubClient } from "test-utils";
+import { clientAndSDKContextRenderOptions, mkRoom, mkStubRoom, stubClient } from "test-utils";
 
 import DMRoomMap from "../../../utils/DMRoomMap";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
@@ -21,6 +21,7 @@ import { SpaceItem, SpaceButton } from "./SpaceTreeLevel";
 import { MetaSpace, type SpaceKey } from "../../../stores/spaces";
 import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
+import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { SDKContextClass } from "../../../contexts/SDKContextClass";
 import SdkConfig from "../../../SdkConfig";
 
@@ -147,6 +148,109 @@ describe("SpaceButton", () => {
                 cli.emit(ClientEvent.AccountData, unmuted);
             });
             expect(screen.queryByRole("img", { name: "Muted" })).not.toBeInTheDocument();
+        });
+    });
+
+    describe("unread pill and summary (fragment_x.server_unread)", () => {
+        let general: ReturnType<typeof mkStubRoom>;
+        let ideas: ReturnType<typeof mkStubRoom>;
+        let notificationState: StaticNotificationState;
+        let getRoomState: ReturnType<typeof vi.spyOn>;
+
+        const renderButton = (
+            props: Partial<React.ComponentProps<typeof SpaceButton>> = {},
+        ): ReturnType<typeof render> =>
+            render(
+                <SpaceButton
+                    space={space}
+                    selected={false}
+                    label="My space"
+                    size="32px"
+                    notificationState={notificationState}
+                    {...props}
+                />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+
+        beforeEach(() => {
+            SdkConfig.put({ fragment_x: { server_unread: true } });
+            general = mkStubRoom("!general:example.org", "General", cli);
+            ideas = mkStubRoom("!ideas:example.org", "Ideas", cli);
+            notificationState = new StaticNotificationState(null, 5, NotificationLevel.Notification);
+            const rooms: Record<string, typeof general> = { [general.roomId]: general, [ideas.roomId]: ideas };
+            vi.spyOn(cli, "getRoom").mockImplementation((id) => (id ? (rooms[id] ?? null) : null));
+            Object.assign(SDKContextClass.instance.spaceStore, {
+                getSpaceFilteredRoomIds: vi.fn(() => new Set([general.roomId, ideas.roomId])),
+            });
+            getRoomState = vi
+                .spyOn(RoomNotificationStateStore.instance, "getRoomState")
+                .mockImplementation(
+                    (room: Room) =>
+                        (room === general
+                            ? StaticNotificationState.forCount(3, NotificationLevel.Notification)
+                            : StaticNotificationState.forCount(2, NotificationLevel.Highlight)) as never,
+                );
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+            getRoomState.mockRestore();
+        });
+
+        it("shows a pill and how many new messages are in how many rooms", () => {
+            const { container } = renderButton();
+
+            expect(screen.getByText("5 new messages in 2 rooms")).toBeInTheDocument();
+            expect(screen.getByText("My space")).toBeInTheDocument();
+            expect(container.querySelector(".mx_SpaceButton_unread")).toBeInTheDocument();
+        });
+
+        it("leaves out rooms with nothing new and the spaces under the space", () => {
+            vi.mocked(ideas.isSpaceRoom).mockReturnValue(true);
+            getRoomState.mockImplementation(
+                (room: Room) =>
+                    (room === general
+                        ? StaticNotificationState.forCount(3, NotificationLevel.Notification)
+                        : StaticNotificationState.forCount(0, NotificationLevel.None)) as never,
+            );
+            renderButton();
+
+            expect(screen.getByText("3 new messages in 1 room")).toBeInTheDocument();
+        });
+
+        it("shows no pill on a selected server, and no line in a narrow rail", () => {
+            const { container, rerender } = renderButton({ selected: true });
+            expect(container.querySelector(".mx_SpaceButton_unread")).not.toBeInTheDocument();
+            expect(screen.getByText("5 new messages in 2 rooms")).toBeInTheDocument();
+
+            rerender(
+                <SpaceButton
+                    space={space}
+                    selected={false}
+                    label="My space"
+                    size="32px"
+                    isNarrow
+                    notificationState={notificationState}
+                />,
+            );
+            expect(container.querySelector(".mx_SpaceButton_unread")).toBeInTheDocument();
+            expect(screen.queryByText(/new messages/)).not.toBeInTheDocument();
+        });
+
+        it("shows nothing when there is nothing new", () => {
+            getRoomState.mockImplementation(() => StaticNotificationState.forCount(0, NotificationLevel.None) as never);
+            const { container } = renderButton();
+
+            expect(container.querySelector(".mx_SpaceButton_unread")).not.toBeInTheDocument();
+            expect(container.querySelector(".mx_SpaceButton_summary")).not.toBeInTheDocument();
+        });
+
+        it("shows nothing without the option", () => {
+            SdkConfig.reset();
+            const { container } = renderButton();
+
+            expect(container.querySelector(".mx_SpaceButton_unread")).not.toBeInTheDocument();
+            expect(screen.queryByText(/new messages/)).not.toBeInTheDocument();
         });
     });
 
