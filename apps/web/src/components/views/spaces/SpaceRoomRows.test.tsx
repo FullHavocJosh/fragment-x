@@ -10,7 +10,7 @@ Please see LICENSE files in the repository root for full details.
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 import EventEmitter from "node:events";
-import { act, cleanup, render, screen } from "test-utils-rtl";
+import { act, render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
@@ -401,14 +401,10 @@ describe("SpaceRoomRows", () => {
         const roomAvatarType = (): string | null | undefined =>
             document.querySelector<HTMLElement>(".mx_SpaceRoomRow .mx_BaseAvatar")?.getAttribute("data-type");
 
-        it("makes a room avatar a rounded square, so an icon that fills its square is not cut off by a circle", () => {
-            renderRows();
-            expect(roomAvatarType()).toBe("round");
-
-            cleanup();
+        it("leaves a room avatar round: the shape changes to a rounded square on hover and selection in the styles", () => {
             SdkConfig.put({ fragment_x: { unified_frame: true } });
             renderRows();
-            expect(roomAvatarType()).toBe("square");
+            expect(roomAvatarType()).toBe("round");
         });
 
         it("keeps the avatar of a direct message with a preview line round", () => {

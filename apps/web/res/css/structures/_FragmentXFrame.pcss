@@ -235,11 +235,25 @@ Please see LICENSE files in the repository root for full details.
         }
 
         /*
-         * A room's icon often fills its square, so it keeps its corners: the square avatar type rounds by 25% (8px at
-         * this size), which cuts the corners off. People (direct messages) stay round.
+         * One shape for every user, space, subspace and room icon: a circle, and a rounded square while the pointer is
+         * over it or it is selected (the spaces do this in _SpacePanel.pcss; rooms, direct messages and the user's own
+         * avatar here).
          */
-        .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_withPreview) .mx_BaseAvatar {
-            --cpd-avatar-radius: 4px;
+        .mx_SpaceRoomRow .mx_BaseAvatar,
+        .mx_UserPanel_menu [style*="--cpd-avatar-size"] {
+            --cpd-avatar-radius: 50%;
+            transition: border-radius 0.15s ease-out;
+
+            img {
+                transition: border-radius 0.15s ease-out;
+            }
+        }
+
+        .mx_SpaceRoomRow:hover .mx_BaseAvatar,
+        .mx_SpaceRoomRow.mx_SpaceRoomRow_selected .mx_BaseAvatar,
+        .mx_UserPanel_menu > button:hover [style*="--cpd-avatar-size"],
+        .mx_UserPanel_menu > button[aria-expanded="true"] [style*="--cpd-avatar-size"] {
+            --cpd-avatar-radius: 30%;
         }
 
         /*
