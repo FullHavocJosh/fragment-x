@@ -102,8 +102,10 @@ What it sets, all through configuration with no code changes:
   `apps/web/src/components/views/spaces/SpaceRoomRows.tsx` and `RoomHeader.tsx`.
 - `fragment_x.unified_frame: true`: the top bar of a room has the colour of the server rail, so the rail and the top bar are
   one frame around the chat (the colour editor's Server rail colour sets both). Every icon in the rail, the room header and
-  the composer is a 24px glyph in a 32px button. Spaces and subspaces have the same icon size (32px), a subspace has a
-  small dot on its left, and a room in the tree has half that size (16px). The styles are in
+  the composer is a 24px glyph in a 32px button. Spaces and subspaces have the same icon size (32px) and a room in the
+  tree has half that size (16px). Every icon in the rail is centred on one vertical axis and every name starts at the
+  same x: there is no indent for subspaces and rooms, an open space and its rows share a background instead. The styles
+  are in
   `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
   adds.
 - `fragment_x.servers_entry: true`: the rail has a Servers entry (a grid icon) above the servers, after a divider, in place of
