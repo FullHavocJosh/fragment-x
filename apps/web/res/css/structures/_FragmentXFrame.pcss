@@ -1,0 +1,46 @@
+/*
+Copyright 2026 Fragment X contributors.
+
+SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE files in the repository root for full details.
+*/
+
+/*
+ * fragment_x.unified_frame: the rail and the top bar are one frame around the chat, and the icons in the bars share a
+ * size. LoggedInView puts the class on the app wrapper.
+ */
+.mx_MatrixChat_fragmentXFrame {
+    /* The top bar has the rail's colour (the colour editor's Server rail colour sets both), and no line under it. */
+    .mx_RoomHeader,
+    .mx_RoomHeader:hover {
+        background-color: var(--cpd-color-bg-subtle-primary);
+        border-bottom-color: transparent;
+    }
+
+    /* Every icon in the bars is a 24px glyph in a 32px button. */
+    /* (.mx_SpaceButton too: this file loads before _SpacePanel.pcss, so it needs the higher specificity to win) */
+    .mx_SpacePanel .mx_SpaceButton .mx_SpaceButton_icon {
+        width: 24px;
+        height: 24px;
+        padding: 4px;
+    }
+
+    .mx_MessageComposer_button {
+        width: 24px;
+        height: 24px;
+        padding: 4px;
+    }
+
+    /* A subspace is as large as a space; a small dot on its left marks it. */
+    .mx_SpaceItem_subspace > .mx_SpaceButton .mx_SpaceButton_avatarWrapper::before {
+        content: "";
+        position: absolute;
+        left: -7px;
+        top: 50%;
+        width: 4px;
+        height: 4px;
+        transform: translateY(-50%);
+        border-radius: 50%;
+        background-color: var(--cpd-color-icon-tertiary);
+    }
+}

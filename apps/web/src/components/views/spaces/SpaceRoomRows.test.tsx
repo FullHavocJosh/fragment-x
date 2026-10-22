@@ -293,6 +293,24 @@ describe("SpaceRoomRows", () => {
         expect(screen.getByText("General")).toBeInTheDocument();
     });
 
+    describe("fragment_x.unified_frame", () => {
+        const roomAvatarWidth = (): string | undefined =>
+            document
+                .querySelector<HTMLElement>(".mx_SpaceRoomRow .mx_BaseAvatar")
+                ?.style.getPropertyValue("--cpd-avatar-size");
+
+        it("keeps the room avatar at 24px by default", () => {
+            renderRows();
+            expect(roomAvatarWidth()).toBe("24px");
+        });
+
+        it("makes the room avatar half the size of a space, 16px", () => {
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            renderRows();
+            expect(roomAvatarWidth()).toBe("16px");
+        });
+    });
+
     describe("fragment_x.room_context_menu", () => {
         const moreOptions = (): HTMLElement[] => screen.queryAllByRole("button", { name: "More Options" });
 

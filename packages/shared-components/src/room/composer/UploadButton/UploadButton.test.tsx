@@ -12,6 +12,7 @@ import { userEvent } from "vitest/browser";
 import { fn } from "storybook/test";
 
 import * as stories from "./UploadButton.stories.tsx";
+import { UploadButton } from "./UploadButton";
 
 const { Default, WithOneOption } = composeStories(stories);
 
@@ -34,6 +35,25 @@ describe("UploadButton", () => {
         expect(container).toMatchSnapshot();
         await userEvent.click(screen.getByRole("menuitem", { name: "Fun Button" }));
         expect(onUploadOptionSelected).toHaveBeenCalledWith("fun");
+    });
+    describe("size", () => {
+        // One snapshot object, not a new one on every call, or the subscription loops.
+        const vmWith = (types: string[]) => {
+            const snapshot = { options: types.map((type) => ({ type, label: type })) };
+            return { getSnapshot: () => snapshot, subscribe: () => () => {}, onUploadOptionSelected: fn() };
+        };
+        const iconButtonSize = (container: HTMLElement): string =>
+            container.querySelector("button")!.style.getPropertyValue("--cpd-icon-button-size");
+
+        it("is 26px by default, with one option or a menu", () => {
+            expect(iconButtonSize(render(<UploadButton vm={vmWith(["a"])} />).container)).toBe("26px");
+            expect(iconButtonSize(render(<UploadButton vm={vmWith(["a", "b"])} />).container)).toBe("26px");
+        });
+
+        it("can be set, with one option or a menu", () => {
+            expect(iconButtonSize(render(<UploadButton vm={vmWith(["a"])} size="32px" />).container)).toBe("32px");
+            expect(iconButtonSize(render(<UploadButton vm={vmWith(["a", "b"])} size="32px" />).container)).toBe("32px");
+        });
     });
     it("can ctrl click to get the first option", async () => {
         userEvent.setup();

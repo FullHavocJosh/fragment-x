@@ -29,13 +29,18 @@ export type RoomListItemViewModel = ViewModel<RoomListItemViewSnapshot, RoomList
 export interface RoomListItemNotificationMenuProps {
     /** The room item view model */
     vm: RoomListItemViewModel;
+    /**
+     * The size of the button. The default, 24px, is the room list item's; 32px is a toolbar button like the room
+     * header's, with the usual padding.
+     */
+    size?: "24px" | "32px";
 }
 
 /**
  * The notification settings menu for room list items.
  * Displays options to change notification settings.
  */
-export function RoomListItemNotificationMenu({ vm }: RoomListItemNotificationMenuProps): JSX.Element {
+export function RoomListItemNotificationMenu({ vm, size = "24px" }: RoomListItemNotificationMenuProps): JSX.Element {
     const snapshot = useViewModel(vm);
     const [open, setOpen] = useState(false);
     const isMuted = snapshot.roomNotifState === RoomNotifState.Mute;
@@ -50,8 +55,8 @@ export function RoomListItemNotificationMenu({ vm }: RoomListItemNotificationMen
             align="start"
             trigger={
                 <IconButton
-                    size="24px"
-                    style={{ padding: "2px" }}
+                    size={size}
+                    style={size === "24px" ? { padding: "2px" } : undefined}
                     tooltip={_t("room_list|notification_options")}
                     aria-label={_t("room_list|notification_options")}
                 >

@@ -24,6 +24,7 @@ import {
     TextFormattingIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { UploadButton, useViewModel } from "@element-hq/web-shared-components";
+import SdkConfig from "../../../SdkConfig";
 
 import { _t } from "../../../languageHandler";
 import { CollapsibleButton, OverflowMenuContext } from "./CollapsibleButton";
@@ -114,7 +115,11 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
             ) : (
                 emojiButton(props)
             ),
-            <UploadButton key="upload" vm={roomUploadVM} />,
+            <UploadButton
+                key="upload"
+                vm={roomUploadVM}
+                size={SdkConfig.get().fragment_x?.unified_frame ? "32px" : "26px"}
+            />,
         ];
         moreButtons = [
             showStickersButton(props),

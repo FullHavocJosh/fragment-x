@@ -100,6 +100,12 @@ What it sets, all through configuration with no code changes:
   click and on a three dot button that shows on hover, and the room header gets a bell with the room's notification
   settings (default, all messages, mentions and keywords, mute). Both reuse Element's room list item menus, see
   `apps/web/src/components/views/spaces/SpaceRoomRows.tsx` and `RoomHeader.tsx`.
+- `fragment_x.unified_frame: true`: the top bar of a room has the colour of the server rail, so the rail and the top bar are
+  one frame around the chat (the colour editor's Server rail colour sets both). Every icon in the rail, the room header and
+  the composer is a 24px glyph in a 32px button. Spaces and subspaces have the same icon size (32px), a subspace has a
+  small dot on its left, and a room in the tree has half that size (16px). The styles are in
+  `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
+  adds.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

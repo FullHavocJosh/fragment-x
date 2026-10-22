@@ -49,6 +49,7 @@ import Modal from "../../Modal";
 import { SETTINGS } from "../../settings/Settings";
 import ToastStore from "../../stores/ToastStore";
 import { ModuleApi } from "../../modules/Api";
+import SdkConfig from "../../SdkConfig";
 
 describe("<LoggedInView />", () => {
     const userId = "@alice:domain.org";
@@ -100,6 +101,22 @@ describe("<LoggedInView />", () => {
         // @ts-expect-error
         mockClient.pushProcessor = new PushProcessor(mockClient);
         mockSdkContext._client = mockClient;
+    });
+
+    describe("fragment_x.unified_frame", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("puts the frame class on the wrapper only with the option", () => {
+            const { container, unmount } = getComponent();
+            expect(container.querySelector(".mx_MatrixChat_fragmentXFrame")).not.toBeInTheDocument();
+            unmount();
+
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            const withOption = getComponent();
+            expect(withOption.container.querySelector(".mx_MatrixChat_fragmentXFrame")).toBeInTheDocument();
+        });
     });
 
     describe("synced push rules", () => {

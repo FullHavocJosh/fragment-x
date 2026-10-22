@@ -22,6 +22,7 @@ import {
 } from "matrix-js-sdk/src/matrix";
 import { type MatrixCall } from "matrix-js-sdk/src/webrtc/call";
 import classNames from "classnames";
+import SdkConfig from "../../SdkConfig";
 import { GroupView, SeparatorView, Panel, LeftResizablePanelView } from "@element-hq/web-shared-components";
 
 import { isOnlyCtrlOrCmdKeyEvent, Key } from "../../Keyboard";
@@ -665,6 +666,8 @@ class LoggedInView extends React.Component<IProps, IState> {
         const wrapperClasses = classNames({
             mx_MatrixChat_wrapper: true,
             mx_MatrixChat_useCompactLayout: this.state.useCompactLayout,
+            // Fragment X: the styles of fragment_x.unified_frame hang on this class
+            mx_MatrixChat_fragmentXFrame: Boolean(SdkConfig.get().fragment_x?.unified_frame),
         });
         const bodyClasses = classNames({
             "mx_MatrixChat": true,
