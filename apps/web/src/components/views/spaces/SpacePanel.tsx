@@ -25,6 +25,7 @@ import { DragDropContext, Draggable, Droppable, type DroppableProvidedProps } fr
 import classNames from "classnames";
 import { type Room } from "matrix-js-sdk/src/matrix";
 import {
+    ChatSolidIcon,
     HomeSolidIcon,
     RoomIcon,
     VideoCallSolidIcon,
@@ -40,7 +41,7 @@ import { useContextMenu } from "../../structures/ContextMenu";
 import { useHomeTab } from "../../structures/HomeTabs";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
-import { HomeRoomRows, isUnifiedTree, useHomeRooms } from "./SpaceRoomRows";
+import { HomeRoomRows, isMessagesEntry, isUnifiedTree, partitionHomeRooms, useHomeRooms } from "./SpaceRoomRows";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
 import UserPanel from "./UserPanel";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
@@ -176,7 +177,11 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
 
     // Fragment X unified tree: Home lists its rooms (direct messages and rooms in no space) under it.
     const unified = isUnifiedTree();
-    const homeRooms = useHomeRooms(unified);
+    const allHomeRooms = useHomeRooms(unified);
+    // Fragment X messages entry: Home is called Messages and lists only the direct messages, each with its last message.
+    const messages = isMessagesEntry();
+    const homeRooms = messages ? partitionHomeRooms(allHomeRooms).dms : allHomeRooms;
+    const homeLabel = messages ? _t("fragment_x|messages") : getMetaSpaceName(MetaSpace.Home, allRoomsInHome);
     const [treeCollapsed, setTreeCollapsed] = useState(() =>
         SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(MetaSpace.Home, undefined, false),
     );
@@ -229,18 +234,18 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
                 spaceKey={MetaSpace.Home}
                 selected={selected}
                 isNarrow={isPanelCollapsed}
-                label={getMetaSpaceName(MetaSpace.Home, allRoomsInHome)}
+                label={homeLabel}
                 notificationState={notificationState}
                 ContextMenuComponent={HomeButtonContextMenu}
                 contextMenuTooltip={_t("common|options")}
                 size="32px"
-                icon={<HomeSolidIcon />}
+                icon={messages ? <ChatSolidIcon /> : <HomeSolidIcon />}
             >
                 {toggle}
             </SpaceButton>
             {hasRooms && !treeCollapsed && (
                 <ul className="mx_SpaceTreeLevel" role="group">
-                    <HomeRoomRows rooms={homeRooms} isNarrow={isPanelCollapsed} />
+                    <HomeRoomRows rooms={homeRooms} isNarrow={isPanelCollapsed} showPreview={messages} />
                 </ul>
             )}
         </li>
@@ -334,6 +339,10 @@ const CreateSpaceButton: React.FC<Pick<IInnerSpacePanelProps, "isPanelCollapsed"
 const ServersEntry: React.FC<{ isPanelCollapsed: boolean; selected: boolean }> = ({ isPanelCollapsed, selected }) => {
     const sdkContext = useContext(SDKContext);
     const [tab, setTab] = useHomeTab();
+    // With the Messages entry, the rooms that are in no space are listed under Servers as "Other rooms".
+    const messages = isMessagesEntry();
+    const allHomeRooms = useHomeRooms(messages);
+    const otherRooms = messages ? partitionHomeRooms(allHomeRooms).others : [];
 
     return (
         <>
@@ -358,6 +367,16 @@ const ServersEntry: React.FC<{ isPanelCollapsed: boolean; selected: boolean }> =
                         defaultDispatcher.fire(Action.ViewHomePage);
                     }}
                 />
+                {otherRooms.length > 0 && (
+                    <ul className="mx_SpaceTreeLevel" role="group" aria-label={_t("common|orphan_rooms")}>
+                        {!isPanelCollapsed && (
+                            <li className="mx_SpaceRoomGroupLabel" role="presentation">
+                                {_t("common|orphan_rooms")}
+                            </li>
+                        )}
+                        <HomeRoomRows rooms={otherRooms} isNarrow={isPanelCollapsed} />
+                    </ul>
+                )}
             </li>
         </>
     );

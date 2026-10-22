@@ -1307,6 +1307,7 @@
         "inbox_preview_toggle": "Show the unread messages in %(roomName)s",
         "mark_all_read": "Mark all read",
         "members": "Members",
+        "messages": "Messages",
         "mute_server": "Mute server",
         "mute_server_failed": {
             "one": "One room could not be changed. Try again.",

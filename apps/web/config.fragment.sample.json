@@ -96,6 +96,7 @@
         "mute_server": true,
         "room_context_menu": true,
         "unified_frame": true,
-        "servers_entry": true
+        "servers_entry": true,
+        "messages_entry": true
     }
 }

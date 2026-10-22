@@ -121,6 +121,12 @@ export interface ConfigOptions extends WebConfigJson {
          * Discover are.
          */
         servers_entry?: boolean;
+        /**
+         * When true (needs `unified_tree`), Home is called Messages in the rail, with a chat icon, and lists only the
+         * direct messages, each with its latest message as a second line. The rooms that are in no space are listed
+         * under the Servers entry (needs `servers_entry`) as Other rooms.
+         */
+        messages_entry?: boolean;
     };
 }
 
