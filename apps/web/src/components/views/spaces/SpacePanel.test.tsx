@@ -27,6 +27,9 @@ import defaultDispatcher from "../../../dispatcher/dispatcher";
 import SdkConfig from "../../../SdkConfig";
 import { setHomeTab, useHomeTab } from "../../structures/HomeTabs";
 import { Action } from "../../../dispatcher/actions";
+import { MessagePreviewStore } from "../../../stores/message-preview";
+import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
+import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
 
 // DND test utilities based on
 // https://github.com/colinrobertbrooks/react-beautiful-dnd-test-utils/issues/18#issuecomment-1373388693
@@ -105,6 +108,9 @@ vi.mock("../../../stores/spaces/SpaceStore", async () => {
     }
     return { default: MockSpaceStore };
 });
+
+// The unified tree adds the user panel, which needs the call store; it has its own tests.
+vi.mock("./UserPanel", () => ({ default: () => null }));
 
 vi.mock("../../../customisations/helpers/UIComponents", () => ({
     shouldShowComponent: vi.fn(),
@@ -221,6 +227,72 @@ describe("<SpacePanel />", () => {
             expect(setActiveSpace).toHaveBeenCalledWith(MetaSpace.Home);
             expect(fire).toHaveBeenCalledWith(Action.ViewHomePage);
             expect(renderHook(() => useHomeTab()).result.current[0]).toBe("servers");
+        });
+    });
+
+    describe("fragment_x.messages_entry", () => {
+        let dm: Room;
+        let lobby: Room;
+
+        // A room's avatar is a button with the room's name too, so count only the tree rows.
+        const rows = (container: HTMLElement, name: string): HTMLElement[] =>
+            within(container)
+                .queryAllByRole("button", { name })
+                .filter((el) => el.classList.contains("mx_SpaceRoomRow"));
+
+        beforeEach(() => {
+            dm = mkStubRoom("!dm:test", "Dana", mockClient);
+            dm.name = "Dana";
+            lobby = mkStubRoom("!lobby:test", "Lobby", mockClient);
+            lobby.name = "Lobby";
+            // The outer beforeEach adds the meta spaces on every test; keep one Home so each row shows once.
+            sdkContext.spaceStore.enabledMetaSpaces.splice(0, Infinity, MetaSpace.Home);
+            const rooms: Record<string, Room> = { [dm.roomId]: dm, [lobby.roomId]: lobby };
+            vi.mocked(mockClient.getRoom).mockImplementation((id) => (id ? (rooms[id] ?? null) : null));
+            (sdkContext.spaceStore as any).getSpaceFilteredRoomIds = () => new Set([dm.roomId, lobby.roomId]);
+            DMRoomMap.setShared({
+                getUserIdForRoomId: (id: string) => (id === dm.roomId ? "@dana:test" : undefined),
+            } as unknown as DMRoomMap);
+            vi.spyOn(MessagePreviewStore.instance, "getPreviewForRoom").mockResolvedValue(null);
+            vi.spyOn(RoomNotificationStateStore.instance, "getRoomState").mockReturnValue(
+                StaticNotificationState.RED_EXCLAMATION as never,
+            );
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+            // Only these spies: restoreAllMocks would also drop the MatrixClientPeg ones the other tests rely on.
+            vi.mocked(MessagePreviewStore.instance.getPreviewForRoom).mockRestore();
+            vi.mocked(RoomNotificationStateStore.instance.getRoomState).mockRestore();
+            vi.mocked(mockClient.getRoom).mockReset();
+            delete (sdkContext.spaceStore as any).getSpaceFilteredRoomIds;
+        });
+
+        it("keeps the Home entry and every room under it without the option", () => {
+            SdkConfig.put({ fragment_x: { unified_tree: true } });
+            render(<SpacePanel />);
+
+            expect(screen.getAllByLabelText("Home").length).toBeGreaterThan(0);
+            expect(screen.queryByLabelText("Messages")).not.toBeInTheDocument();
+            // The panel is collapsed here, so a room shows as an icon with its name as the title.
+            expect(rows(document.body, "Dana")).toHaveLength(1);
+            expect(rows(document.body, "Lobby")).toHaveLength(1);
+        });
+
+        it("calls Home Messages, lists the direct messages under it and the other rooms under Servers", () => {
+            SdkConfig.put({ fragment_x: { unified_tree: true, servers_entry: true, messages_entry: true } });
+            render(<SpacePanel />);
+
+            expect(screen.getByLabelText("Messages")).toBeInTheDocument();
+            expect(screen.queryByLabelText("Home")).not.toBeInTheDocument();
+            const messages = screen.getByLabelText("Messages").closest("[role=treeitem]")!;
+            expect(rows(messages as HTMLElement, "Dana")).toHaveLength(1);
+            expect(rows(messages as HTMLElement, "Lobby")).toHaveLength(0);
+
+            const servers = screen.getByTestId("servers-entry").closest("[role=treeitem]")! as HTMLElement;
+            expect(within(servers).getByRole("group", { name: "Other rooms" })).toBeInTheDocument();
+            expect(rows(servers, "Lobby")).toHaveLength(1);
+            expect(rows(servers, "Dana")).toHaveLength(0);
         });
     });
 

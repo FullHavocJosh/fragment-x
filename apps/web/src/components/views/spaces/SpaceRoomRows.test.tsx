@@ -15,7 +15,15 @@ import userEvent from "@testing-library/user-event";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
 
-import { HomeRoomRows, isUnifiedTree, SpaceRoomRows, sortRoomsForTree, useHomeRooms } from "./SpaceRoomRows";
+import {
+    HomeRoomRows,
+    isMessagesEntry,
+    isUnifiedTree,
+    partitionHomeRooms,
+    SpaceRoomRows,
+    sortRoomsForTree,
+    useHomeRooms,
+} from "./SpaceRoomRows";
 import { SDKContext } from "../../../contexts/SDKContext";
 import { type SDKContextClass } from "../../../contexts/SDKContextClass";
 import MatrixClientContext from "../../../contexts/MatrixClientContext";
@@ -27,6 +35,7 @@ import { StaticNotificationState } from "../../../stores/notifications/StaticNot
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
 import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
+import { MessagePreviewStore } from "../../../stores/message-preview";
 
 // The room list's own view model needs a real room; the menus only need its snapshot and actions.
 const roomItem = vi.hoisted(() => ({
@@ -291,6 +300,91 @@ describe("SpaceRoomRows", () => {
         );
         expect(screen.queryByText("Announcements")).not.toBeInTheDocument();
         expect(screen.getByText("General")).toBeInTheDocument();
+    });
+
+    describe("fragment_x.messages_entry", () => {
+        it("is on only with unified_tree and messages_entry", () => {
+            expect(isMessagesEntry()).toBe(false);
+            SdkConfig.put({ fragment_x: { messages_entry: true } });
+            expect(isMessagesEntry()).toBe(false);
+            SdkConfig.put({ fragment_x: { unified_tree: true, messages_entry: true } });
+            expect(isMessagesEntry()).toBe(true);
+        });
+
+        it("splits the Home rooms into direct messages and the other rooms", () => {
+            const dm = named("!dm:server", "Dana");
+            DMRoomMap.setShared({
+                getUserIdForRoomId: (id: string) => (id === dm.roomId ? "@dana:server" : undefined),
+            } as unknown as DMRoomMap);
+
+            expect(partitionHomeRooms([general, dm, announcements])).toEqual({
+                dms: [dm],
+                others: [general, announcements],
+            });
+        });
+
+        describe("preview line", () => {
+            let previewChanged: (() => void) | undefined;
+
+            const renderPreview = (showPreview: boolean, isNarrow = false) =>
+                render(
+                    <MatrixClientContext.Provider value={cli}>
+                        <SDKContext.Provider
+                            value={
+                                {
+                                    spaceStore,
+                                    roomViewStore: Object.assign(new EventEmitter(), { getRoomId: () => null }),
+                                } as unknown as SDKContextClass
+                            }
+                        >
+                            <ul>
+                                <HomeRoomRows rooms={[general]} showPreview={showPreview} isNarrow={isNarrow} />
+                            </ul>
+                        </SDKContext.Provider>
+                    </MatrixClientContext.Provider>,
+                );
+
+            beforeEach(() => {
+                previewChanged = undefined;
+                vi.spyOn(MessagePreviewStore.instance, "getPreviewForRoom").mockResolvedValue({
+                    text: "that's awesome",
+                } as never);
+                vi.spyOn(MessagePreviewStore.instance, "on").mockImplementation(((_name: string, cb: () => void) => {
+                    previewChanged = cb;
+                    return MessagePreviewStore.instance;
+                }) as never);
+                vi.spyOn(MessagePreviewStore.instance, "off").mockReturnValue(MessagePreviewStore.instance);
+            });
+
+            it("shows the latest message under the name", async () => {
+                renderPreview(true);
+                expect(await screen.findByText("that's awesome")).toBeInTheDocument();
+                expect(screen.getByText("General")).toBeInTheDocument();
+            });
+
+            it("shows a new message when the preview changes", async () => {
+                renderPreview(true);
+                await screen.findByText("that's awesome");
+
+                vi.mocked(MessagePreviewStore.instance.getPreviewForRoom).mockResolvedValue({
+                    text: "see you soon",
+                } as never);
+                act(() => previewChanged?.());
+                expect(await screen.findByText("see you soon")).toBeInTheDocument();
+            });
+
+            it("shows no preview without the option or in a narrow rail", async () => {
+                const { unmount } = renderPreview(false);
+                await act(async () => {});
+                expect(screen.queryByText("that's awesome")).not.toBeInTheDocument();
+                unmount();
+
+                renderPreview(true, true);
+                await act(async () => {});
+                expect(screen.queryByText("that's awesome")).not.toBeInTheDocument();
+                expect(MessagePreviewStore.instance.getPreviewForRoom).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe("fragment_x.unified_frame", () => {

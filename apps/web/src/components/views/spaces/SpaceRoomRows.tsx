@@ -5,9 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, type PropsWithChildren, useContext, useReducer } from "react";
+import React, { type JSX, type PropsWithChildren, useContext, useEffect, useReducer, useState } from "react";
 import classNames from "classnames";
 import { KnownMembership, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
+import { logger } from "matrix-js-sdk/src/logger";
 import {
     RoomListItemContextMenu,
     RoomListItemMoreOptionsMenu,
@@ -24,6 +25,9 @@ import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEm
 import { UPDATE_EVENT } from "../../../stores/AsyncStore";
 import { MetaSpace, UPDATE_HOME_BEHAVIOUR } from "../../../stores/spaces";
 import { RoomListItemViewModel } from "../../../viewmodels/room-list/RoomListItemViewModel";
+import { MessagePreviewStore } from "../../../stores/message-preview";
+import { DefaultTagID } from "../../../stores/room-list-v3/skip-list/tag";
+import DMRoomMap from "../../../utils/DMRoomMap";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import AccessibleButton from "../elements/AccessibleButton";
 import RoomAvatar from "../avatars/RoomAvatar";
@@ -32,6 +36,45 @@ import { NotificationBadge } from "../rooms/NotificationBadge/NotificationBadge"
 /** Whether the Fragment X unified tree (`fragment_x.unified_tree`) is on: rooms are listed under their spaces in the rail. */
 export function isUnifiedTree(): boolean {
     return Boolean(SdkConfig.get().fragment_x?.unified_tree);
+}
+
+/** Whether the Fragment X Messages entry (`fragment_x.messages_entry`) is on: Home lists only direct messages, with a preview line. */
+export function isMessagesEntry(): boolean {
+    return isUnifiedTree() && Boolean(SdkConfig.get().fragment_x?.messages_entry);
+}
+
+/** Splits the Home rooms into direct messages and the other rooms, which are in no space. */
+export function partitionHomeRooms(rooms: Room[]): { dms: Room[]; others: Room[] } {
+    const dmMap = DMRoomMap.shared();
+    const dms: Room[] = [];
+    const others: Room[] = [];
+    for (const room of rooms) (dmMap.getUserIdForRoomId(room.roomId) ? dms : others).push(room);
+    return { dms, others };
+}
+
+/** The text of the latest message of a direct message, kept up to date. Undefined while loading or when there is none. */
+function useLastMessage(room: Room, enabled: boolean): string | undefined {
+    const [text, setText] = useState<string | undefined>();
+    useEffect(() => {
+        if (!enabled) return;
+        let stale = false;
+        const load = (): void => {
+            MessagePreviewStore.instance
+                .getPreviewForRoom(room, DefaultTagID.DM)
+                .then((preview) => {
+                    if (!stale) setText(preview?.text);
+                })
+                .catch((e) => logger.warn(`Could not load the preview of ${room.roomId}`, e));
+        };
+        load();
+        const eventName = MessagePreviewStore.getPreviewChangedEventName(room);
+        MessagePreviewStore.instance.on(eventName, load);
+        return () => {
+            stale = true;
+            MessagePreviewStore.instance.off(eventName, load);
+        };
+    }, [room, enabled]);
+    return text;
 }
 
 /** The joined rooms of a space for the tree: favourites (pinned) first, then by name. */
@@ -60,6 +103,8 @@ interface RowProps {
     spaceKey: string;
     /** The rail shows icons only: the name is left out (and given as the tooltip). */
     isNarrow?: boolean;
+    /** Show the latest message under the name (the Messages entry). */
+    showPreview?: boolean;
 }
 
 /**
@@ -89,7 +134,7 @@ export function isUnifiedFrame(): boolean {
 }
 
 /** A room under its space in the rail tree: avatar, name, unread badge. A click opens the room. */
-export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Element {
+export function SpaceRoomRow({ room, spaceKey, isNarrow, showPreview }: RowProps): JSX.Element {
     const sdkContext = useContext(SDKContext);
     const [, refresh] = useReducer((n: number) => n + 1, 0);
     useEventEmitter(room, RoomEvent.Name, refresh);
@@ -99,12 +144,14 @@ export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Elemen
         () => sdkContext.roomViewStore.getRoomId() === room.roomId,
     );
     const notificationState = RoomNotificationStateStore.instance.getRoomState(room);
+    const lastMessage = useLastMessage(room, Boolean(showPreview) && !isNarrow);
 
     const button = (
         <AccessibleButton
             className={classNames("mx_SpaceRoomRow", {
                 mx_SpaceRoomRow_selected: selected,
                 mx_SpaceRoomRow_narrow: isNarrow,
+                mx_SpaceRoomRow_withPreview: showPreview && !isNarrow,
             })}
             title={isNarrow ? room.name : undefined}
             onClick={() => {
@@ -118,8 +165,13 @@ export function SpaceRoomRow({ room, spaceKey, isNarrow }: RowProps): JSX.Elemen
                 });
             }}
         >
-            <RoomAvatar room={room} size={isUnifiedFrame() ? "16px" : "24px"} />
-            {!isNarrow && <span className="mx_SpaceRoomRow_name">{room.name}</span>}
+            <RoomAvatar room={room} size={isUnifiedFrame() && !showPreview ? "16px" : "24px"} />
+            {!isNarrow && (
+                <span className="mx_SpaceRoomRow_text">
+                    <span className="mx_SpaceRoomRow_name">{room.name}</span>
+                    {showPreview && lastMessage && <span className="mx_SpaceRoomRow_preview">{lastMessage}</span>}
+                </span>
+            )}
             <span className="mx_SpaceRoomRow_badge">
                 <NotificationBadge notification={notificationState} />
             </span>
@@ -174,11 +226,25 @@ export function useHomeRooms(enabled = true): Room[] {
 }
 
 /** The room rows of Home, to be placed inside its tree level list. */
-export function HomeRoomRows({ rooms, isNarrow }: { rooms: Room[]; isNarrow?: boolean }): JSX.Element {
+export function HomeRoomRows({
+    rooms,
+    isNarrow,
+    showPreview,
+}: {
+    rooms: Room[];
+    isNarrow?: boolean;
+    showPreview?: boolean;
+}): JSX.Element {
     return (
         <>
             {rooms.map((room) => (
-                <SpaceRoomRow key={room.roomId} room={room} spaceKey={MetaSpace.Home} isNarrow={isNarrow} />
+                <SpaceRoomRow
+                    key={room.roomId}
+                    room={room}
+                    spaceKey={MetaSpace.Home}
+                    isNarrow={isNarrow}
+                    showPreview={showPreview}
+                />
             ))}
         </>
     );

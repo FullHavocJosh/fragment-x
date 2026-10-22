@@ -484,6 +484,30 @@ Please see LICENSE files in the repository root for full details.
         flex: 0 0 auto;
     }
 
+    /* Fragment X messages_entry: the name with the latest message under it, and the label of the Other rooms group. */
+    .mx_SpaceRoomRow_text {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .mx_SpaceRoomRow_preview {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--cpd-color-text-secondary);
+        font: var(--cpd-font-body-xs-regular);
+    }
+
+    .mx_SpaceRoomGroupLabel {
+        list-style: none;
+        padding: 4px 8px 2px 36px;
+        color: var(--cpd-color-text-secondary);
+        font: var(--cpd-font-body-xs-semibold);
+        text-transform: uppercase;
+    }
+
     /* Fragment X room_context_menu: the three dot button sits over the badge on hover, focus or while its menu is open. */
     .mx_SpaceRoomRow_menuWrapper {
         position: relative;

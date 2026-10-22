@@ -110,6 +110,10 @@ What it sets, all through configuration with no code changes:
   the plus button below them, like Discord's. It opens Home on the Servers tab (needs `home_top_bar`), which lists the
   servers and has Create a space and Discover buttons. The tab shown on Home is shared state, see `useHomeTab` in
   `apps/web/src/components/structures/HomeTabs.tsx`.
+- `fragment_x.messages_entry: true` (needs `unified_tree`; `servers_entry` for the second part): Home is called Messages in
+  the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
+  line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
+  Other rooms. The Home page and its tabs are unchanged.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
