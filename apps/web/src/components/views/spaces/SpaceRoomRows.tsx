@@ -165,7 +165,7 @@ export function SpaceRoomRow({ room, spaceKey, isNarrow, showPreview }: RowProps
                 });
             }}
         >
-            <RoomAvatar room={room} size={isUnifiedFrame() && !showPreview ? "16px" : "24px"} />
+            <RoomAvatar room={room} size={isUnifiedFrame() ? "32px" : "24px"} />
             {!isNarrow && (
                 <span className="mx_SpaceRoomRow_text">
                     <span className="mx_SpaceRoomRow_name">{room.name}</span>

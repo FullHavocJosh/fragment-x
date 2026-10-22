@@ -33,8 +33,8 @@ Please see LICENSE files in the repository root for full details.
 
     /*
      * One icon axis: the icon of every row, whatever its depth, is centred on the same vertical line, so the rail reads as
-     * one column. A space, a subspace, Messages, Servers and a direct message share a 32px slot; a room is half of that
-     * and centres in the same slot. There is no indent; an open space and its rows share a background instead.
+     * one column. A space, a subspace, a room, Messages, Servers and a direct message all have the same 32px icon, so
+     * there is no indent and no size to tell them apart: the highlights below group an open space and its subspaces.
      */
     .mx_SpacePanel {
         /* the centre of the slot: the gutter (14px), the selection padding (4px) and half the icon (16px) */
@@ -79,15 +79,9 @@ Please see LICENSE files in the repository root for full details.
         }
 
         .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {
-            /* a 16px avatar centres on the axis, and the name lines up with the names of the spaces */
-            padding-left: calc(var(--fragmentXRailAxis) - 8px);
-            gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 8px);
-
-            &.mx_SpaceRoomRow_withPreview {
-                /* a direct message has a 24px avatar */
-                padding-left: calc(var(--fragmentXRailAxis) - 12px);
-                gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 12px);
-            }
+            /* a 32px avatar, like a space's, centres on the axis, and the name lines up with the names of the spaces */
+            padding-left: calc(var(--fragmentXRailAxis) - 16px);
+            gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 16px);
         }
 
         .mx_SpaceRoomGroupLabel {
