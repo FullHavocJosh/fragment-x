@@ -10,7 +10,7 @@ Please see LICENSE files in the repository root for full details.
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 import EventEmitter from "node:events";
-import { act, render, screen } from "test-utils-rtl";
+import { act, cleanup, render, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
 import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
@@ -396,6 +396,40 @@ describe("SpaceRoomRows", () => {
         it("keeps the room avatar at 24px by default", () => {
             renderRows();
             expect(roomAvatarWidth()).toBe("24px");
+        });
+
+        const roomAvatarType = (): string | null | undefined =>
+            document.querySelector<HTMLElement>(".mx_SpaceRoomRow .mx_BaseAvatar")?.getAttribute("data-type");
+
+        it("makes a room avatar a rounded square, so an icon that fills its square is not cut off by a circle", () => {
+            renderRows();
+            expect(roomAvatarType()).toBe("round");
+
+            cleanup();
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            renderRows();
+            expect(roomAvatarType()).toBe("square");
+        });
+
+        it("keeps the avatar of a direct message with a preview line round", () => {
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            render(
+                <MatrixClientContext.Provider value={cli}>
+                    <SDKContext.Provider
+                        value={
+                            {
+                                spaceStore,
+                                roomViewStore: Object.assign(new EventEmitter(), { getRoomId: () => null }),
+                            } as unknown as SDKContextClass
+                        }
+                    >
+                        <ul>
+                            <HomeRoomRows rooms={[general]} showPreview />
+                        </ul>
+                    </SDKContext.Provider>
+                </MatrixClientContext.Provider>,
+            );
+            expect(roomAvatarType()).toBe("round");
         });
 
         it("makes the room avatar the size of a space, 32px", () => {
