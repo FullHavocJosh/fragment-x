@@ -31,6 +31,7 @@ import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayo
 import { MessagePreviewStore } from "../../../stores/message-preview";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
+import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
 
 // DND test utilities based on
 // https://github.com/colinrobertbrooks/react-beautiful-dnd-test-utils/issues/18#issuecomment-1373388693
@@ -287,6 +288,43 @@ describe("<SpacePanel />", () => {
 
             expect(rows(document.body, "Dana")).toHaveLength(1);
             SpaceTreeLevelLayoutStore.instance.setSpaceCollapsedState(MetaSpace.Home, undefined, false);
+        });
+
+        it("lists only the pinned and the unread conversations under Messages with pinned_messages, pinned first", () => {
+            const mk = (id: string, name: string, pinned: boolean): Room => {
+                const room = mkStubRoom(id, name, mockClient);
+                room.name = name;
+                room.getLastActiveTimestamp = vi.fn().mockReturnValue(1);
+                (room as unknown as { tags: Record<string, object> }).tags = pinned ? { "m.favourite": {} } : {};
+                return room;
+            };
+            const pinned = mk("!pin:test", "Pinned Pat", true);
+            const unread = mk("!unr:test", "Unread Uma", false);
+            const read = mk("!rd:test", "Read Rex", false);
+            const rooms: Record<string, Room> = {
+                [pinned.roomId]: pinned,
+                [unread.roomId]: unread,
+                [read.roomId]: read,
+            };
+            vi.mocked(mockClient.getRoom).mockImplementation((id) => (id ? (rooms[id] ?? null) : null));
+            (sdkContext.spaceStore as any).getSpaceFilteredRoomIds = () => new Set(Object.keys(rooms));
+            DMRoomMap.setShared({ getUserIdForRoomId: () => "@someone:test" } as unknown as DMRoomMap);
+            vi.mocked(RoomNotificationStateStore.instance.getRoomState).mockImplementation(
+                (room: Room) =>
+                    (room === unread
+                        ? StaticNotificationState.forCount(2, NotificationLevel.Notification)
+                        : StaticNotificationState.forCount(0, NotificationLevel.None)) as never,
+            );
+            SdkConfig.put({
+                fragment_x: { unified_tree: true, messages_entry: true, pinned_messages: true },
+            });
+            render(<SpacePanel />);
+
+            // a narrow rail has the name as the accessible label and an open one as text
+            const names = [...document.querySelectorAll(".mx_SpaceRoomRow")].map(
+                (row) => row.getAttribute("aria-label") ?? row.querySelector(".mx_SpaceRoomRow_name")?.textContent,
+            );
+            expect(names).toEqual(["Pinned Pat", "Unread Uma"]);
         });
 
         it("calls Home Messages, lists the direct messages under it and the other rooms under Servers", () => {

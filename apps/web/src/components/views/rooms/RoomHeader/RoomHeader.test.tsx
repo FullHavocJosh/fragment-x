@@ -42,6 +42,7 @@ import { filterConsole, setupAsyncStoreWithClient, stubClient } from "test-utils
 
 import RoomHeader from "./RoomHeader";
 import DMRoomMap from "../../../../utils/DMRoomMap";
+import { tagRoom } from "../../../../utils/room/tagRoom";
 import { MatrixClientPeg } from "../../../../MatrixClientPeg";
 import { ScopedRoomContextProvider } from "../../../../contexts/ScopedRoomContext";
 import RoomContext, { type RoomContextType } from "../../../../contexts/RoomContext";
@@ -70,6 +71,7 @@ vi.mock("../../../../hooks/right-panel/useCurrentPhase", () => ({
     },
 }));
 vi.mock("../../../../Modal");
+vi.mock("../../../../utils/room/tagRoom", () => ({ tagRoom: vi.fn() }));
 
 // The room list's own view model needs a real room; the menus only need its snapshot and actions.
 const roomItem = vi.hoisted(() => ({
@@ -281,6 +283,51 @@ describe("RoomHeader", () => {
         it("keeps both buttons without the option", () => {
             const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
             expect(getAllByRole("button", { name: "Room info" })).toHaveLength(2);
+        });
+    });
+
+    describe("Fragment X pinned_messages", () => {
+        beforeEach(() => {
+            vi.mocked(DMRoomMap.shared().getUserIdForRoomId).mockImplementation((roomId) => {
+                if (roomId === room.roomId) return "@user:example.com";
+            });
+            room.getMember = vi.fn((userId) => new RoomMember(room.roomId, userId));
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+            vi.mocked(tagRoom).mockClear();
+            (room as unknown as { tags: object }).tags = {};
+        });
+
+        it("has no pin button without the option", () => {
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+            expect(queryByRole("button", { name: /Pin conversation/ })).not.toBeInTheDocument();
+        });
+
+        it("has a pin button for a direct message that toggles the favourite tag", async () => {
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            const user = userEvent.setup();
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            await user.click(getByRole("button", { name: "Pin conversation" }));
+            expect(tagRoom).toHaveBeenCalledWith(room, "m.favourite");
+        });
+
+        it("shows a pinned conversation as pressed, with the label to unpin it", () => {
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            (room as unknown as { tags: object }).tags = { "m.favourite": {} };
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(getByRole("button", { name: "Unpin conversation" })).toHaveAttribute("aria-pressed", "true");
+        });
+
+        it("has no pin button in a room that is not a direct message", () => {
+            vi.mocked(DMRoomMap.shared().getUserIdForRoomId).mockReturnValue(undefined);
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(queryByRole("button", { name: /Pin conversation/ })).not.toBeInTheDocument();
         });
     });
 

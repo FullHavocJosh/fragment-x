@@ -105,13 +105,15 @@ What it sets, all through configuration with no code changes:
   the composer is a 24px glyph in a 32px button. Spaces, subspaces and rooms in the rail all have the same 32px icon.
   Every icon in the rail is centred on one vertical axis and every name starts at the same x: there is no indent for
   subspaces and rooms; an open space and its rows share a highlight and each open subspace with its rooms has a second,
-  darker one inset in it instead. The Inbox, the user's avatar (32px too) and the names beside them use the same axis and text offset. There are no arrows and no selection or unread pills in the left column: a space opens when the selection is in it (the selected space and the spaces around it; the others are closed), clicking the selected space again closes it and a third click opens it, and Messages always lists its conversations. A room's avatar is a rounded square, so an icon that fills its square is not cut off; people stay round. The frame is a grid of square cells as wide as the rail (68px): the top bar is one cell high, so the search icon is
+  darker one inset in it instead. The Inbox, the user's avatar (32px too) and the names beside them use the same axis and text offset. There are no arrows and no selection or unread pills in the left column: a space opens when the selection is in it (the selected space and the spaces around it; the others are closed), clicking the selected space again closes it and a third click opens it, and Messages always lists its conversations. Every user, space, subspace and room icon is a circle, and a rounded square while the pointer is over it or it is selected. The frame is a grid of square cells as wide as the rail (68px): the top bar is one cell high, so the search icon is
   centred on both the rail column and the bar next to it, an icon at the right end of the bar is as far from the edge as
   the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom.
   Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
   Every icon that is not a person, a space or a room (Search, Collapse, Inbox, settings, the icons in the top bar) has the
   same hover: no box, the icon brightens and glows. The highlights around a space and around a subspace have 4px between
-  them and what is next to them or inside them. The styles are in
+  them and what is next to them or inside them, and the selected or hover highlight of every row (a space, a subspace, a
+  room, a direct message) ends 14px from each edge of the rail, so it is inside the trays; in the icons only rail it is a
+  40px tile. The styles are in
   `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
   adds.
 - `fragment_x.servers_entry: true`: the rail has a Servers entry (a grid icon) above the servers, after a divider, in place of
@@ -122,6 +124,11 @@ What it sets, all through configuration with no code changes:
   the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
   line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
   Other rooms. The Home page and its tabs are unchanged.
+- `fragment_x.pinned_messages: true` (needs `messages_entry`): Messages lists only the conversations that matter: the pinned
+  direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it does not
+  vanish while it is read. The other conversations are still on the Home page, under People. A pin button in the room
+  header of a direct message pins it; a pin is the room's favourite tag (the same as Favourite in the context menu and in
+  other clients). See `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined

@@ -152,6 +152,11 @@ Please see LICENSE files in the repository root for full details.
             padding-left: 0;
         }
 
+        /* the tree is as wide as the rail (it stopped 22px short), so the trays and rows are inset the same on both sides */
+        .mx_SpaceTreeLevel {
+            max-width: none;
+        }
+
         /*
          * Two levels of highlight: an open space and everything under it share one, and each open subspace with its rooms
          * has a second, darker one inset in it, so a subspace reads as a tray inside its space.
@@ -180,19 +185,49 @@ Please see LICENSE files in the repository root for full details.
             }
         }
 
-        /* In the icons only rail a room is a centred tile, so its highlight stays inside the group's. */
-        .mx_SpaceRoomRow.mx_SpaceRoomRow_narrow {
-            width: 36px;
-            margin: 0 auto;
-            padding: 3px 0;
-            /* no gap before the (empty) badge, so nothing pushes the avatar off the axis */
+        /*
+         * Every row's highlight (selected, hover) ends 14px from each edge of the rail, whatever the row is and however
+         * deep it is, with the 4px of padding round its 32px icon: it is inside the group trays (which are 6px and 10px
+         * from the edge), and as high as a space's row. In the icons only rail it is a 40px tile.
+         */
+        --fragmentXRowInset: calc(var(--fragmentXRailAxis) - 16px - 4px);
+
+        .mx_SpaceRoomItem {
+            box-sizing: border-box;
+            padding-inline: var(--fragmentXRowInset);
+        }
+
+        /* (under .mx_SpaceRoomItem to win over the rail's own row padding) */
+        .mx_SpaceRoomItem .mx_SpaceRoomRow {
+            box-sizing: border-box;
+            width: 100%;
+            padding-block: 4px;
+        }
+
+        /* no gap before the (empty) badge, so nothing pushes the avatar off the axis; 40px high like a space's row */
+        .mx_SpaceRoomItem .mx_SpaceRoomRow.mx_SpaceRoomRow_narrow {
+            padding: 4px 0;
             gap: 0;
         }
 
         .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {
-            /* a 32px avatar, like a space's, centres on the axis, and the name lines up with the names of the spaces */
-            padding-left: calc(var(--fragmentXRailAxis) - 16px);
+            /* the avatar is 4px inside the highlight, on the axis, and the name lines up with the names of the spaces */
+            padding-left: 4px;
             gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 16px);
+        }
+
+        /* a space's highlight is symmetric too: the same inset on the right as on the left */
+        .mx_SpaceItem:not(.mx_SpaceItem_narrow) > .mx_SpaceButton {
+            padding-right: var(--fragmentXRowInset);
+
+            .mx_SpaceButton_selectionWrapper {
+                flex: 1 1 auto;
+                width: auto;
+            }
+        }
+
+        .mx_SpaceItem:not(.mx_SpaceItem_narrow):not(.hasSubSpaces) > .mx_SpaceButton {
+            width: calc(100% - var(--fragmentXRowInset));
         }
 
         .mx_SpaceRoomGroupLabel {
@@ -200,11 +235,25 @@ Please see LICENSE files in the repository root for full details.
         }
 
         /*
-         * A room's icon often fills its square, so it keeps its corners: the square avatar type rounds by 25% (8px at
-         * this size), which cuts the corners off. People (direct messages) stay round.
+         * One shape for every user, space, subspace and room icon: a circle, and a rounded square while the pointer is
+         * over it or it is selected (the spaces do this in _SpacePanel.pcss; rooms, direct messages and the user's own
+         * avatar here).
          */
-        .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_withPreview) .mx_BaseAvatar {
-            --cpd-avatar-radius: 4px;
+        .mx_SpaceRoomRow .mx_BaseAvatar,
+        .mx_UserPanel_menu [style*="--cpd-avatar-size"] {
+            --cpd-avatar-radius: 50%;
+            transition: border-radius 0.15s ease-out;
+
+            img {
+                transition: border-radius 0.15s ease-out;
+            }
+        }
+
+        .mx_SpaceRoomRow:hover .mx_BaseAvatar,
+        .mx_SpaceRoomRow.mx_SpaceRoomRow_selected .mx_BaseAvatar,
+        .mx_UserPanel_menu > button:hover [style*="--cpd-avatar-size"],
+        .mx_UserPanel_menu > button[aria-expanded="true"] [style*="--cpd-avatar-size"] {
+            --cpd-avatar-radius: 30%;
         }
 
         /*

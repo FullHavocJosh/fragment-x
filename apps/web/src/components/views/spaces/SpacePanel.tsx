@@ -44,10 +44,12 @@ import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
 import {
     HomeRoomRows,
     isMessagesEntry,
+    isPinnedMessages,
     isUnifiedFrame,
     isUnifiedTree,
     partitionHomeRooms,
     useHomeRooms,
+    useMessagesRooms,
 } from "./SpaceRoomRows";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
 import UserPanel from "./UserPanel";
@@ -187,7 +189,9 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
     const allHomeRooms = useHomeRooms(unified);
     // Fragment X messages entry: Home is called Messages and lists only the direct messages, each with its last message.
     const messages = isMessagesEntry();
-    const homeRooms = messages ? partitionHomeRooms(allHomeRooms).dms : allHomeRooms;
+    const dmRooms = messages ? partitionHomeRooms(allHomeRooms).dms : allHomeRooms;
+    // Fragment X pinned messages: only the pinned and the unread conversations, the pinned ones first
+    const homeRooms = useMessagesRooms(dmRooms, isPinnedMessages());
     const homeLabel = messages ? _t("fragment_x|messages") : getMetaSpaceName(MetaSpace.Home, allRoomsInHome);
     const [storedTreeCollapsed, setTreeCollapsed] = useState(() =>
         SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(MetaSpace.Home, undefined, false),

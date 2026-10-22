@@ -1319,11 +1319,13 @@
         "no_pending": "No pending invites.",
         "no_servers": "You have not joined any servers yet.",
         "pending": "Pending",
+        "pin_conversation": "Pin conversation",
         "pinned": "Pinned",
         "servers": "Servers",
         "space_muted": "Muted",
         "unblock": "Unblock",
         "unmute_server": "Unmute server",
+        "unpin_conversation": "Unpin conversation",
         "unread_activity": "New activity in %(rooms)s",
         "unread_messages": {
             "one": "1 new message",

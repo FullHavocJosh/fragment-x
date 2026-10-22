@@ -98,6 +98,7 @@
         "unified_frame": true,
         "servers_entry": true,
         "messages_entry": true,
-        "server_unread": true
+        "server_unread": true,
+        "pinned_messages": true
     }
 }
