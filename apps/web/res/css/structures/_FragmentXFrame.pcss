@@ -87,5 +87,43 @@ Please see LICENSE files in the repository root for full details.
         .mx_SpaceRoomGroupLabel {
             padding-left: var(--fragmentXRailText);
         }
+
+        /* The bottom column (Inbox, settings, the user's avatar) is on the same axis as the rail's icons. */
+        .mx_ThreadsActivityCentreButton.expanded {
+            /* 4px of button padding, then the 24px glyph, centred on the axis */
+            margin-left: calc(var(--fragmentXRailAxis) - 16px);
+
+            /* and the label starts where the names of the spaces do */
+            .mx_ThreadsActivityCentreButton_Icon {
+                margin-right: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 12px);
+            }
+        }
+
+        .mx_UserPanel:not(.mx_UserPanel_compact) {
+            padding-left: calc(var(--fragmentXRailAxis) - 16px);
+        }
+
+        .mx_UserPanel_menu {
+            /* the shared user menu gives its avatar button side margins; the panel's padding places it instead */
+            > button {
+                /* the 8px after the avatar puts the name where the names of the spaces start */
+                margin: 0 8px 0 0;
+                padding: 0;
+            }
+
+            /* the same 32px as the other icons (the shared avatar is 36px) */
+            [style*="--cpd-avatar-size"] {
+                --cpd-avatar-size: 32px !important;
+            }
+        }
+
+        .mx_UserPanel_compact .mx_UserPanel_menu {
+            flex: 0 0 auto;
+
+            /* icons only: no name, so no gap after the avatar to push it off the axis */
+            > button {
+                margin-right: 0;
+            }
+        }
     }
 }
