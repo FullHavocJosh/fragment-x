@@ -129,6 +129,12 @@ export interface ConfigOptions extends WebConfigJson {
          */
         messages_entry?: boolean;
         /**
+         * When true (needs `messages_entry`), Messages lists only the pinned direct messages, first, and the unread ones
+         * under them, plus the one that is open. A pin button in the room header of a direct message pins it (the room's
+         * favourite tag, so it is the same in every client).
+         */
+        pinned_messages?: boolean;
+        /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */

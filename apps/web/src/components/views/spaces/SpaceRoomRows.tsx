@@ -28,7 +28,12 @@ import { RoomListItemViewModel } from "../../../viewmodels/room-list/RoomListIte
 import { MessagePreviewStore } from "../../../stores/message-preview";
 import { DefaultTagID } from "../../../stores/room-list-v3/skip-list/tag";
 import DMRoomMap from "../../../utils/DMRoomMap";
-import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
+import {
+    RoomNotificationStateStore,
+    UPDATE_STATUS_INDICATOR,
+} from "../../../stores/notifications/RoomNotificationStateStore";
+import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
+import { isPinnedRoom } from "../../../utils/room/isPinnedRoom";
 import AccessibleButton from "../elements/AccessibleButton";
 import RoomAvatar from "../avatars/RoomAvatar";
 import { NotificationBadge } from "../rooms/NotificationBadge/NotificationBadge";
@@ -41,6 +46,39 @@ export function isUnifiedTree(): boolean {
 /** Whether the Fragment X Messages entry (`fragment_x.messages_entry`) is on: Home lists only direct messages, with a preview line. */
 export function isMessagesEntry(): boolean {
     return isUnifiedTree() && Boolean(SdkConfig.get().fragment_x?.messages_entry);
+}
+
+/** Whether the pinned list of Messages is on (`fragment_x.pinned_messages`, with the Messages entry). */
+export function isPinnedMessages(): boolean {
+    return isMessagesEntry() && Boolean(SdkConfig.get().fragment_x?.pinned_messages);
+}
+
+/** Whether a room has unread messages or activity. A muted room does not count. */
+export function isUnreadRoom(room: Room): boolean {
+    const state = RoomNotificationStateStore.instance.getRoomState(room);
+    return state.level !== NotificationLevel.Muted && (state.isUnread || state.hasUnreadCount);
+}
+
+/**
+ * The direct messages that Messages lists: the pinned ones first, by name, then the unread ones, newest first, then the
+ * open one if it is neither (so the conversation being read does not vanish from the list).
+ */
+export function selectMessagesRooms(dms: Room[], openRoomId?: string | null): Room[] {
+    const pinned = dms.filter(isPinnedRoom).sort((a, b) => a.name.localeCompare(b.name));
+    const unread = dms
+        .filter((room) => !isPinnedRoom(room) && isUnreadRoom(room))
+        .sort((a, b) => b.getLastActiveTimestamp() - a.getLastActiveTimestamp());
+    const open = dms.find((room) => room.roomId === openRoomId && !isPinnedRoom(room) && !isUnreadRoom(room));
+    return open ? [...pinned, ...unread, open] : [...pinned, ...unread];
+}
+
+/** The rooms Messages lists: the pinned and unread direct messages, kept up to date; all of them when it is off. */
+export function useMessagesRooms(dms: Room[], enabled: boolean): Room[] {
+    const sdkContext = useContext(SDKContext);
+    const [, refresh] = useReducer((n: number) => n + 1, 0);
+    useEventEmitter(enabled ? sdkContext.roomNotificationStateStore : undefined, UPDATE_STATUS_INDICATOR, refresh);
+    useEventEmitter(enabled ? sdkContext.roomViewStore : undefined, UPDATE_EVENT, refresh);
+    return enabled ? selectMessagesRooms(dms, sdkContext.roomViewStore.getRoomId()) : dms;
 }
 
 /** Splits the Home rooms into direct messages and the other rooms, which are in no space. */

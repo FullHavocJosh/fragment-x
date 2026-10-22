@@ -124,6 +124,11 @@ What it sets, all through configuration with no code changes:
   the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
   line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
   Other rooms. The Home page and its tabs are unchanged.
+- `fragment_x.pinned_messages: true` (needs `messages_entry`): Messages lists only the conversations that matter: the pinned
+  direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it does not
+  vanish while it is read. The other conversations are still on the Home page, under People. A pin button in the room
+  header of a direct message pins it; a pin is the room's favourite tag (the same as Favourite in the context menu and in
+  other clients). See `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined

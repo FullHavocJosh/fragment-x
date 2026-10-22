@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type JSX, useCallback, useContext, useState } from "react";
+import React, { type JSX, useCallback, useContext, useReducer, useState } from "react";
 import { Text, Button, IconButton, Menu, MenuItem, Tooltip } from "@vector-im/compound-web";
 import VideoCallIcon from "@vector-im/compound-design-tokens/assets/web/icons/video-call-solid";
 import VoiceCallIcon from "@vector-im/compound-design-tokens/assets/web/icons/voice-call-solid";
@@ -18,7 +18,9 @@ import NotificationsIcon from "@vector-im/compound-design-tokens/assets/web/icon
 import VerifiedIcon from "@vector-im/compound-design-tokens/assets/web/icons/verified";
 import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-solid";
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
-import { HistoryVisibility, JoinRule, type Room } from "matrix-js-sdk/src/matrix";
+import PinIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin";
+import PinSolidIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin-solid";
+import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
 import {
     Flex,
@@ -64,6 +66,10 @@ import { useIsEncrypted } from "../../../../hooks/useIsEncrypted.ts";
 import { useUserStatus } from "../../../../hooks/useUserStatus.ts";
 import { SDKContext } from "../../../../contexts/SDKContext.ts";
 import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomListItemViewModel.ts";
+import { isPinnedRoom } from "../../../../utils/room/isPinnedRoom";
+import { tagRoom } from "../../../../utils/room/tagRoom";
+import { DefaultTagID } from "../../../../stores/room-list-v3/skip-list/tag";
+import { useEventEmitter } from "../../../../hooks/useEventEmitter";
 
 /**
  * Fragment X (`fragment_x.room_context_menu`): a bell with the room's notification settings, the same menu as the room
@@ -72,6 +78,25 @@ import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomList
 function RoomNotificationBell({ room }: { room: Room }): JSX.Element {
     const vm = useCreateAutoDisposedViewModel(() => new RoomListItemViewModel({ room, client: room.client }));
     return <RoomListItemNotificationMenu vm={vm} size="32px" />;
+}
+
+/**
+ * Fragment X (`fragment_x.pinned_messages`): pins the open direct message to the top of the Messages list in the rail. A
+ * pin is the room's favourite tag, so it is the same in every client.
+ */
+function RoomPinButton({ room }: { room: Room }): JSX.Element {
+    const [, refresh] = useReducer((n: number) => n + 1, 0);
+    useEventEmitter(room.client, RoomEvent.Tags, refresh);
+    const pinned = isPinnedRoom(room);
+    const label = pinned ? _t("fragment_x|unpin_conversation") : _t("fragment_x|pin_conversation");
+
+    return (
+        <Tooltip label={label}>
+            <IconButton aria-label={label} aria-pressed={pinned} onClick={() => tagRoom(room, DefaultTagID.Favourite)}>
+                {pinned ? <PinSolidIcon /> : <PinIcon />}
+            </IconButton>
+        </Tooltip>
+    );
 }
 
 function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: JSX.Element }): JSX.Element {
@@ -336,6 +361,9 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     <ToggleableIcon Icon={ThreadsIcon} phase={RightPanelPhases.ThreadPanel} />
                 </IconButton>
             </Tooltip>
+            {isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
+                <RoomPinButton key={room.roomId} room={room} />
+            )}
             {SdkConfig.get().fragment_x?.room_context_menu && <RoomNotificationBell key={room.roomId} room={room} />}
             {notificationsEnabled && (
                 <Tooltip label={_t("notifications|enable_prompt_toast_title")}>

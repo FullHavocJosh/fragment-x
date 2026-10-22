@@ -18,8 +18,10 @@ import { mkStubRoom, stubClient } from "test-utils";
 import {
     HomeRoomRows,
     isMessagesEntry,
+    isPinnedMessages,
     isUnifiedTree,
     partitionHomeRooms,
+    selectMessagesRooms,
     SpaceRoomRows,
     sortRoomsForTree,
     useHomeRooms,
@@ -300,6 +302,65 @@ describe("SpaceRoomRows", () => {
         );
         expect(screen.queryByText("Announcements")).not.toBeInTheDocument();
         expect(screen.getByText("General")).toBeInTheDocument();
+    });
+
+    describe("fragment_x.pinned_messages", () => {
+        const dm = (id: string, name: string, lastActive: number, pinned = false): Room => {
+            const room = named(id, name);
+            room.getLastActiveTimestamp = vi.fn().mockReturnValue(lastActive);
+            (room as unknown as { tags: Record<string, object> }).tags = pinned ? { "m.favourite": {} } : {};
+            return room;
+        };
+        const unreadIds = (ids: string[], muted: string[] = []): void => {
+            vi.spyOn(RoomNotificationStateStore.instance, "getRoomState").mockImplementation(
+                (room: Room) =>
+                    (muted.includes(room.roomId)
+                        ? StaticNotificationState.forCount(3, NotificationLevel.Muted)
+                        : ids.includes(room.roomId)
+                          ? StaticNotificationState.forCount(2, NotificationLevel.Notification)
+                          : StaticNotificationState.forCount(0, NotificationLevel.None)) as never,
+            );
+        };
+
+        it("is on only with unified_tree, messages_entry and pinned_messages", () => {
+            expect(isPinnedMessages()).toBe(false);
+            SdkConfig.put({ fragment_x: { unified_tree: true, messages_entry: true } });
+            expect(isPinnedMessages()).toBe(false);
+            SdkConfig.put({ fragment_x: { unified_tree: true, messages_entry: true, pinned_messages: true } });
+            expect(isPinnedMessages()).toBe(true);
+        });
+
+        it("lists the pinned conversations first by name, then the unread ones, newest first", () => {
+            const zed = dm("!zed:s", "Zed", 5, true);
+            const ann = dm("!ann:s", "Ann", 1, true);
+            const old = dm("!old:s", "Old", 10);
+            const fresh = dm("!fresh:s", "Fresh", 30);
+            const read = dm("!read:s", "Read", 20);
+            unreadIds(["!old:s", "!fresh:s", "!zed:s"]);
+
+            expect(selectMessagesRooms([old, zed, read, fresh, ann]).map((r) => r.name)).toEqual([
+                "Ann",
+                "Zed",
+                "Fresh",
+                "Old",
+            ]);
+        });
+
+        it("keeps a conversation that is pinned and unread in the pinned part only", () => {
+            const pinned = dm("!p:s", "Pinned", 5, true);
+            unreadIds(["!p:s"]);
+            expect(selectMessagesRooms([pinned])).toEqual([pinned]);
+        });
+
+        it("leaves out a muted conversation, and keeps the open one while it is read", () => {
+            const muted = dm("!m:s", "Muted", 5);
+            const open = dm("!o:s", "Open", 1);
+            const other = dm("!x:s", "Other", 2);
+            unreadIds([], ["!m:s"]);
+
+            expect(selectMessagesRooms([muted, open, other], "!o:s")).toEqual([open]);
+            expect(selectMessagesRooms([muted, open, other])).toEqual([]);
+        });
     });
 
     describe("fragment_x.messages_entry", () => {
