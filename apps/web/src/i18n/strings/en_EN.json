@@ -1324,6 +1324,16 @@
         "space_muted": "Muted",
         "unblock": "Unblock",
         "unmute_server": "Unmute server",
+        "unread_activity": "New activity in %(rooms)s",
+        "unread_messages": {
+            "one": "1 new message",
+            "other": "%(count)s new messages"
+        },
+        "unread_rooms": {
+            "one": "1 room",
+            "other": "%(count)s rooms"
+        },
+        "unread_summary": "%(messages)s in %(rooms)s",
         "unread_threads": "Unread threads"
     },
     "identity_server": {

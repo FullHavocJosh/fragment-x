@@ -46,7 +46,11 @@ Please see LICENSE files in the repository root for full details.
             padding-left: 0;
         }
 
-        .mx_SpaceItem.hasSubSpaces:not(.collapsed):not(.mx_SpaceItem_subspace) {
+        /*
+         * Two levels of highlight: an open space and everything under it share one, and each open subspace with its rooms
+         * has a second, darker one inset in it, so a subspace reads as a tray inside its space.
+         */
+        .mx_SpaceItem.hasSubSpaces:not(.collapsed) {
             position: relative;
             isolation: isolate;
 
@@ -59,6 +63,19 @@ Please see LICENSE files in the repository root for full details.
                 border-radius: 16px;
                 background-color: var(--cpd-color-bg-subtle-secondary);
             }
+
+            &.mx_SpaceItem_subspace::before {
+                inset: 0 10px;
+                border-radius: 14px;
+                background-color: var(--cpd-color-bg-subtle-primary);
+            }
+        }
+
+        /* In the icons only rail a room is a centred tile, so its highlight stays inside the group's. */
+        .mx_SpaceRoomRow.mx_SpaceRoomRow_narrow {
+            width: 36px;
+            margin: 0 auto;
+            padding: 3px 0;
         }
 
         .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {

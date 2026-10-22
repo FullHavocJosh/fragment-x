@@ -104,7 +104,7 @@ What it sets, all through configuration with no code changes:
   one frame around the chat (the colour editor's Server rail colour sets both). Every icon in the rail, the room header and
   the composer is a 24px glyph in a 32px button. Spaces and subspaces have the same icon size (32px) and a room in the
   tree has half that size (16px). Every icon in the rail is centred on one vertical axis and every name starts at the
-  same x: there is no indent for subspaces and rooms, an open space and its rows share a background instead. The styles
+  same x: there is no indent for subspaces and rooms; an open space and its rows share a highlight and each open subspace with its rooms has a second, darker one inset in it instead. The styles
   are in
   `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
   adds.
@@ -116,6 +116,11 @@ What it sets, all through configuration with no code changes:
   the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
   line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
   Other rooms. The Home page and its tabs are unchanged.
+- `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
+  in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
+  rooms have only unread activity and no count). The numbers are added up from the notification state of each joined
+  room of the space and its subspaces, so muted rooms count for nothing; see `useSpaceUnread` in
+  `apps/web/src/hooks/useSpaceUnread.ts`. A selected server keeps its tall pill.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
