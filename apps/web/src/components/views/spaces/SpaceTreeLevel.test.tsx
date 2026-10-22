@@ -381,6 +381,80 @@ describe("SpaceItem", () => {
         });
     });
 
+    describe("opening on selection (fragment_x.unified_frame)", () => {
+        const other = mkRoom(cli, "!3:example.org");
+        other.name = "Other Space";
+
+        const renderItem = (activeSpaces: string[]): ReturnType<typeof render> => {
+            vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>
+                spaceId === space.roomId ? [subspace] : [],
+            );
+            Object.assign(SDKContextClass.instance.spaceStore, {
+                getChildRooms: vi.fn().mockReturnValue([]),
+                // the subspace is inside the space
+                getKnownParents: vi.fn((id: string) => new Set(id === subspace.roomId ? [space.roomId] : [])),
+            });
+            return render(
+                <SpaceItem space={space} activeSpaces={activeSpaces} />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+        };
+        const isOpen = (): boolean => screen.queryByText("Subspace") !== null;
+
+        beforeEach(() => {
+            localStorage.clear();
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("is closed when the selection is elsewhere", () => {
+            renderItem([other.roomId]);
+            expect(isOpen()).toBe(false);
+        });
+
+        it("is open when it is selected, and when a space inside it is", () => {
+            const { unmount } = renderItem([space.roomId]);
+            expect(isOpen()).toBe(true);
+            unmount();
+
+            renderItem([subspace.roomId]);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("closes when the selected space is selected again, and opens on a third click", () => {
+            renderItem([space.roomId]);
+            const button = screen.getByRole("button", { name: "Root Space" });
+
+            fireEvent.click(button);
+            expect(isOpen()).toBe(false);
+            fireEvent.click(button);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("keeps a choice made by hand only until another space is selected", () => {
+            const { rerender } = renderItem([space.roomId]);
+            fireEvent.click(screen.getByRole("button", { name: "Root Space" }));
+            expect(isOpen()).toBe(false);
+
+            const again = (active: string[]) => rerender(<SpaceItem space={space} activeSpaces={active} />);
+            again([other.roomId]);
+            expect(isOpen()).toBe(false);
+            again([space.roomId]);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("hides nothing by hand without the option: the arrow still toggles as before", () => {
+            SdkConfig.reset();
+            renderItem([space.roomId]);
+            expect(isOpen()).toBe(false);
+            fireEvent.click(screen.getByLabelText("Expand"));
+            expect(isOpen()).toBe(true);
+        });
+    });
+
     describe("opening a space in an icons-only rail", () => {
         const renderNarrow = (onExpand: () => void) => {
             vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>

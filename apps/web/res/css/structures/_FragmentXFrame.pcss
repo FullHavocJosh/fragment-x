@@ -76,6 +76,8 @@ Please see LICENSE files in the repository root for full details.
             width: 36px;
             margin: 0 auto;
             padding: 3px 0;
+            /* no gap before the (empty) badge, so nothing pushes the avatar off the axis */
+            gap: 0;
         }
 
         .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_narrow) {
@@ -86,6 +88,36 @@ Please see LICENSE files in the repository root for full details.
 
         .mx_SpaceRoomGroupLabel {
             padding-left: var(--fragmentXRailText);
+        }
+
+        /*
+         * A room's icon often fills its square, so it keeps its corners: the square avatar type rounds by 25% (8px at
+         * this size), which cuts the corners off. People (direct messages) stay round.
+         */
+        .mx_SpaceRoomRow:not(.mx_SpaceRoomRow_withPreview) .mx_BaseAvatar {
+            --cpd-avatar-radius: 4px;
+        }
+
+        /*
+         * An avatar is never squeezed: in the icons only rail a row is 36px wide and held the 32px avatar, an 8px gap and
+         * the (empty) badge, so the avatar shrank to about 28px wide and kept its 32px height, which crops its sides.
+         */
+        .mx_SpaceRoomRow .mx_BaseAvatar {
+            flex: none;
+        }
+
+        /*
+         * No arrows and no pills in the left column: a space opens when the selection is in it (see SpaceItem), the
+         * selected server shows as a rounded square, and what is unread shows in the badge and the summary line.
+         */
+        .mx_SpaceButton_toggleCollapse {
+            /* hidden, not removed: its width keeps the gutter that puts the icon on the axis */
+            visibility: hidden;
+        }
+
+        .mx_SpaceButton.mx_SpaceButton_active .mx_SpaceButton_selectionWrapper::before,
+        .mx_SpaceButton.mx_SpaceButton_unread .mx_SpaceButton_selectionWrapper::before {
+            display: none;
         }
 
         /* The bottom column (Inbox, settings, the user's avatar) is on the same axis as the rail's icons. */

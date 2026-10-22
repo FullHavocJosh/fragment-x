@@ -234,6 +234,8 @@ interface IItemState {
     childSpaces: Room[];
     /** Fragment X unified tree: the number of joined rooms directly in the space. */
     childRoomCount: number;
+    /** Fragment X unified frame: the user opened or closed the space by hand, until another space is selected. */
+    override?: "open" | "closed";
 }
 
 export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
@@ -257,6 +259,13 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             childSpaces: this.childSpaces,
             childRoomCount: this.childRoomCount,
         };
+    }
+
+    public componentDidUpdate(prevProps: IItemProps): void {
+        // A choice made by hand lasts until another space is selected.
+        if (this.state.override && prevProps.activeSpaces.join(",") !== this.props.activeSpaces.join(",")) {
+            this.setState({ override: undefined });
+        }
     }
 
     public componentDidMount(): void {
@@ -294,12 +303,30 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             : 0;
     }
 
+    /** Whether the selected space is this space or inside it, so that it is on the way to the selection. */
+    private get isOnActivePath(): boolean {
+        const id = this.props.space.roomId;
+        return this.props.activeSpaces.some(
+            (active) => active === id || this.context.spaceStore.getKnownParents(active, true).has(id),
+        );
+    }
+
     private get isCollapsed(): boolean {
+        // Fragment X unified frame: there are no arrows; a space is open when the selection is in it, unless the user
+        // chose otherwise since selecting it.
+        if (isUnifiedFrame()) {
+            return this.state.override ? this.state.override === "closed" : !this.isOnActivePath;
+        }
         // In the unified tree the rail keeps its tree when it shows icons only, so a narrow rail does not collapse it.
         return this.state.collapsed || (!!this.props.isPanelCollapsed && !isUnifiedTree());
     }
 
-    private toggleCollapse = (evt: ButtonEvent): void => {
+    private toggleCollapse = (evt?: ButtonEvent): void => {
+        if (isUnifiedFrame()) {
+            this.setState({ override: this.isCollapsed ? "open" : "closed" });
+            evt?.stopPropagation();
+            return;
+        }
         // Fragment X unified tree: opening a space only opens that space; the rail's own Expand and Collapse button
         // is what shows or hides the names, so a space must not widen an icons-only rail.
         if (this.props.onExpand && this.isCollapsed && !isUnifiedTree()) {
@@ -315,7 +342,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
         this.setState({ collapsed: newCollapsedState });
         // don't bubble up so encapsulating button for space
         // doesn't get triggered
-        evt.stopPropagation();
+        evt?.stopPropagation();
     };
 
     private onKeyDown = (ev: React.KeyboardEvent): void => {
@@ -435,6 +462,8 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
                     notificationState={notificationState}
                     isNarrow={isPanelCollapsed}
                     size={isNested && !isUnifiedFrame() ? "24px" : "32px"}
+                    // Fragment X unified frame: selecting the selected space again opens or closes it
+                    onClick={isUnifiedFrame() && selected && hasChildren ? this.toggleCollapse : undefined}
                     onKeyDown={this.onKeyDown}
                     ContextMenuComponent={
                         this.props.space.getMyMembership() === KnownMembership.Join ? SpaceContextMenu : undefined

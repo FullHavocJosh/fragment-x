@@ -27,6 +27,7 @@ import defaultDispatcher from "../../../dispatcher/dispatcher";
 import SdkConfig from "../../../SdkConfig";
 import { setHomeTab, useHomeTab } from "../../structures/HomeTabs";
 import { Action } from "../../../dispatcher/actions";
+import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
 import { MessagePreviewStore } from "../../../stores/message-preview";
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
@@ -279,6 +280,15 @@ describe("<SpacePanel />", () => {
             expect(rows(document.body, "Lobby")).toHaveLength(1);
         });
 
+        it("always lists the conversations under Messages with the unified frame, which has no arrows", () => {
+            SpaceTreeLevelLayoutStore.instance.setSpaceCollapsedState(MetaSpace.Home, undefined, true);
+            SdkConfig.put({ fragment_x: { unified_tree: true, messages_entry: true, unified_frame: true } });
+            render(<SpacePanel />);
+
+            expect(rows(document.body, "Dana")).toHaveLength(1);
+            SpaceTreeLevelLayoutStore.instance.setSpaceCollapsedState(MetaSpace.Home, undefined, false);
+        });
+
         it("calls Home Messages, lists the direct messages under it and the other rooms under Servers", () => {
             SdkConfig.put({ fragment_x: { unified_tree: true, servers_entry: true, messages_entry: true } });
             render(<SpacePanel />);
@@ -290,6 +300,9 @@ describe("<SpacePanel />", () => {
             expect(rows(messages as HTMLElement, "Lobby")).toHaveLength(0);
 
             const servers = screen.getByTestId("servers-entry").closest("[role=treeitem]")! as HTMLElement;
+            // collapsed hides the rooms under an entry (a narrow rail is not that), so they stay visible in this narrow rail
+            expect(servers).not.toHaveClass("collapsed");
+            expect(servers).toHaveClass("mx_SpaceItem_narrow");
             expect(within(servers).getByRole("group", { name: "Other rooms" })).toBeInTheDocument();
             expect(rows(servers, "Lobby")).toHaveLength(1);
             expect(rows(servers, "Dana")).toHaveLength(0);
