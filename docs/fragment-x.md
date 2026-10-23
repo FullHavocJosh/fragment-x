@@ -110,7 +110,9 @@ What it sets, all through configuration with no code changes:
   the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom.
   Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
   Every icon that is not a person, a space or a room (Search, Collapse, Inbox, settings, the icons in the top bar) has the
-  same hover: no box, the icon brightens and glows. The highlights around a space and around a subspace have 4px between
+  same hover: no box, the icon brightens and glows. Every icon button in the rail, the top bar and the composer has the same light grey
+  (`--cpd-color-icon-secondary`), and is white while the pointer or focus is on it, while it is selected or pressed, and for
+  the Inbox while it has something unread. The highlights around a space and around a subspace have 4px between
   them and what is next to them or inside them, and the selected or hover highlight of every row (a space, a subspace, a
   room, a direct message) ends 14px from each edge of the rail, so it is inside the trays; in the icons only rail it is a
   40px tile. The menu items of the room info card and of the user menu have no dark box: they take the colour behind them

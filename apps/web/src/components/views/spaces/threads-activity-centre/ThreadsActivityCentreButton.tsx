@@ -12,7 +12,7 @@ import classNames from "classnames";
 import { IconButton, Text, Tooltip } from "@vector-im/compound-web";
 
 import { _t } from "../../../../languageHandler";
-import { type NotificationLevel } from "../../../../stores/notifications/NotificationLevel";
+import { NotificationLevel } from "../../../../stores/notifications/NotificationLevel";
 import { notificationLevelToIndicator } from "../../../../utils/notifications";
 
 interface ThreadsActivityCentreButtonProps extends ComponentProps<typeof IconButton> {
@@ -53,7 +53,11 @@ export const ThreadsActivityCentreButton = function ThreadsActivityCentreButton(
         <Tooltip label={label} placement="right" open={openTooltip}>
             <IconButton
                 aria-label={label}
-                className={classNames("mx_ThreadsActivityCentreButton", { expanded: displayLabel })}
+                className={classNames("mx_ThreadsActivityCentreButton", {
+                    expanded: displayLabel,
+                    // Fragment X: an inbox with something in it has a white icon
+                    mx_ThreadsActivityCentreButton_unread: notificationLevel > NotificationLevel.None,
+                })}
                 indicator={notificationLevelToIndicator(notificationLevel)}
                 {...props}
                 ref={ref}
