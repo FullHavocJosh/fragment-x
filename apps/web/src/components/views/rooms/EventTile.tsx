@@ -1078,6 +1078,26 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             timestamp ??
             (eventTileRenderState.timestamp.displayState.useIRCLayout ? <span aria-hidden="true" /> : undefined);
 
+        // Fragment X chat cosmetics: the time beside the name of the sender, in the first tile of a group (the time that
+        // shows in the gutter on hover is hidden for that tile in the styles; the tiles that continue a group keep it).
+        const senderSlot =
+            sender &&
+            SdkConfig.get().fragment_x?.chat_cosmetics &&
+            this.props.layout === Layout.Group &&
+            !this.isPreview &&
+            !this.props.hideTimestamp ? (
+                <div className="mx_EventTile_senderLine">
+                    {sender}
+                    <MessageTimestampAdapter
+                        eventTileViewModel={this.viewModel}
+                        kind="linked"
+                        timestampProps={linkedMessageTimestampProps}
+                    />
+                </div>
+            ) : (
+                sender
+            );
+
         // Receipt slots.
         const receiptState = this.receiptState;
         const isFileShape = eventTileRenderState.root.shape === "File";
@@ -1196,7 +1216,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                 classNames={eventTileRenderState.classNames}
                 slots={{
                     avatar,
-                    sender,
+                    sender: senderSlot,
                     body,
                     timestamp: timestampSlot,
                     padlock,

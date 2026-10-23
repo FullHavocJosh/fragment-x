@@ -439,6 +439,40 @@ describe("EventTile", () => {
         });
     });
 
+    describe("Fragment X chat_cosmetics", () => {
+        beforeEach(() => {
+            mxEvent = makeTimestampedMessage();
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("has the time beside the name of the sender in the first message of a group", () => {
+            SdkConfig.put({ fragment_x: { chat_cosmetics: true } });
+            const { container } = getComponent();
+
+            const line = container.querySelector(".mx_EventTile_senderLine");
+            expect(line).not.toBeNull();
+            expect(line).toContainElement(container.querySelector(".mx_DisambiguatedProfile"));
+            expect(line?.querySelector(".mx_MessageTimestamp")).not.toBeNull();
+        });
+
+        it("has no time beside the name without the option, so the time shows on hover only", () => {
+            const { container } = getComponent();
+
+            expect(container.querySelector(".mx_EventTile_senderLine")).toBeNull();
+            expect(container.querySelector(".mx_MessageTimestamp")).toBeNull();
+        });
+
+        it("has no line for a message that continues a group, which has no name", () => {
+            SdkConfig.put({ fragment_x: { chat_cosmetics: true } });
+            const { container } = getComponent({ continuation: true });
+
+            expect(container.querySelector(".mx_EventTile_senderLine")).toBeNull();
+        });
+    });
+
     describe("sender and avatar rendering", () => {
         it("keeps the sender/avatar composition in room timelines", () => {
             const { container } = getComponent();

@@ -41,11 +41,17 @@ export interface UploadButtonViewActions {
 export function UploadButton({
     vm,
     defaultOpen = false,
+    TriggerIcon,
     ...rootButtonProps
 }: PropsWithChildren<
-    { vm: ViewModel<UploadButtonViewSnapshot, UploadButtonViewActions>; defaultOpen?: boolean } & ComponentProps<
-        typeof IconButton
-    >
+    {
+        vm: ViewModel<UploadButtonViewSnapshot, UploadButtonViewActions>;
+        defaultOpen?: boolean;
+        /**
+         * The icon of the button, in place of the attachment icon (and of the icon of a lone option).
+         */
+        TriggerIcon?: ComponentType<SVGAttributes<SVGElement>>;
+    } & ComponentProps<typeof IconButton>
 >): ReactElement {
     const i18n = useI18n();
     const [open, setOpen] = useState(defaultOpen);
@@ -73,7 +79,7 @@ export function UploadButton({
                 aria-label={label}
                 onClick={() => vm.onUploadOptionSelected(options[0].type)}
             >
-                {Icon ? <Icon /> : <AttachmentIcon />}
+                {TriggerIcon ? <TriggerIcon /> : Icon ? <Icon /> : <AttachmentIcon />}
             </IconButton>
         );
     }
@@ -86,7 +92,7 @@ export function UploadButton({
             onClick={onMenuClick}
             title={i18n.translate("common|attachment")}
         >
-            <AttachmentIcon />
+            {TriggerIcon ? <TriggerIcon /> : <AttachmentIcon />}
         </IconButton>
     );
 

@@ -21,6 +21,7 @@ import { logger } from "matrix-js-sdk/src/logger";
 import { LockOffIcon, SendSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { useCreateAutoDisposedViewModel } from "@element-hq/web-shared-components";
 
+import SdkConfig from "../../../SdkConfig";
 import { _t } from "../../../languageHandler";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import dis from "../../../dispatcher/dispatcher";
@@ -692,6 +693,8 @@ export class MessageComposer extends React.Component<IProps, IState> {
             "mx_MessageComposer--compact": this.props.compact,
             "mx_MessageComposer_e2eStatus": leftIcon,
             "mx_MessageComposer_wysiwyg": this.state.isWysiwygLabEnabled,
+            // Fragment X chat cosmetics: the attachment button is a plus at the left of the row
+            "mx_MessageComposer_plusLeft": Boolean(SdkConfig.get().fragment_x?.chat_cosmetics),
         });
 
         return (

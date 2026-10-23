@@ -9,12 +9,13 @@ Please see LICENSE files in the repository root for full details.
 // @vitest-environment happy-dom
 
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "test-utils-rtl";
 import { createTestClient, getRoomContext, mkStubRoom } from "test-utils";
 
 import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
+import SdkConfig from "../../../SdkConfig";
 import MessageComposerButtons from "./MessageComposerButtons";
 import { ScopedRoomContextProvider } from "../../../contexts/ScopedRoomContext.tsx";
 import { type RoomContextType } from "../../../contexts/RoomContext.ts";
@@ -101,6 +102,38 @@ describe("MessageComposerButtons", () => {
                 "More options",
                 ["Sticker", "Voice Message", "Poll", "Location"],
             ]);
+        });
+    });
+
+    describe("Fragment X chat_cosmetics", () => {
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        const renderWide = (): ReturnType<typeof wrapAndRender> =>
+            wrapAndRender(
+                <MessageComposerButtons
+                    {...mockProps}
+                    isMenuOpen={false}
+                    showLocationButton={false}
+                    showPollsButton={false}
+                    showStickersButton={false}
+                />,
+                false,
+            );
+
+        it("marks the attachment button so the styles can put it at the left of the composer", () => {
+            SdkConfig.put({ fragment_x: { chat_cosmetics: true } });
+            renderWide();
+
+            const upload = screen.getByRole("button", { name: "Attachment" });
+            expect(upload).toHaveClass("mx_MessageComposer_upload");
+        });
+
+        it("leaves the attachment button as it is without the option", () => {
+            renderWide();
+
+            expect(screen.getByRole("button", { name: "Attachment" })).not.toHaveClass("mx_MessageComposer_upload");
         });
     });
 
