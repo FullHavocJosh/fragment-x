@@ -23,6 +23,10 @@ import { OwnProfileStore } from "../../../stores/OwnProfileStore.ts";
 import { CallStore, CallStoreEvent } from "../../../stores/CallStore";
 import { CallEvent, ElementCall } from "../../../models/Call";
 import { UserMenuViewModel } from "../../../viewmodels/menus/UserMenuViewModel.ts";
+import { useMatrixClientContext } from "../../../contexts/MatrixClientContext";
+import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
+import { useMentionRooms } from "./threads-activity-centre/useMentionRooms";
+import { useUnreadThreadRooms } from "./threads-activity-centre/useUnreadThreadRooms";
 
 /**
  * The Element Call the user is connected to, if any. Only Element Call can be muted from outside.
@@ -35,6 +39,19 @@ function useConnectedElementCall(): ElementCall | null {
         return null;
     });
 }
+
+/**
+ * Fragment X (`inbox_in_user_menu`): tells the user menu whether the inbox has something in it, for the dot on its Inbox
+ * item. The same data the inbox popup shows: a mention anywhere, or an unread thread.
+ */
+const InboxUnreadWatcher: React.FC<{ onChange: (unread: boolean) => void }> = ({ onChange }) => {
+    const client = useMatrixClientContext();
+    const mentionRooms = useMentionRooms(client, true);
+    const { greatestNotificationLevel } = useUnreadThreadRooms(false);
+    const unread = mentionRooms.length > 0 || greatestNotificationLevel > NotificationLevel.None;
+    useEffect(() => onChange(unread), [onChange, unread]);
+    return null;
+};
 
 /**
  * The microphone button, shown only while the user is in a call. Element Call has no "deafen" control, so there is none.
@@ -87,6 +104,9 @@ const UserPanel: React.FC<{ compact?: boolean }> = ({ compact }): JSX.Element | 
     return (
         <div className={classNames("mx_UserPanel", { mx_UserPanel_compact: compact })}>
             <UserMenu vm={userMenuVm} className="mx_UserPanel_menu" />
+            {SdkConfig.get().fragment_x?.inbox_in_user_menu && (
+                <InboxUnreadWatcher onChange={userMenuVm.setInboxUnread} />
+            )}
             <div className="mx_UserPanel_buttons">
                 {call && <CallMuteButton call={call} />}
                 {!SdkConfig.get().fragment_x?.settings_in_user_menu && (

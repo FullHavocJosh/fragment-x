@@ -86,6 +86,10 @@ What it sets, all through configuration with no code changes:
   newest first, either a thread you took part in or a room where you were mentioned (muted rooms are left out). The other
   tab is Unread threads. Mark all read clears the rooms behind the For you rows. This supersedes the Mentions tab of
   `inbox_mentions`. See `apps/web/src/components/views/spaces/threads-activity-centre/forYou.ts`.
+- `fragment_x.inbox_in_user_menu: true` (needs `inbox_for_you`): the Inbox button is not in the server rail. The menu that
+  opens from the user's avatar has an Inbox item, with a dot while the inbox has something (a mention anywhere or an unread
+  thread), that opens the same inbox popup. The rail's button stays in the page as an invisible anchor for the popup. See
+  `Action.OpenInbox`, `ThreadsActivityCentre.tsx` and `UserPanel.tsx`.
 - `fragment_x.single_room_info_button: true`: the room header has one Room info button, the room name. The separate info
   icon next to the call buttons, which opened the same panel, is not shown.
 - `fragment_x.mute_server: true`: the context menu of a space has Mute server and Unmute server. Muting mutes every joined

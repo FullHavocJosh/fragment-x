@@ -222,6 +222,32 @@ describe("UserMenuViewModel", () => {
         expect(vm.getSnapshot().actions.openSettings).toEqual(true);
     });
 
+    describe("inbox_in_user_menu", () => {
+        const create = (): UserMenuViewModel =>
+            new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);
+
+        it("has no Inbox item without the option", () => {
+            expect(create().getSnapshot().actions.openInbox).toBe(false);
+        });
+
+        it("has an Inbox item, with a dot only while the inbox has something, that opens the inbox", () => {
+            SdkConfig.put({ fragment_x: { inbox_in_user_menu: true } });
+            const dispatch = vi.spyOn(dispatcher, "dispatch");
+            const vm = create();
+            expect(vm.getSnapshot().actions.openInbox).toBe(true);
+            expect(vm.getSnapshot().inboxLabel).toBe("Inbox");
+            expect(vm.getSnapshot().inboxUnread).toBe(false);
+
+            vm.setInboxUnread(true);
+            expect(vm.getSnapshot().inboxUnread).toBe(true);
+
+            vm.setOpen(true);
+            vm.openInbox();
+            expect(vm.getSnapshot().open).toBe(false);
+            expect(dispatch).toHaveBeenCalledWith({ action: Action.OpenInbox });
+        });
+    });
+
     it("should generate a menu options that includes a home page", () => {
         SdkConfig.put({ embedded_pages: { home_url: "https://example.org" } });
         const vm = new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);

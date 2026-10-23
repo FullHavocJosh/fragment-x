@@ -7,6 +7,7 @@
  */
 
 import React, { type JSX, useMemo, useState } from "react";
+import classNames from "classnames";
 import { Menu, MenuItem, NavBar, NavItem, Text } from "@vector-im/compound-web";
 import { ChevronDownIcon, ChevronRightIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { type MatrixEvent } from "matrix-js-sdk/src/matrix";
@@ -17,6 +18,8 @@ import { _t } from "../../../../languageHandler";
 import DecoratedRoomAvatar from "../../avatars/DecoratedRoomAvatar";
 import { Action } from "../../../../dispatcher/actions";
 import defaultDispatcher from "../../../../dispatcher/dispatcher";
+import { type ActionPayload } from "../../../../dispatcher/payloads";
+import { useDispatcher } from "../../../../hooks/useDispatcher";
 import { type ViewRoomPayload } from "../../../../dispatcher/payloads/ViewRoomPayload";
 import RightPanelStore from "../../../../stores/right-panel/RightPanelStore";
 import { RightPanelPhases } from "../../../../stores/right-panel/RightPanelStorePhases";
@@ -39,6 +42,10 @@ interface ThreadsActivityCentreProps {
      * Display the `Treads` label next to the icon.
      */
     displayButtonLabel?: boolean;
+    /**
+     * Fragment X (`inbox_in_user_menu`): the button is not shown; the popup opens from the user menu.
+     */
+    inUserMenu?: boolean;
 }
 
 /**
@@ -72,8 +79,11 @@ function getActiveTabContent(
  * Display in a popup the list of rooms with unread threads.
  * The popup is displayed when the user clicks on the `Threads` button.
  */
-export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCentreProps): JSX.Element {
+export function ThreadsActivityCentre({ displayButtonLabel, inUserMenu }: ThreadsActivityCentreProps): JSX.Element {
     const [open, setOpen] = useState(false);
+    useDispatcher(defaultDispatcher, (payload: ActionPayload) => {
+        if (inUserMenu && payload.action === Action.OpenInbox) setOpen(true);
+    });
     // Fragment X: with inbox_mentions the panel starts on a Mentions tab, the rooms where the user was mentioned. With
     // inbox_for_you it is the inbox: a For you tab merging those with the threads the user took part in, an Unread
     // threads tab, and Mark all read.
@@ -105,7 +115,9 @@ export function ThreadsActivityCentre({ displayButtonLabel }: ThreadsActivityCen
 
     return (
         <div
-            className="mx_ThreadsActivityCentre_container"
+            className={classNames("mx_ThreadsActivityCentre_container", {
+                mx_ThreadsActivityCentre_inUserMenu: inUserMenu,
+            })}
             onKeyDown={(evt) => {
                 // Do nothing if the TAC is closed
                 if (!open) return;

@@ -648,7 +648,10 @@ const SpacePanel: React.FC = () => {
                         </Droppable>
 
                         {/* Fragment X unified frame: the Inbox is an icon next to the settings icon, so it has no label when expanded */}
-                        <ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed && !isUnifiedFrame()} />
+                        <ThreadsActivityCentre
+                            displayButtonLabel={!isPanelCollapsed && !isUnifiedFrame()}
+                            inUserMenu={!!SdkConfig.get().fragment_x?.inbox_in_user_menu}
+                        />
 
                         {/* Fragment X: the user panel's gear opens the settings, so with the unified tree and the user
                             panel the quick settings entry above it would be a second settings button. */}

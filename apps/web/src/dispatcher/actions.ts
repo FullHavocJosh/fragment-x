@@ -104,6 +104,11 @@ export enum Action {
     ToggleUserMenu = "toggle_user_menu",
 
     /**
+     * Fragment X (`inbox_in_user_menu`): opens the inbox popup. No additional payload information required.
+     */
+    OpenInbox = "fragment_x_open_inbox",
+
+    /**
      * Toggles the Space panel. No additional payload information required.
      */
     ToggleSpacePanel = "toggle_space_panel",
