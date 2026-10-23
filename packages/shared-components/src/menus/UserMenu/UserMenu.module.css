@@ -167,3 +167,10 @@
     color: var(--cpd-color-text-secondary);
     white-space: nowrap;
 }
+
+.inboxDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--cpd-color-icon-accent-primary);
+}

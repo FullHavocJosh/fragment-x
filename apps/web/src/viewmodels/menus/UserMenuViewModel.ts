@@ -104,6 +104,8 @@ export class UserMenuViewModel
             userStatus: ownProfileStore.userStatus,
             presence: UserMenuViewModel.computePresence(client),
             presenceChoices: UserMenuViewModel.computePresenceChoices(client),
+            inboxLabel: _t("fragment_x|inbox"),
+            inboxUnread: false,
             showUserStatus: SettingsStore.getValue("feature_user_status") && isAuthenticated,
             setStatusViewModel,
             actions: {
@@ -117,6 +119,7 @@ export class UserMenuViewModel
                 // the gear is not there (`settings_in_user_menu`).
                 openSettings:
                     !SdkConfig.get().fragment_x?.user_panel || !!SdkConfig.get().fragment_x?.settings_in_user_menu,
+                openInbox: isAuthenticated && !!SdkConfig.get().fragment_x?.inbox_in_user_menu,
             },
         };
     }
@@ -202,6 +205,15 @@ export class UserMenuViewModel
         this.dispatcher.dispatch({
             action: Action.ViewUserSettings,
         });
+    };
+
+    public readonly openInbox = (): void => {
+        this.setOpen(false);
+        this.dispatcher.dispatch({ action: Action.OpenInbox });
+    };
+
+    public readonly setInboxUnread = (inboxUnread: boolean): void => {
+        this.snapshot.merge({ inboxUnread });
     };
 
     public readonly setPresenceChoice = (value: UserMenuPresenceChoiceValue): void => {

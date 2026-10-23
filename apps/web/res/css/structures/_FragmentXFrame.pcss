@@ -505,3 +505,13 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
 .mx_MatrixChat_fragmentXFrame .mx_BaseCard .mx_BaseCard_header {
     border-block-end-color: transparent;
 }
+
+/* The inbox opens from the user menu, so its button is only an anchor for the popup, out of sight. */
+.mx_MatrixChat_fragmentXFrame .mx_ThreadsActivityCentre_container.mx_ThreadsActivityCentre_inUserMenu {
+    position: fixed !important;
+    inset: auto auto 8px 8px !important;
+    width: 32px;
+    height: 32px;
+    visibility: hidden;
+    pointer-events: none;
+}

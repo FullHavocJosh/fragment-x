@@ -50,6 +50,17 @@ describe("UserMenu", () => {
         const { baseElement } = render(<NoAvatar />);
         expect(baseElement).toMatchSnapshot();
     });
+    it("renders an Inbox item with a dot only while the inbox has something", () => {
+        const actions = { openInbox: true };
+        const read = render(<Default open actions={actions} inboxLabel="Inbox" />);
+        expect(read.getByRole("menuitem", { name: "Inbox" })).toBeInTheDocument();
+        expect(read.queryByTestId("inbox-dot")).not.toBeInTheDocument();
+        read.unmount();
+
+        const unread = render(<Default open actions={actions} inboxLabel="Inbox" inboxUnread />);
+        expect(unread.getByTestId("inbox-dot")).toBeInTheDocument();
+    });
+
     it("renders the choices of presence as radio items, with the checked one marked", async () => {
         const { getAllByRole } = render(
             <Default

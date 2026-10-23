@@ -57,6 +57,11 @@ export interface ConfigOptions extends WebConfigJson {
          */
         settings_in_user_menu?: boolean;
         /**
+         * When true, the Inbox button is not in the server rail: the user menu has an Inbox item, with a dot while the
+         * inbox has something in it, that opens the inbox.
+         */
+        inbox_in_user_menu?: boolean;
+        /**
          * When true, Home is titled "Direct Messages" and lists only direct messages by default (the People filter is
          * applied when Home opens and can be switched off).
          */

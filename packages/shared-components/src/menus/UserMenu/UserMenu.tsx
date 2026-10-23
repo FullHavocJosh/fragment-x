@@ -11,6 +11,7 @@ import {
     ChatProblemIcon,
     DevicesIcon,
     HomeIcon,
+    ThreadsIcon,
     LockIcon,
     SettingsIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
@@ -98,6 +99,14 @@ export interface UserMenuViewSnapshot {
      */
     presenceChoices?: UserMenuPresenceChoice[];
     /**
+     * The text of the Inbox item, already translated.
+     */
+    inboxLabel?: string;
+    /**
+     * Whether the inbox has something in it, shown as a dot on its item.
+     */
+    inboxUnread?: boolean;
+    /**
      * ViewModel for the set status view.
      */
     setStatusViewModel: SetStatusViewModel;
@@ -112,6 +121,7 @@ export interface UserMenuViewSnapshot {
         openSecurity: boolean;
         openFeedback: boolean;
         openSettings: boolean;
+        openInbox: boolean;
     }>;
 }
 
@@ -153,6 +163,10 @@ export declare interface UserMenuViewActions {
      */
     clearStatus: () => void;
     /**
+     * Called to open the inbox.
+     */
+    openInbox?: () => void;
+    /**
      * Called when the user picks a presence.
      */
     setPresenceChoice?: (value: UserMenuPresenceChoiceValue) => void;
@@ -178,6 +192,8 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
         userStatus,
         presence,
         presenceChoices,
+        inboxLabel,
+        inboxUnread,
         setStatusViewModel,
         showUserStatus = true,
     } = useViewModel(vm);
@@ -298,6 +314,11 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
                             label={_t("user_menu|open_feedback")}
                             onSelect={vm.openFeedback}
                         />
+                    )}
+                    {actions.openInbox && (
+                        <MenuItem Icon={ThreadsIcon} label={inboxLabel ?? ""} onSelect={() => vm.openInbox?.()}>
+                            {inboxUnread && <span className={styles.inboxDot} data-testid="inbox-dot" />}
+                        </MenuItem>
                     )}
                     {actions.openSettings && (
                         <MenuItem
