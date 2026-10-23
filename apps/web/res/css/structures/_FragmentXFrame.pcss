@@ -78,7 +78,9 @@ Please see LICENSE files in the repository root for full details.
 
     /*
      * The composer row is centred in a cell as high as the top bar, which puts it level with the user's avatar at the
-     * bottom of the rail. A composer with several lines grows upwards from there.
+     * bottom of the rail. A composer with several lines grows upwards from there. The message box is part of the frame:
+     * the colour of the rail and the top bar, and the chat's two bottom corners are rounded like the top ones, each a
+     * notch in the frame's colour over the chat's own corner.
      */
     .mx_RoomView .mx_MessageComposer {
         display: flex;
@@ -87,10 +89,45 @@ Please see LICENSE files in the repository root for full details.
         box-sizing: border-box;
         min-height: var(--fragmentXFrameCell);
         padding-bottom: 0;
+        position: relative;
+        margin-right: 0;
+        background-color: var(--cpd-color-bg-subtle-primary);
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            z-index: 5;
+            width: var(--fragmentXFrameRadius);
+            height: var(--fragmentXFrameRadius);
+            pointer-events: none;
+            background-color: var(--cpd-color-bg-subtle-primary);
+        }
+
+        &::before {
+            left: 0;
+            mask: radial-gradient(
+                circle at 100% 0,
+                transparent var(--fragmentXFrameRadius),
+                #000 calc(var(--fragmentXFrameRadius) + 0.5px)
+            );
+        }
+
+        &::after {
+            right: 0;
+            mask: radial-gradient(
+                circle at 0 0,
+                transparent var(--fragmentXFrameRadius),
+                #000 calc(var(--fragmentXFrameRadius) + 0.5px)
+            );
+        }
     }
 
     .mx_MessageComposer_wrapper {
         margin: 0;
+        /* no line above the text box: it has the frame's colour, not the chat's */
+        border-top-color: transparent;
     }
 
     /*
@@ -398,6 +435,11 @@ Please see LICENSE files in the repository root for full details.
             .mx_ThreadsActivityCentreButton {
                 margin: 0;
             }
+        }
+
+        /* without the settings icon the Inbox is the last one in the row */
+        &.mx_SpacePanel_settingsInMenu:not(.collapsed) .mx_ThreadsActivityCentre_container {
+            inset-inline-end: var(--fragmentXIconPad);
         }
 
         /* The user's avatar sits in a cell as high as the top bar, centred, level with the composer row. */

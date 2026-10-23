@@ -43,6 +43,9 @@ What it sets, all through configuration with no code changes:
   menu, a settings button, and a microphone mute button while the user is in an Element Call). The server rail no longer
   shows the user menu. Element Call has no deafen control, so there is no deafen button. See
   `apps/web/src/components/views/spaces/UserPanel.tsx`.
+- `fragment_x.settings_in_user_menu: true` (needs `user_panel`): the settings entry is in the menu that opens from the user's
+  avatar, and the user panel has no settings button, so the bottom of the rail is the Inbox and the avatar (expanded, the
+  Inbox takes the settings button's place at the right end of the row).
 - `fragment_x.home_direct_messages: true`: Home is titled "Direct Messages" and opens with the People filter applied, so it
   lists direct messages like Discord's home. The People chip can be switched off to see every room again; other spaces
   are unaffected. See `applyHomeDefaultFilter` in `apps/web/src/viewmodels/room-list/RoomListViewModel.ts`.
@@ -107,7 +110,7 @@ What it sets, all through configuration with no code changes:
   subspaces and rooms; an open space and its rows share a highlight and each open subspace with its rooms has a second,
   darker one inset in it instead. The Inbox, the user's avatar (32px too) and the names beside them use the same axis and text offset. There are no arrows and no selection or unread pills in the left column: a space opens when the selection is in it (the selected space and the spaces around it; the others are closed), clicking the selected space again closes it and a third click opens it, and Messages always lists its conversations. Every user, space, subspace and room icon is a circle, and a rounded square while the pointer is over it or it is selected. The frame is a grid of square cells as wide as the rail (68px): the top bar is one cell high, so the search icon is
   centred on both the rail column and the bar next to it, an icon at the right end of the bar is as far from the edge as
-  the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom.
+  the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom. The message box has the frame's colour with no line above it, and the chat's bottom corners are rounded like the top ones.
   Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
   Every icon that is not a person, a space or a room (Search, Collapse, Inbox, settings, the icons in the top bar) has the
   same hover: no box, the icon brightens and glows. Every icon button in the rail, the top bar and the composer has the same light grey
@@ -147,9 +150,9 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.header_icons: true`: the room header has a side panel toggle at the right end, like Discord's, that shows or
   hides the panel with whatever it holds (its icon is the left column's collapse icon, mirrored). The toggle works in a room
   that has no saved panel state yet. Threads, pinned messages and search are not in the header, because the room info card
-  in the side panel has them; the notification options show in the header only while the side panel is open. The call start
-  buttons show only in a direct message (in a call or its lobby they stay, so the call can be left). The member count still
-  opens the member list.
+  in the side panel has them; the notification options and the call start
+  buttons (in every room) show in the header only while the side panel is open (in a call or its lobby they stay, so the
+  call can be left). The member count still opens the member list.
 - `fragment_x.narrow_collapse: true`: when the window is narrower than 1100px the space panel collapses to its icons-only
   view and the right panel closes, and a room does not open its panel by default (`member_list_default_open`) while the
   window is that narrow. Only the change to narrow does it, so either panel can be opened again. See

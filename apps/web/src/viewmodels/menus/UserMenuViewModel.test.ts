@@ -216,6 +216,12 @@ describe("UserMenuViewModel", () => {
         expect(vm.getSnapshot().actions.openSettings).toEqual(false);
     });
 
+    it("should have the settings entry with the Fragment X user panel when the gear is in the menu", () => {
+        SdkConfig.put({ fragment_x: { user_panel: true, settings_in_user_menu: true } });
+        const vm = new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);
+        expect(vm.getSnapshot().actions.openSettings).toEqual(true);
+    });
+
     it("should generate a menu options that includes a home page", () => {
         SdkConfig.put({ embedded_pages: { home_url: "https://example.org" } });
         const vm = new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);
