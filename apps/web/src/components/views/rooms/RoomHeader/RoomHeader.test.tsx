@@ -19,6 +19,7 @@ import {
     MatrixEvent,
     PendingEventOrdering,
     Room,
+    RoomEvent,
     RoomStateEvent,
     RoomMember,
     type MatrixClient,
@@ -312,6 +313,22 @@ describe("RoomHeader", () => {
 
             await user.click(getByRole("button", { name: "Pin conversation" }));
             expect(tagRoom).toHaveBeenCalledWith(room, "m.favourite");
+        });
+
+        it("renders one pin button, also next to the bell and after the header renders again", () => {
+            SdkConfig.put({ fragment_x: { pinned_messages: true, room_context_menu: true } });
+            const { getAllByRole, rerender } = render(<RoomHeader room={room} />, getWrapper());
+            expect(getAllByRole("button", { name: "Pin conversation" })).toHaveLength(1);
+
+            // the same key on both made React add a pin button on each update
+            for (let i = 0; i < 3; i++) {
+                act(() => {
+                    room.client.emit(RoomEvent.Tags, {} as never, room);
+                });
+                rerender(<RoomHeader room={room} />);
+            }
+            expect(getAllByRole("button", { name: "Pin conversation" })).toHaveLength(1);
+            expect(getAllByRole("button", { name: "Notification options" })).toHaveLength(1);
         });
 
         it("shows a pinned conversation as pressed, with the label to unpin it", () => {

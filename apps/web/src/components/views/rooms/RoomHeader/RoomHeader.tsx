@@ -362,9 +362,12 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                 </IconButton>
             </Tooltip>
             {isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
-                <RoomPinButton key={room.roomId} room={room} />
+                // not the room id alone: the bell below has that key, and siblings with one key are rendered again on every update
+                <RoomPinButton key={`pin-${room.roomId}`} room={room} />
             )}
-            {SdkConfig.get().fragment_x?.room_context_menu && <RoomNotificationBell key={room.roomId} room={room} />}
+            {SdkConfig.get().fragment_x?.room_context_menu && (
+                <RoomNotificationBell key={`bell-${room.roomId}`} room={room} />
+            )}
             {notificationsEnabled && (
                 <Tooltip label={_t("notifications|enable_prompt_toast_title")}>
                     <IconButton
