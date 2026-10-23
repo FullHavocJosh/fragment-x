@@ -47,6 +47,36 @@ Please see LICENSE files in the repository root for full details.
     }
 
     /*
+     * The right panel is part of the frame: the frame's colour, no line, and the chat's corner next to it is rounded the
+     * same way as the one at the top left.
+     */
+    .mx_RightPanel {
+        background-color: var(--cpd-color-bg-subtle-primary);
+        border-left-color: transparent;
+    }
+
+    .mx_MainSplit:has(.mx_RightPanel_ResizeWrapper) .mx_RoomView_timeline {
+        margin-right: 0;
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 5;
+            width: var(--fragmentXFrameRadius);
+            height: var(--fragmentXFrameRadius);
+            pointer-events: none;
+            background-color: var(--cpd-color-bg-subtle-primary);
+            mask: radial-gradient(
+                circle at 0 100%,
+                transparent var(--fragmentXFrameRadius),
+                #000 calc(var(--fragmentXFrameRadius) + 0.5px)
+            );
+        }
+    }
+
+    /*
      * The composer row is centred in a cell as high as the top bar, which puts it level with the user's avatar at the
      * bottom of the rail. A composer with several lines grows upwards from there.
      */

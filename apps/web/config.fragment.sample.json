@@ -80,6 +80,7 @@
     },
     "fragment_x": {
         "member_list_default_open": true,
+        "narrow_collapse": true,
         "rail_search_button": true,
         "room_list_toggle_button": true,
         "user_panel": true,

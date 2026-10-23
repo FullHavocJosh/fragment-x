@@ -20,7 +20,6 @@ import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import PinIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin";
 import PinSolidIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin-solid";
-import SearchIcon from "@vector-im/compound-design-tokens/assets/web/icons/search";
 import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
 import {
@@ -72,7 +71,6 @@ import { useIsEncrypted } from "../../../../hooks/useIsEncrypted.ts";
 import { useUserStatus } from "../../../../hooks/useUserStatus.ts";
 import { SDKContext } from "../../../../contexts/SDKContext.ts";
 import { useCurrentPhase } from "../../../../hooks/right-panel/useCurrentPhase";
-import { Action } from "../../../../dispatcher/actions";
 import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomListItemViewModel.ts";
 import { isPinnedRoom } from "../../../../utils/room/isPinnedRoom";
 import { tagRoom } from "../../../../utils/room/tagRoom";
@@ -396,7 +394,8 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
 
             {showChatButton && <VideoRoomChatButton room={room} />}
 
-            {showPanelTools && (
+            {/* with header_icons the room info card in the side panel has Threads, pinned messages and search */}
+            {!headerIcons && (
                 <Tooltip label={_t("common|threads")}>
                     <IconButton
                         indicator={notificationLevelToIndicator(threadNotifications)}
@@ -411,39 +410,12 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     </IconButton>
                 </Tooltip>
             )}
-            {/* Fragment X header icons: the pinned messages, as in Discord (a direct message has the pin for the conversation) */}
-            {showPanelTools && SdkConfig.get().fragment_x?.header_icons && !isDirectMessage && (
-                <Tooltip label={_t("right_panel|pinned_messages_button")}>
-                    <IconButton
-                        onClick={(evt) => {
-                            evt.stopPropagation();
-                            sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.PinnedMessages);
-                        }}
-                        aria-label={_t("right_panel|pinned_messages_button")}
-                    >
-                        <ToggleableIcon Icon={PinIcon} phase={RightPanelPhases.PinnedMessages} />
-                    </IconButton>
-                </Tooltip>
-            )}
             {showPanelTools && isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
                 // not the room id alone: the bell below has that key, and siblings with one key are rendered again on every update
                 <RoomPinButton key={`pin-${room.roomId}`} room={room} />
             )}
             {showPanelTools && SdkConfig.get().fragment_x?.room_context_menu && (
                 <RoomNotificationBell key={`bell-${room.roomId}`} room={room} />
-            )}
-            {showPanelTools && SdkConfig.get().fragment_x?.header_icons && (
-                <Tooltip label={_t("room|search|this_room_button")}>
-                    <IconButton
-                        onClick={(evt) => {
-                            evt.stopPropagation();
-                            defaultDispatcher.fire(Action.FocusMessageSearch);
-                        }}
-                        aria-label={_t("room|search|this_room_button")}
-                    >
-                        <SearchIcon />
-                    </IconButton>
-                </Tooltip>
             )}
             {notificationsEnabled && (
                 <Tooltip label={_t("notifications|enable_prompt_toast_title")}>

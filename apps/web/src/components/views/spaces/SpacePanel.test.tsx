@@ -9,7 +9,7 @@ Please see LICENSE files in the repository root for full details.
 
 // @vitest-environment happy-dom
 
-import { vi, describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
+import { vi, describe, it, expect, beforeAll, beforeEach, afterEach, type MockInstance } from "vitest";
 import React from "react";
 import { render, renderHook, screen, fireEvent, act, cleanup, waitFor, within } from "test-utils-rtl";
 import { type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
@@ -25,6 +25,7 @@ import SettingsStore from "../../../settings/SettingsStore";
 import UnwrappedSpacePanel from "./SpacePanel";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
 import SdkConfig from "../../../SdkConfig";
+import UIStore from "../../../stores/UIStore";
 import { setHomeTab, useHomeTab } from "../../structures/HomeTabs";
 import { Action } from "../../../dispatcher/actions";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
@@ -193,6 +194,36 @@ describe("<SpacePanel />", () => {
             render(<SpacePanel />);
             fireEvent.click(screen.getByTestId("create-space-button"));
             expect(screen.getByTestId("create-space-button")).toBeVisible();
+        });
+    });
+
+    describe("fragment_x.narrow_collapse", () => {
+        const originalWidth = UIStore.instance.windowWidth;
+        let hide: MockInstance | undefined;
+        afterEach(() => {
+            SdkConfig.reset();
+            UIStore.instance.windowWidth = originalWidth;
+            hide?.mockRestore();
+        });
+
+        it("closes the right panel when the window is narrow", () => {
+            SdkConfig.put({ fragment_x: { narrow_collapse: true } });
+            UIStore.instance.windowWidth = 800;
+            hide = vi.spyOn(sdkContext.rightPanelStore, "hide").mockImplementation(() => {});
+            render(<SpacePanel />);
+            expect(hide).toHaveBeenCalledWith(null);
+        });
+
+        it("leaves the right panel alone in a wide window, and without the option", () => {
+            hide = vi.spyOn(sdkContext.rightPanelStore, "hide").mockImplementation(() => {});
+            UIStore.instance.windowWidth = 800;
+            render(<SpacePanel />);
+            cleanup();
+
+            SdkConfig.put({ fragment_x: { narrow_collapse: true } });
+            UIStore.instance.windowWidth = 1600;
+            render(<SpacePanel />);
+            expect(hide).not.toHaveBeenCalled();
         });
     });
 

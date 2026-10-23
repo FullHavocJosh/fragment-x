@@ -7,7 +7,7 @@
 
 // @vitest-environment happy-dom
 
-import { type MatrixClient, type User, UserEvent } from "matrix-js-sdk/src/matrix";
+import { type MatrixClient, SetPresence, type User, UserEvent } from "matrix-js-sdk/src/matrix";
 import { vi, describe, it, expect, beforeEach, afterEach, type MockedObject } from "vitest";
 import { waitFor } from "test-utils-rtl";
 import {
@@ -26,6 +26,7 @@ import { UserTab } from "../../components/views/dialogs/UserTab";
 import Modal from "../../Modal";
 import FeedbackDialog from "../../components/views/dialogs/FeedbackDialog";
 import { type OwnProfileStore } from "../../stores/OwnProfileStore";
+import Presence from "../../Presence";
 
 describe("UserMenuViewModel", () => {
     let dispatcher: MatrixDispatcher;
@@ -152,6 +153,55 @@ describe("UserMenuViewModel", () => {
             setPresence("online");
             client.emit(UserEvent.Presence, undefined, { userId: "@alice:domain" } as User);
             expect(vm.getSnapshot().presence?.state).toBe("idle");
+        });
+    });
+
+    describe("presence choices (fragment_x.user_presence)", () => {
+        const create = (): UserMenuViewModel =>
+            new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);
+
+        beforeEach(() => {
+            SdkConfig.put({ fragment_x: { user_presence: true } });
+            Object.assign(client, { getUser: vi.fn().mockReturnValue(null), isGuest: vi.fn().mockReturnValue(false) });
+        });
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it("has none without the option", () => {
+            SdkConfig.reset();
+            expect(create().getSnapshot().presenceChoices).toBeUndefined();
+        });
+
+        it("lists the four choices with Automatic checked while the presence follows activity", () => {
+            vi.spyOn(Presence, "getOverride").mockReturnValue(null);
+            expect(create().getSnapshot().presenceChoices).toEqual([
+                { value: "auto", label: "Automatic", checked: true },
+                { value: "online", label: "Online", checked: false },
+                { value: "idle", label: "Idle", checked: false },
+                { value: "invisible", label: "Invisible", checked: false },
+            ]);
+        });
+
+        it("sets the presence the user picks, closes the menu and checks the choice", async () => {
+            const override = vi.spyOn(Presence, "setOverride").mockResolvedValue();
+            const vm = create();
+            vm.setOpen(true);
+
+            vi.spyOn(Presence, "getOverride").mockReturnValue(SetPresence.Offline);
+            vm.setPresenceChoice("invisible");
+
+            expect(override).toHaveBeenCalledWith(SetPresence.Offline);
+            expect(vm.getSnapshot().open).toBe(false);
+            await waitFor(() =>
+                expect(vm.getSnapshot().presenceChoices?.find((choice) => choice.checked)?.value).toBe("invisible"),
+            );
+        });
+
+        it("goes back to following activity with Automatic", () => {
+            const override = vi.spyOn(Presence, "setOverride").mockResolvedValue();
+            create().setPresenceChoice("auto");
+            expect(override).toHaveBeenCalledWith(null);
         });
     });
 

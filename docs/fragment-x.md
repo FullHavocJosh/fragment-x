@@ -135,13 +135,20 @@ What it sets, all through configuration with no code changes:
   reports the user as online or idle: a server without presence (see `enable_presence_by_hs_url`), or an offline user,
   shows nothing, rather than a wrong Online. The data is the user's own `User.presence`; see `computePresence` in
   `apps/web/src/viewmodels/menus/UserMenuViewModel.ts`.
-- `fragment_x.header_icons: true`: the room header has the icons of Discord's: pinned messages (opens that side panel card;
-  not in a direct message, which has the pin for the conversation), search (the same as the keyboard shortcut: the room's
-  message search in the side panel) and, at the right end, a side panel toggle that shows or hides the panel with whatever
-  it holds. The member count still opens the member list. Threads, pinned messages, notification options and search show
-  in the header only while the side panel is open. The call start buttons show only in a direct message (in a call or
-  its lobby they stay, so the call can be left). The toggle works in a room that has no saved panel state yet, and its
-  icon is the left column's collapse icon, mirrored.
+  The user menu (a click on the avatar, collapsed or expanded) also lists the choices Automatic, Online, Idle and
+  Invisible. Automatic follows the user's activity (online, idle after 3 minutes); the others stay until changed, are kept
+  in this browser (`mx_fragment_x_presence`) and set the presence the homeserver reports for the user to others (Invisible
+  is offline). See `Presence.setOverride` in `apps/web/src/Presence.ts`.
+- `fragment_x.header_icons: true`: the room header has a side panel toggle at the right end, like Discord's, that shows or
+  hides the panel with whatever it holds (its icon is the left column's collapse icon, mirrored). The toggle works in a room
+  that has no saved panel state yet. Threads, pinned messages and search are not in the header, because the room info card
+  in the side panel has them; the notification options show in the header only while the side panel is open. The call start
+  buttons show only in a direct message (in a call or its lobby they stay, so the call can be left). The member count still
+  opens the member list.
+- `fragment_x.narrow_collapse: true`: when the window is narrower than 1100px the space panel collapses to its icons-only
+  view and the right panel closes, and a room does not open its panel by default (`member_list_default_open`) while the
+  window is that narrow. Only the change to narrow does it, so either panel can be opened again. See
+  `apps/web/src/utils/narrowWindow.ts` and `SpacePanel.tsx`.
 - `fragment_x.chat_cosmetics: true`: three touches of Discord's in the chat. The time shows beside the name of the sender in
   the first message of a group (the messages that follow keep the time on hover, in the gutter); the date between days is a
   centred pill on the line; and the attachment button is a plus at the left of the composer, with the emoji and the other

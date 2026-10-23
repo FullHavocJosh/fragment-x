@@ -12,6 +12,7 @@ import { CryptoEvent } from "matrix-js-sdk/src/crypto-api";
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import { pendingVerificationRequestForUser } from "../../verification";
 import SettingsStore from "../../settings/SettingsStore";
+import { isNarrowWindow } from "../../utils/narrowWindow";
 import SdkConfig from "../../SdkConfig";
 import { RightPanelPhases } from "./RightPanelStorePhases";
 import { SettingLevel } from "../../settings/SettingLevel";
@@ -325,7 +326,11 @@ export default class RightPanelStore extends ReadyWatchingStore {
                     convertToStatePanel(SettingsStore.getValue("RightPanel.phases", this.viewedRoomId), room) ??
                     undefined;
                 // Fragment X: with the option set, a room with no saved panel state opens with the member list.
-                if (!this.byRoom[this.viewedRoomId] && SdkConfig.get().fragment_x?.member_list_default_open) {
+                if (
+                    !this.byRoom[this.viewedRoomId] &&
+                    SdkConfig.get().fragment_x?.member_list_default_open &&
+                    !isNarrowWindow()
+                ) {
                     this.byRoom[this.viewedRoomId] = {
                         isOpen: true,
                         history: this.generateHistoryForPhase(RightPanelPhases.MemberList),
