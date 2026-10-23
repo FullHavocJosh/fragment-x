@@ -7,7 +7,7 @@
 
 // @vitest-environment happy-dom
 
-import { type MatrixClient } from "matrix-js-sdk/src/matrix";
+import { type MatrixClient, type User, UserEvent } from "matrix-js-sdk/src/matrix";
 import { vi, describe, it, expect, beforeEach, afterEach, type MockedObject } from "vitest";
 import { waitFor } from "test-utils-rtl";
 import {
@@ -53,6 +53,7 @@ describe("UserMenuViewModel", () => {
             userStatus: undefined,
             getHttpAvatarUrl: vi.fn().mockReturnValue("https://foo.dummy/avatar.png"),
             on: vi.fn(),
+            off: vi.fn(),
         } as unknown as OwnProfileStore;
     });
     afterEach(() => {
@@ -92,6 +93,66 @@ describe("UserMenuViewModel", () => {
         const vm = new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, true);
         vm.setOpen(true);
         expect(vm.getSnapshot().actions.openFeedback).toEqual(true);
+    });
+
+    describe("presence (fragment_x.user_presence)", () => {
+        const setPresence = (presence?: string): void => {
+            Object.assign(client, { getUser: vi.fn().mockReturnValue(presence ? { presence } : null) });
+        };
+        const create = (): UserMenuViewModel =>
+            new UserMenuViewModel({ ownProfileStore: mockOwnProfileStore }, dispatcher, client, false);
+
+        beforeEach(() => {
+            SdkConfig.put({ fragment_x: { user_presence: true } });
+        });
+
+        it("has none without the option, and does not read the user", () => {
+            SdkConfig.reset();
+            setPresence("online");
+            const vm = create();
+            expect(vm.getSnapshot().presence).toBeUndefined();
+            expect(client.getUser).not.toHaveBeenCalled();
+        });
+
+        it("shows Online for an online user and Idle for an idle one", () => {
+            setPresence("online");
+            expect(create().getSnapshot().presence).toEqual({ state: "online", label: "Online" });
+            setPresence("unavailable");
+            expect(create().getSnapshot().presence).toEqual({ state: "idle", label: "Idle" });
+        });
+
+        it("shows nothing for an offline or unknown user, rather than a wrong Online", () => {
+            setPresence("offline");
+            expect(create().getSnapshot().presence).toBeUndefined();
+            setPresence();
+            expect(create().getSnapshot().presence).toBeUndefined();
+        });
+
+        it("shows nothing when the homeserver is set to have no presence", () => {
+            setPresence("online");
+            SdkConfig.put({
+                fragment_x: { user_presence: true },
+                enable_presence_by_hs_url: { [client.baseUrl]: false },
+            });
+            expect(create().getSnapshot().presence).toBeUndefined();
+        });
+
+        it("follows the presence of the user and ignores other users", () => {
+            setPresence("online");
+            const vm = create();
+            expect(vm.getSnapshot().presence?.state).toBe("online");
+
+            setPresence("unavailable");
+            client.emit(UserEvent.Presence, undefined, { userId: "@other:domain" } as User);
+            expect(vm.getSnapshot().presence?.state).toBe("online");
+            client.emit(UserEvent.Presence, undefined, { userId: "@alice:domain" } as User);
+            expect(vm.getSnapshot().presence?.state).toBe("idle");
+
+            vm.dispose();
+            setPresence("online");
+            client.emit(UserEvent.Presence, undefined, { userId: "@alice:domain" } as User);
+            expect(vm.getSnapshot().presence?.state).toBe("idle");
+        });
     });
 
     it("should include the settings entry by default", () => {

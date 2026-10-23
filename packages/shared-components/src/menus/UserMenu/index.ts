@@ -8,6 +8,7 @@
 export {
     UserMenuView as UserMenu,
     type UserMenuViewProps,
+    type UserMenuPresence,
     type UserMenuViewSnapshot as UserMenuSnapshot,
     type UserMenuViewActions,
 } from "./UserMenu";

@@ -129,6 +129,11 @@ What it sets, all through configuration with no code changes:
   vanish while it is read. The other conversations are still on the Home page, under People. A pin button in the room
   header of a direct message pins it; a pin is the room's favourite tag (the same as Favourite in the context menu and in
   other clients). See `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
+- `fragment_x.user_presence: true` (needs `user_panel`): the user panel shows a dot on the user's avatar (green for online,
+  amber for idle) and, in the expanded rail, a line under the name (Online or Idle). It shows only while the homeserver
+  reports the user as online or idle: a server without presence (see `enable_presence_by_hs_url`), or an offline user,
+  shows nothing, rather than a wrong Online. The data is the user's own `User.presence`; see `computePresence` in
+  `apps/web/src/viewmodels/menus/UserMenuViewModel.ts`.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined
