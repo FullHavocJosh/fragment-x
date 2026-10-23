@@ -10,7 +10,7 @@ Please see LICENSE files in the repository root for full details.
 
 import React from "react";
 import { describe, it, expect, beforeEach, afterEach, vi, type MockedObject } from "vitest";
-import { render, fireEvent, screen } from "test-utils-rtl";
+import { render, fireEvent, screen, cleanup } from "test-utils-rtl";
 import { Room, type MatrixClient, JoinRule, MatrixEvent, HistoryVisibility } from "matrix-js-sdk/src/matrix";
 import userEvent from "@testing-library/user-event";
 import { LinkedTextContext } from "@element-hq/web-shared-components";
@@ -25,6 +25,7 @@ import {
     useRoomSummaryCardViewModel,
 } from "../../viewmodels/right_panel/RoomSummaryCardViewModel";
 import DMRoomMap from "../../../utils/DMRoomMap";
+import SdkConfig from "../../../SdkConfig";
 import { SDKContext } from "../../../contexts/SDKContext";
 import { SDKContextClass } from "../../../contexts/SDKContextClass";
 
@@ -225,6 +226,30 @@ describe("<RoomSummaryCard />", () => {
         fireEvent.click(getByText(_t("room|context_menu|favourite")));
 
         expect(vmDefaultValues.onFavoriteToggleClick).toHaveBeenCalled();
+    });
+
+    describe("fragment_x.pinned_messages", () => {
+        afterEach(() => SdkConfig.reset());
+
+        it("calls the favourite entry Pin in a direct message", () => {
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            vi.mocked(useRoomSummaryCardViewModel).mockReturnValue({ ...vmDefaultValues, isDirectMessage: true });
+            const { getByText, queryByText } = getComponent();
+
+            expect(queryByText(_t("room|context_menu|favourite"))).not.toBeInTheDocument();
+            fireEvent.click(getByText("Pin"));
+            expect(vmDefaultValues.onFavoriteToggleClick).toHaveBeenCalled();
+        });
+
+        it("keeps Favourite in a room, and in a direct message without the option", () => {
+            vi.mocked(useRoomSummaryCardViewModel).mockReturnValue({ ...vmDefaultValues, isDirectMessage: true });
+            expect(getComponent().queryByText(_t("room|context_menu|favourite"))).toBeInTheDocument();
+            cleanup();
+
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            vi.mocked(useRoomSummaryCardViewModel).mockReturnValue({ ...vmDefaultValues, isDirectMessage: false });
+            expect(getComponent().queryByText(_t("room|context_menu|favourite"))).toBeInTheDocument();
+        });
     });
 
     it("opens room settings on button click", () => {
