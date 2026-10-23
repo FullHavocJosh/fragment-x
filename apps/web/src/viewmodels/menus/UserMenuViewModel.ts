@@ -18,10 +18,12 @@ import FeedbackDialog from "../../components/views/dialogs/FeedbackDialog";
 import { shouldShowFeedback } from "../../utils/Feedback";
 import { getHomePageUrl } from "../../utils/pages";
 import SdkConfig from "../../SdkConfig";
-import type { MatrixClient } from "matrix-js-sdk/src/matrix";
+import { type MatrixClient, type MatrixEvent, type User, UserEvent } from "matrix-js-sdk/src/matrix";
 import { clearAllUserStatus } from "../../utils/userStatus";
 import { type SetStatusViewModel, UserMenuSetStatusViewModel } from "../status/SetStatusViewModel";
 import SettingsStore from "../../settings/SettingsStore";
+import { isPresenceEnabled } from "../../utils/presence";
+import { _t } from "../../languageHandler";
 
 // Matches maximum size of an avatar in the UserMenu
 const AVATAR_PX = 88;
@@ -35,6 +37,24 @@ export class UserMenuViewModel
     implements UserMenuViewActions
 {
     public readonly setStatusVm: SetStatusViewModel;
+
+    /**
+     * Fragment X (`fragment_x.user_presence`): the presence of the user, for a dot on the avatar and a line under the name.
+     * Only when the homeserver reports it as online or idle: offline, unknown and a server without presence show nothing,
+     * rather than a wrong "Online".
+     */
+    private static computePresence(client: MatrixClient): UserMenuSnapshot["presence"] {
+        if (!SdkConfig.get().fragment_x?.user_presence || !isPresenceEnabled(client)) return undefined;
+        switch (client.getUser(client.getSafeUserId())?.presence) {
+            case "online":
+                return { state: "online", label: _t("presence|online") };
+            case "unavailable":
+                return { state: "idle", label: _t("presence|idle") };
+            default:
+                return undefined;
+        }
+    }
+
     private static computeSnapshot(
         client: MatrixClient,
         ownProfileStore: OwnProfileStore,
@@ -59,6 +79,7 @@ export class UserMenuViewModel
             expanded: !isPanelCollapsed,
             showAvatar: isAuthenticated,
             userStatus: ownProfileStore.userStatus,
+            presence: UserMenuViewModel.computePresence(client),
             showUserStatus: SettingsStore.getValue("feature_user_status") && isAuthenticated,
             setStatusViewModel,
             actions: {
@@ -83,13 +104,20 @@ export class UserMenuViewModel
         super(props, UserMenuViewModel.computeSnapshot(client, props.ownProfileStore, isPanelCollapsed));
         this.setStatusVm = new UserMenuSetStatusViewModel({ client, ownProfileStore: props.ownProfileStore });
         props.ownProfileStore.on(UPDATE_EVENT, this.recalculateProfile);
+        if (SdkConfig.get().fragment_x?.user_presence) client.on(UserEvent.Presence, this.onPresence);
     }
 
     public dispose(): void {
         this.props.ownProfileStore.off(UPDATE_EVENT, this.recalculateProfile);
+        this.client.off(UserEvent.Presence, this.onPresence);
         this.setStatusVm.dispose();
         super.dispose();
     }
+
+    private readonly onPresence = (_event: MatrixEvent | undefined, user: User): void => {
+        if (user.userId !== this.client.getSafeUserId()) return;
+        this.snapshot.merge({ presence: UserMenuViewModel.computePresence(this.client) });
+    };
 
     public readonly recalculateProfile = (): void => {
         const displayName = this.props.ownProfileStore.displayName || this.snapshot.current.userId;

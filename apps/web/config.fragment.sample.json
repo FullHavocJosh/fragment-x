@@ -99,6 +99,7 @@
         "servers_entry": true,
         "messages_entry": true,
         "server_unread": true,
-        "pinned_messages": true
+        "pinned_messages": true,
+        "user_presence": true
     }
 }

@@ -81,6 +81,7 @@
 }
 
 .avatarWrapper {
+    position: relative;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
@@ -136,4 +137,33 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+/* The presence of the user: a dot at the bottom right of the avatar, ringed in the colour behind it. */
+.presenceDot {
+    position: absolute;
+    inset-inline-end: -2px;
+    /* the bottom of the avatar, whatever its size (the avatar is 36px unless the host says otherwise) */
+    inset-block-start: calc(var(--cpd-user-menu-avatar-size, 36px) - 10px);
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 2px solid var(--cpd-user-menu-presence-ring, var(--cpd-color-bg-canvas-default));
+    background-color: var(--cpd-color-icon-success-primary);
+
+    &[data-presence="idle"] {
+        background-color: var(--cpd-color-icon-warning-primary);
+    }
+}
+
+.nameColumn {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+
+.presenceLabel {
+    color: var(--cpd-color-text-secondary);
+    white-space: nowrap;
 }

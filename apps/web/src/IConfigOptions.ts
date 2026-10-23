@@ -135,6 +135,12 @@ export interface ConfigOptions extends WebConfigJson {
          */
         pinned_messages?: boolean;
         /**
+         * When true, the user panel shows a dot on the user's avatar and, when expanded, a line under the name (Online or
+         * Idle) while the homeserver reports the user as online or idle. A server without presence, or an offline user,
+         * shows nothing.
+         */
+        user_presence?: boolean;
+        /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */

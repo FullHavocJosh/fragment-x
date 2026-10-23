@@ -22,6 +22,20 @@ import { useI18n } from "../../core/i18n/i18nContext";
 import { type UserStatus } from "../../core/userStatus";
 import { SetStatusView, type SetStatusViewModel } from "../../status/SetStatusView";
 
+/**
+ * The presence of the user in the menu's toggle.
+ */
+export interface UserMenuPresence {
+    /**
+     * Which dot to show.
+     */
+    state: "online" | "idle";
+    /**
+     * The text under the display name, already translated.
+     */
+    label: string;
+}
+
 export interface UserMenuViewSnapshot {
     /**
      * Is the menu open or closed.
@@ -57,6 +71,11 @@ export interface UserMenuViewSnapshot {
      * Default: true
      */
     showUserStatus?: boolean;
+    /**
+     * The presence of the user, shown as a dot on the avatar and, when the menu is expanded, as a line under the display
+     * name. Undefined for no dot and no line.
+     */
+    presence?: UserMenuPresence;
     /**
      * ViewModel for the set status view.
      */
@@ -132,6 +151,7 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
         actions,
         showAvatar,
         userStatus,
+        presence,
         setStatusViewModel,
         showUserStatus = true,
     } = useViewModel(vm);
@@ -147,6 +167,9 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
                     src={avatarUrl}
                     className={userStatus ? styles.avatarWithStatus : undefined}
                 />
+                {presence && (
+                    <span className={styles.presenceDot} data-presence={presence.state} data-testid="presence-dot" />
+                )}
                 {userStatus && (
                     <Text as="div" className={styles.iconStatusEmoji}>
                         {userStatus.emoji}
@@ -244,11 +267,21 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
                     )}
                 </section>
             </Menu>
-            {expanded && (
-                <Text type="heading" size="sm" as="span" weight="semibold" className={styles.displayName}>
-                    {displayName}
-                </Text>
-            )}
+            {expanded &&
+                (presence ? (
+                    <div className={styles.nameColumn}>
+                        <Text type="heading" size="sm" as="span" weight="semibold" className={styles.displayName}>
+                            {displayName}
+                        </Text>
+                        <Text type="body" size="sm" as="span" className={styles.presenceLabel}>
+                            {presence.label}
+                        </Text>
+                    </div>
+                ) : (
+                    <Text type="heading" size="sm" as="span" weight="semibold" className={styles.displayName}>
+                        {displayName}
+                    </Text>
+                ))}
         </div>
     );
 }
