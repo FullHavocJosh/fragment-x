@@ -20,6 +20,8 @@ import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import PinIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin";
 import PinSolidIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin-solid";
+import SearchIcon from "@vector-im/compound-design-tokens/assets/web/icons/search";
+import SidebarIcon from "@vector-im/compound-design-tokens/assets/web/icons/sidebar";
 import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
 import {
@@ -65,6 +67,8 @@ import { LocalRoom } from "../../../../models/LocalRoom.ts";
 import { useIsEncrypted } from "../../../../hooks/useIsEncrypted.ts";
 import { useUserStatus } from "../../../../hooks/useUserStatus.ts";
 import { SDKContext } from "../../../../contexts/SDKContext.ts";
+import { useCurrentPhase } from "../../../../hooks/right-panel/useCurrentPhase";
+import { Action } from "../../../../dispatcher/actions";
 import { RoomListItemViewModel } from "../../../../viewmodels/room-list/RoomListItemViewModel.ts";
 import { isPinnedRoom } from "../../../../utils/room/isPinnedRoom";
 import { tagRoom } from "../../../../utils/room/tagRoom";
@@ -94,6 +98,31 @@ function RoomPinButton({ room }: { room: Room }): JSX.Element {
         <Tooltip label={label}>
             <IconButton aria-label={label} aria-pressed={pinned} onClick={() => tagRoom(room, DefaultTagID.Favourite)}>
                 {pinned ? <PinSolidIcon /> : <PinIcon />}
+            </IconButton>
+        </Tooltip>
+    );
+}
+
+/**
+ * Fragment X (`fragment_x.header_icons`): shows or hides the side panel, whatever it holds, with an icon at the right end
+ * of the header like Discord's. (The member count beside it still opens the member list.)
+ */
+function RoomPanelToggle(): JSX.Element {
+    const sdkContext = useContext(SDKContext);
+    const { isOpen } = useCurrentPhase();
+    const label = _t("fragment_x|side_panel");
+
+    return (
+        <Tooltip label={label}>
+            <IconButton
+                aria-label={label}
+                aria-pressed={isOpen}
+                onClick={(evt) => {
+                    evt.stopPropagation();
+                    sdkContext.rightPanelStore.togglePanel(null);
+                }}
+            >
+                <SidebarIcon className={isOpen ? "mx_RoomHeader_toggled" : undefined} />
             </IconButton>
         </Tooltip>
     );
@@ -361,12 +390,39 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     <ToggleableIcon Icon={ThreadsIcon} phase={RightPanelPhases.ThreadPanel} />
                 </IconButton>
             </Tooltip>
+            {/* Fragment X header icons: the pinned messages, as in Discord (a direct message has the pin for the conversation) */}
+            {SdkConfig.get().fragment_x?.header_icons && !isDirectMessage && (
+                <Tooltip label={_t("right_panel|pinned_messages_button")}>
+                    <IconButton
+                        onClick={(evt) => {
+                            evt.stopPropagation();
+                            sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.PinnedMessages);
+                        }}
+                        aria-label={_t("right_panel|pinned_messages_button")}
+                    >
+                        <ToggleableIcon Icon={PinIcon} phase={RightPanelPhases.PinnedMessages} />
+                    </IconButton>
+                </Tooltip>
+            )}
             {isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
                 // not the room id alone: the bell below has that key, and siblings with one key are rendered again on every update
                 <RoomPinButton key={`pin-${room.roomId}`} room={room} />
             )}
             {SdkConfig.get().fragment_x?.room_context_menu && (
                 <RoomNotificationBell key={`bell-${room.roomId}`} room={room} />
+            )}
+            {SdkConfig.get().fragment_x?.header_icons && (
+                <Tooltip label={_t("room|search|this_room_button")}>
+                    <IconButton
+                        onClick={(evt) => {
+                            evt.stopPropagation();
+                            defaultDispatcher.fire(Action.FocusMessageSearch);
+                        }}
+                        aria-label={_t("room|search|this_room_button")}
+                    >
+                        <SearchIcon />
+                    </IconButton>
+                </Tooltip>
             )}
             {notificationsEnabled && (
                 <Tooltip label={_t("notifications|enable_prompt_toast_title")}>
@@ -417,6 +473,7 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     </FacePile>
                 </Text>
             )}
+            {SdkConfig.get().fragment_x?.header_icons && <RoomPanelToggle />}
         </>
     );
 }

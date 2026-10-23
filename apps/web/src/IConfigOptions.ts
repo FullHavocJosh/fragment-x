@@ -141,6 +141,12 @@ export interface ConfigOptions extends WebConfigJson {
          */
         user_presence?: boolean;
         /**
+         * When true, the room header has the icons of Discord's: one for the pinned messages (not in a direct message,
+         * which has the pin for the conversation), one that searches the room, and one at the right end that shows or hides
+         * the side panel, whatever it holds.
+         */
+        header_icons?: boolean;
+        /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */

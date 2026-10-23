@@ -134,6 +134,10 @@ What it sets, all through configuration with no code changes:
   reports the user as online or idle: a server without presence (see `enable_presence_by_hs_url`), or an offline user,
   shows nothing, rather than a wrong Online. The data is the user's own `User.presence`; see `computePresence` in
   `apps/web/src/viewmodels/menus/UserMenuViewModel.ts`.
+- `fragment_x.header_icons: true`: the room header has the icons of Discord's: pinned messages (opens that side panel card;
+  not in a direct message, which has the pin for the conversation), search (the same as the keyboard shortcut: the room's
+  message search in the side panel) and, at the right end, a side panel toggle that shows or hides the panel with whatever
+  it holds. The member count still opens the member list. Calls stay as they are.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined
