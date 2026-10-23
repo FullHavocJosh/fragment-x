@@ -192,3 +192,94 @@ Please see LICENSE files in the repository root for full details.
         background-color: var(--cpd-color-bg-accent-hovered);
     }
 }
+
+/* Fragment X active_now: the people list with the Active Now column beside it. */
+.mx_HomeTabs_peopleLayout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+
+    > .mx_HomeTabs_list {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.mx_ActiveNow {
+    flex: 0 0 280px;
+    padding: 0 0 0 24px;
+    border-inline-start: 1px solid var(--cpd-color-bg-subtle-secondary);
+}
+
+.mx_ActiveNow_heading {
+    margin: 0 0 12px;
+    font: var(--cpd-font-heading-sm-semibold);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_ActiveNow_empty {
+    margin: 0;
+    font: var(--cpd-font-body-sm-regular);
+    color: var(--cpd-color-text-secondary);
+}
+
+.mx_ActiveNow_list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mx_ActiveNow_row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--cpd-color-bg-subtle-secondary);
+    }
+}
+
+.mx_ActiveNow_avatar {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+}
+
+/* the presence dot, as on the user's own avatar in the user panel */
+.mx_ActiveNow_dot {
+    position: absolute;
+    inset-inline-end: -2px;
+    inset-block-end: -2px;
+    box-sizing: border-box;
+    inline-size: 12px;
+    block-size: 12px;
+    border: 2px solid var(--cpd-color-bg-canvas-default);
+    border-radius: 50%;
+    background-color: var(--cpd-color-icon-success-primary);
+
+    &[data-presence="idle"] {
+        background-color: var(--cpd-color-icon-warning-primary);
+    }
+}
+
+.mx_ActiveNow_text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.mx_ActiveNow_name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: var(--cpd-font-body-md-semibold);
+    color: var(--cpd-color-text-primary);
+}
+
+.mx_ActiveNow_status {
+    font: var(--cpd-font-body-xs-regular);
+    color: var(--cpd-color-text-secondary);
+}

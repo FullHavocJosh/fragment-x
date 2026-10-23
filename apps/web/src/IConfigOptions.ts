@@ -129,9 +129,10 @@ export interface ConfigOptions extends WebConfigJson {
          */
         messages_entry?: boolean;
         /**
-         * When true (needs `messages_entry`), Messages lists only the pinned direct messages, first, and the unread ones
-         * under them, plus the one that is open. A pin button in the room header of a direct message pins it (the room's
-         * favourite tag, so it is the same in every client).
+         * When true (needs `messages_entry`), Messages in the rail lists the pinned direct messages first and the unread
+         * ones under them (and the one that is open), and a click on Messages shows all of them on the Home page. A pin
+         * button in the room header of a direct message pins it (the room's favourite tag, so it is the same in every
+         * client).
          */
         pinned_messages?: boolean;
         /**
@@ -152,6 +153,12 @@ export interface ConfigOptions extends WebConfigJson {
          * attachment button is a plus at the left of the composer.
          */
         chat_cosmetics?: boolean;
+        /**
+         * When true (needs `home_top_bar`), the people tab of the Home page has a column beside the list, Active Now,
+         * with the people the user has a direct chat with who are online or idle. It is left out when the homeserver has no
+         * presence.
+         */
+        active_now?: boolean;
         /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.

@@ -51,6 +51,7 @@ import { useRovingTabIndex } from "../../../accessibility/RovingTabIndex";
 import { KeyBindingAction } from "../../../accessibility/KeyboardShortcuts";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
 import { useIsSpaceMuted } from "../../../hooks/useIsSpaceMuted";
+import { UPDATE_EVENT } from "../../../stores/AsyncStore";
 import { hasUnread, unreadSummaryText, useSpaceUnread } from "../../../hooks/useSpaceUnread";
 
 type ButtonProps<T extends keyof HTMLElementTagNameMap> = Omit<
@@ -61,6 +62,11 @@ type ButtonProps<T extends keyof HTMLElementTagNameMap> = Omit<
     spaceKey?: SpaceKey;
     className?: string;
     selected?: boolean;
+    /**
+     * Whether the button shows as selected, when that is not the same as {@link selected} (Fragment X unified frame: a
+     * space that holds the open room is the context but only the room is highlighted).
+     */
+    highlighted?: boolean;
     label: string;
     icon?: JSX.Element;
     contextMenuTooltip?: string;
@@ -78,6 +84,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
     className,
     icon,
     selected,
+    highlighted,
     label,
     contextMenuTooltip,
     notificationState,
@@ -160,7 +167,7 @@ export const SpaceButton = <T extends keyof HTMLElementTagNameMap>({
         <AccessibleButton
             {...props}
             className={classNames("mx_SpaceButton", className, {
-                mx_SpaceButton_active: selected,
+                mx_SpaceButton_active: highlighted ?? selected,
                 mx_SpaceButton_hasMenuOpen: menuDisplayed,
                 mx_SpaceButton_narrow: isNarrow,
                 mx_SpaceButton_withIcon: Boolean(icon),
@@ -236,6 +243,8 @@ interface IItemState {
     childRoomCount: number;
     /** Fragment X unified frame: the user opened or closed the space by hand, until another space is selected. */
     override?: "open" | "closed";
+    /** Fragment X unified frame: the room that is open, to highlight the space only while its own page is. */
+    viewedRoomId?: string | null;
 }
 
 export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
@@ -258,6 +267,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
             collapsed,
             childSpaces: this.childSpaces,
             childRoomCount: this.childRoomCount,
+            viewedRoomId: isUnifiedFrame() ? context.roomViewStore.getRoomId() : undefined,
         };
     }
 
@@ -271,12 +281,18 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
     public componentDidMount(): void {
         this.context.spaceStore.on(this.props.space.roomId, this.onSpaceUpdate);
         this.props.space.on(RoomEvent.Name, this.onRoomNameChange);
+        if (isUnifiedFrame()) this.context.roomViewStore.on(UPDATE_EVENT, this.onViewedRoomChange);
     }
 
     public componentWillUnmount(): void {
         this.context.spaceStore.off(this.props.space.roomId, this.onSpaceUpdate);
         this.props.space.off(RoomEvent.Name, this.onRoomNameChange);
+        this.context.roomViewStore.off(UPDATE_EVENT, this.onViewedRoomChange);
     }
+
+    private onViewedRoomChange = (): void => {
+        this.setState({ viewedRoomId: this.context.roomViewStore.getRoomId() });
+    };
 
     private onSpaceUpdate = (): void => {
         this.setState({
@@ -457,6 +473,8 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
                     space={space}
                     className={isInvite ? "mx_SpaceButton_invite" : undefined}
                     selected={selected}
+                    // Fragment X unified frame: a space that holds the open room is the context; the room is highlighted
+                    highlighted={isUnifiedFrame() ? selected && this.state.viewedRoomId === space.roomId : undefined}
                     label={this.state.name}
                     contextMenuTooltip={_t("space|context_menu|options")}
                     notificationState={notificationState}

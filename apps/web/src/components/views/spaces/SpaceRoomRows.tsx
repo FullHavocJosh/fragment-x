@@ -60,8 +60,9 @@ export function isUnreadRoom(room: Room): boolean {
 }
 
 /**
- * The direct messages that Messages lists: the pinned ones first, by name, then the unread ones, newest first, then the
- * open one if it is neither (so the conversation being read does not vanish from the list).
+ * The direct messages that Messages lists in the rail: the pinned ones first, by name, then the unread ones, newest first,
+ * and nothing else (all of them are on the Home page, which a click on Messages opens). The open one is kept while it is
+ * read, so the conversation being read does not vanish from the list when it stops being unread.
  */
 export function selectMessagesRooms(dms: Room[], openRoomId?: string | null): Room[] {
     const pinned = dms.filter(isPinnedRoom).sort((a, b) => a.name.localeCompare(b.name));
@@ -72,7 +73,7 @@ export function selectMessagesRooms(dms: Room[], openRoomId?: string | null): Ro
     return open ? [...pinned, ...unread, open] : [...pinned, ...unread];
 }
 
-/** The rooms Messages lists: the pinned and unread direct messages, kept up to date; all of them when it is off. */
+/** The rooms Messages lists in the rail, kept up to date as conversations become unread or are read, or opened. */
 export function useMessagesRooms(dms: Room[], enabled: boolean): Room[] {
     const sdkContext = useContext(SDKContext);
     const [, refresh] = useReducer((n: number) => n + 1, 0);

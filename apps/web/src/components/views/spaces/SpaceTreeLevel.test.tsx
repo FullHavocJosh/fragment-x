@@ -24,6 +24,7 @@ import { NotificationLevel } from "../../../stores/notifications/NotificationLev
 import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 import { SDKContextClass } from "../../../contexts/SDKContextClass";
 import SdkConfig from "../../../SdkConfig";
+import { UPDATE_EVENT } from "../../../stores/AsyncStore";
 
 vi.mock("../../../stores/spaces/SpaceStore", async () => {
     const EventEmitter = (await vi.importActual("events")).EventEmitter as typeof import("events").EventEmitter;
@@ -378,6 +379,61 @@ describe("SpaceItem", () => {
             const marked = container.querySelectorAll(".mx_SpaceItem_subspace");
             expect(marked).toHaveLength(1);
             expect(marked[0]).toHaveTextContent("Subspace");
+        });
+    });
+
+    describe("highlight of the space that holds the open room (fragment_x.unified_frame)", () => {
+        const renderSelected = (): ReturnType<typeof render> => {
+            vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockReturnValue([]);
+            Object.assign(SDKContextClass.instance.spaceStore, { getChildRooms: vi.fn().mockReturnValue([]) });
+            return render(
+                <SpaceItem space={space} activeSpaces={[space.roomId]} />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+        };
+        const viewing = (roomId: string | null): void => {
+            vi.spyOn(SDKContextClass.instance.roomViewStore, "getRoomId").mockReturnValue(roomId);
+        };
+
+        beforeEach(() => {
+            localStorage.clear();
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+            vi.restoreAllMocks();
+        });
+
+        it("highlights the selected space on its own page, and not while a room in it is open", () => {
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            viewing("!a-room-in-it:example.org");
+            const { container, unmount } = renderSelected();
+            expect(container.querySelector(".mx_SpaceButton_active")).not.toBeInTheDocument();
+            expect(container.querySelector('[role="treeitem"]')).toHaveAttribute("aria-selected", "true");
+            unmount();
+
+            viewing(space.roomId);
+            const own = renderSelected();
+            expect(own.container.querySelector(".mx_SpaceButton_active")).toBeInTheDocument();
+        });
+
+        it("follows the open room as it changes", () => {
+            SdkConfig.put({ fragment_x: { unified_frame: true } });
+            viewing(space.roomId);
+            const { container } = renderSelected();
+            expect(container.querySelector(".mx_SpaceButton_active")).toBeInTheDocument();
+
+            viewing("!another:example.org");
+            act(() => {
+                SDKContextClass.instance.roomViewStore.emit(UPDATE_EVENT, SDKContextClass.instance.roomViewStore);
+            });
+            expect(container.querySelector(".mx_SpaceButton_active")).not.toBeInTheDocument();
+        });
+
+        it("highlights the selected space whatever room is open without the option", () => {
+            viewing("!a-room-in-it:example.org");
+            const { container } = renderSelected();
+            expect(container.querySelector(".mx_SpaceButton_active")).toBeInTheDocument();
         });
     });
 

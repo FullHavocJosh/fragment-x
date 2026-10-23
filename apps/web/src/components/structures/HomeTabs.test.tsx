@@ -12,11 +12,13 @@ import React from "react";
 import { act, render, renderHook, screen } from "test-utils-rtl";
 import userEvent from "@testing-library/user-event";
 import EventEmitter from "node:events";
-import { KnownMembership, type MatrixClient, type Room } from "matrix-js-sdk/src/matrix";
+import { KnownMembership, type MatrixClient, type Room, UserEvent } from "matrix-js-sdk/src/matrix";
 import { mkStubRoom, stubClient } from "test-utils";
 
 import {
+    ActiveNow,
     BlockedList,
+    getActiveContacts,
     getDirectContacts,
     getPendingInvites,
     HomeTopBar,
@@ -27,6 +29,7 @@ import {
     useHomeTab,
 } from "./HomeTabs";
 import DMRoomMap from "../../utils/DMRoomMap";
+import SdkConfig from "../../SdkConfig";
 import defaultDispatcher from "../../dispatcher/dispatcher";
 import { Action } from "../../dispatcher/actions";
 import MatrixClientContext from "../../contexts/MatrixClientContext";
@@ -102,6 +105,74 @@ describe("HomeTabs", () => {
 
             await userEvent.click(screen.getByRole("button", { name: "Help" }));
             expect(fire).toHaveBeenCalledWith(expect.objectContaining({ action: Action.ViewUserSettings }));
+        });
+    });
+
+    describe("Active Now (fragment_x.active_now)", () => {
+        const setPresence = (presence: Record<string, string | undefined>): void => {
+            vi.mocked(cli.getUser).mockImplementation(
+                (userId) => (presence[userId] ? { userId, presence: presence[userId] } : null) as never,
+            );
+        };
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("lists the online people first, then the idle ones, by name, and leaves out the others", () => {
+            setPresence({ "@zed:server": "online", "@amy:server": "unavailable" });
+            expect(getActiveContacts(cli, getDirectContacts()).map((a) => [a.contact.userId, a.state])).toEqual([
+                ["@zed:server", "online"],
+                ["@amy:server", "idle"],
+            ]);
+
+            setPresence({ "@zed:server": "offline" });
+            expect(getActiveContacts(cli, getDirectContacts())).toEqual([]);
+        });
+
+        it("shows who is around with a status line, and opens the chat on a click", async () => {
+            setPresence({ "@zed:server": "online", "@amy:server": "unavailable" });
+            const dispatch = vi.spyOn(defaultDispatcher, "dispatch").mockImplementation(() => {});
+            render(<ActiveNow cli={cli} contacts={getDirectContacts()} />, { wrapper: withClient });
+
+            expect(screen.getByRole("heading", { name: "Active Now" })).toBeInTheDocument();
+            expect(screen.getByText("Online")).toBeInTheDocument();
+            expect(screen.getByText("Idle")).toBeInTheDocument();
+
+            await userEvent.click(screen.getByText("Zed"));
+            expect(dispatch).toHaveBeenCalledWith(
+                expect.objectContaining({ action: Action.ViewRoom, room_id: "!dm1:server" }),
+            );
+        });
+
+        it("says it is quiet when nobody is around", () => {
+            setPresence({});
+            render(<ActiveNow cli={cli} contacts={getDirectContacts()} />, { wrapper: withClient });
+
+            expect(screen.getByText(/It's quiet for now/)).toBeInTheDocument();
+            expect(screen.queryByRole("button")).not.toBeInTheDocument();
+        });
+
+        it("follows presence changes", () => {
+            setPresence({});
+            render(<ActiveNow cli={cli} contacts={getDirectContacts()} />, { wrapper: withClient });
+            expect(screen.queryByText("Zed")).not.toBeInTheDocument();
+
+            setPresence({ "@zed:server": "online" });
+            act(() => {
+                cli.emit(UserEvent.Presence, undefined, { userId: "@zed:server" } as never);
+            });
+            expect(screen.getByText("Zed")).toBeInTheDocument();
+        });
+
+        it("is not shown when the homeserver is set to have no presence", () => {
+            setPresence({ "@zed:server": "online" });
+            SdkConfig.put({ enable_presence_by_hs_url: { [cli.baseUrl]: false } });
+            const { container } = render(<ActiveNow cli={cli} contacts={getDirectContacts()} />, {
+                wrapper: withClient,
+            });
+
+            expect(container).toBeEmptyDOMElement();
         });
     });
 

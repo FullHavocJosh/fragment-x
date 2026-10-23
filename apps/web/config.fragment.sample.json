@@ -102,6 +102,7 @@
         "pinned_messages": true,
         "user_presence": true,
         "header_icons": true,
-        "chat_cosmetics": true
+        "chat_cosmetics": true,
+        "active_now": true
     }
 }
