@@ -19,6 +19,7 @@ import React, { type JSX, type ReactElement, type ReactNode, useContext } from "
 import {
     MicOnIcon,
     OverflowHorizontalIcon,
+    PlusIcon,
     PollsIcon,
     StickerIcon,
     TextFormattingIcon,
@@ -119,6 +120,10 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
                 key="upload"
                 vm={roomUploadVM}
                 size={SdkConfig.get().fragment_x?.unified_frame ? "32px" : "26px"}
+                // Fragment X chat cosmetics: a plus, at the left of the composer (see MessageComposer)
+                {...(SdkConfig.get().fragment_x?.chat_cosmetics
+                    ? { TriggerIcon: PlusIcon, className: "mx_MessageComposer_upload" }
+                    : {})}
             />,
         ];
         moreButtons = [

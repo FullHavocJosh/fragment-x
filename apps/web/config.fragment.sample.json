@@ -101,6 +101,7 @@
         "server_unread": true,
         "pinned_messages": true,
         "user_presence": true,
-        "header_icons": true
+        "header_icons": true,
+        "chat_cosmetics": true
     }
 }

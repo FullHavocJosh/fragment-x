@@ -138,6 +138,11 @@ What it sets, all through configuration with no code changes:
   not in a direct message, which has the pin for the conversation), search (the same as the keyboard shortcut: the room's
   message search in the side panel) and, at the right end, a side panel toggle that shows or hides the panel with whatever
   it holds. The member count still opens the member list. Calls stay as they are.
+- `fragment_x.chat_cosmetics: true`: three touches of Discord's in the chat. The time shows beside the name of the sender in
+  the first message of a group (the messages that follow keep the time on hover, in the gutter); the date between days is a
+  centred pill on the line; and the attachment button is a plus at the left of the composer, with the emoji and the other
+  buttons staying on the right. See `EventTile.tsx` (`mx_EventTile_senderLine`), `MessageComposerButtons.tsx` and
+  `apps/web/res/css/structures/_FragmentXChat.pcss`.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined

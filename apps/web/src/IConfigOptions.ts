@@ -147,6 +147,12 @@ export interface ConfigOptions extends WebConfigJson {
          */
         header_icons?: boolean;
         /**
+         * When true, the chat has three touches of Discord's: the time beside the name of the sender (in the first message
+         * of a group; the following messages keep the time on hover), the date between days is a centred pill, and the
+         * attachment button is a plus at the left of the composer.
+         */
+        chat_cosmetics?: boolean;
+        /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */
