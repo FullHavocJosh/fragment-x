@@ -348,8 +348,6 @@ describe("RoomHeader", () => {
     });
 
     describe("Fragment X header_icons", () => {
-        const names = ["Pinned messages", "Search this room", "Side panel"];
-
         beforeEach(() => {
             panelPhase.currentPhase = "foo";
             panelPhase.isOpen = true;
@@ -362,14 +360,12 @@ describe("RoomHeader", () => {
             panelPhase.isOpen = false;
         });
 
-        it("keeps threads, pinned messages, search and alerts out of the header while the side panel is closed", () => {
+        it("keeps the alerts out of the header while the side panel is closed", () => {
             panelPhase.isOpen = false;
             SdkConfig.put({ fragment_x: { header_icons: true, room_context_menu: true } });
             const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
 
-            for (const name of ["Threads", "Pinned messages", "Search this room", "Notification options"]) {
-                expect(queryByRole("button", { name })).not.toBeInTheDocument();
-            }
+            expect(queryByRole("button", { name: "Notification options" })).not.toBeInTheDocument();
             expect(queryByRole("button", { name: "Side panel" })).toBeInTheDocument();
         });
 
@@ -392,34 +388,21 @@ describe("RoomHeader", () => {
             expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.RoomSummary, state: undefined });
         });
 
-        it("has none of the three icons without the option", () => {
+        it("has the side panel toggle once and no header icon for what the room info card has, with the option", () => {
+            panelPhase.isOpen = true;
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const { getAllByRole, queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(getAllByRole("button", { name: "Side panel" })).toHaveLength(1);
+            for (const name of ["Threads", "Pinned messages", "Search this room"]) {
+                expect(queryByRole("button", { name })).not.toBeInTheDocument();
+            }
+        });
+
+        it("has no side panel toggle and keeps the threads icon without the option", () => {
             const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
-            for (const name of names) expect(queryByRole("button", { name })).not.toBeInTheDocument();
-        });
-
-        it("has the three icons, each once, with the option", () => {
-            SdkConfig.put({ fragment_x: { header_icons: true } });
-            const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
-            for (const name of names) expect(getAllByRole("button", { name })).toHaveLength(1);
-        });
-
-        it("opens the pinned messages card from the pinned messages icon", async () => {
-            SdkConfig.put({ fragment_x: { header_icons: true } });
-            const user = userEvent.setup();
-            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
-
-            await user.click(getByRole("button", { name: "Pinned messages" }));
-            expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.PinnedMessages, state: undefined });
-        });
-
-        it("starts the room's message search from the search icon", async () => {
-            SdkConfig.put({ fragment_x: { header_icons: true } });
-            const fire = vi.spyOn(dispatcher, "fire");
-            const user = userEvent.setup();
-            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
-
-            await user.click(getByRole("button", { name: "Search this room" }));
-            expect(fire).toHaveBeenCalledWith("focus_search");
+            expect(queryByRole("button", { name: "Side panel" })).not.toBeInTheDocument();
+            expect(queryByRole("button", { name: "Threads" })).toBeInTheDocument();
         });
 
         it("shows or hides the side panel from the toggle", async () => {

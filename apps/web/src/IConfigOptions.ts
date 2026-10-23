@@ -34,6 +34,11 @@ export interface ConfigOptions extends WebConfigJson {
          */
         member_list_default_open?: boolean;
         /**
+         * When true, the space panel collapses to icons and the right panel closes when the window gets narrower than
+         * 1100px, and a room does not open its panel by default while the window is that narrow.
+         */
+        narrow_collapse?: boolean;
+        /**
          * When true, the space panel (server rail) shows a search button that opens the spotlight search.
          */
         rail_search_button?: boolean;

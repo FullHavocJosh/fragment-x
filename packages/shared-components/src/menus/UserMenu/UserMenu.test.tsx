@@ -50,6 +50,21 @@ describe("UserMenu", () => {
         const { baseElement } = render(<NoAvatar />);
         expect(baseElement).toMatchSnapshot();
     });
+    it("renders the choices of presence as radio items, with the checked one marked", async () => {
+        const { getAllByRole } = render(
+            <Default
+                open
+                presenceChoices={[
+                    { value: "auto", label: "Automatic", checked: true },
+                    { value: "invisible", label: "Invisible", checked: false },
+                ]}
+            />,
+        );
+
+        const items = getAllByRole("menuitemradio");
+        expect(items.map((item) => item.textContent)).toEqual(["Automatic", "Invisible"]);
+        expect(items.map((item) => item.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+    });
     it("renders an open menu with user status", async () => {
         const { container } = render(<WithStatusOpen />);
         expect(container).toMatchSnapshot();

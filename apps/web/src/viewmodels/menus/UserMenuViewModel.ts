@@ -5,7 +5,12 @@
  * Please see LICENSE files in the repository root for full details.
  */
 
-import { BaseViewModel, type UserMenuSnapshot, type UserMenuViewActions } from "@element-hq/web-shared-components";
+import {
+    BaseViewModel,
+    type UserMenuPresenceChoiceValue,
+    type UserMenuSnapshot,
+    type UserMenuViewActions,
+} from "@element-hq/web-shared-components";
 import { logger } from "matrix-js-sdk/src/logger";
 
 import { type OwnProfileStore } from "../../stores/OwnProfileStore";
@@ -18,12 +23,13 @@ import FeedbackDialog from "../../components/views/dialogs/FeedbackDialog";
 import { shouldShowFeedback } from "../../utils/Feedback";
 import { getHomePageUrl } from "../../utils/pages";
 import SdkConfig from "../../SdkConfig";
-import { type MatrixClient, type MatrixEvent, type User, UserEvent } from "matrix-js-sdk/src/matrix";
+import { type MatrixClient, type MatrixEvent, SetPresence, type User, UserEvent } from "matrix-js-sdk/src/matrix";
 import { clearAllUserStatus } from "../../utils/userStatus";
 import { type SetStatusViewModel, UserMenuSetStatusViewModel } from "../status/SetStatusViewModel";
 import SettingsStore from "../../settings/SettingsStore";
 import { isPresenceEnabled } from "../../utils/presence";
 import { _t } from "../../languageHandler";
+import Presence from "../../Presence";
 
 // Matches maximum size of an avatar in the UserMenu
 const AVATAR_PX = 88;
@@ -55,6 +61,23 @@ export class UserMenuViewModel
         }
     }
 
+    /**
+     * Fragment X (`fragment_x.user_presence`): the choices of presence, under the profile in the menu. Not on a server
+     * without presence.
+     */
+    private static computePresenceChoices(client: MatrixClient): UserMenuSnapshot["presenceChoices"] {
+        if (!SdkConfig.get().fragment_x?.user_presence || !isPresenceEnabled(client) || client.isGuest())
+            return undefined;
+        const override = Presence.getOverride();
+        const choices: [UserMenuPresenceChoiceValue, string, boolean][] = [
+            ["auto", _t("presence|auto"), !override],
+            ["online", _t("presence|online"), override === SetPresence.Online],
+            ["idle", _t("presence|idle"), override === SetPresence.Unavailable],
+            ["invisible", _t("presence|invisible"), override === SetPresence.Offline],
+        ];
+        return choices.map(([value, label, checked]) => ({ value, label, checked }));
+    }
+
     private static computeSnapshot(
         client: MatrixClient,
         ownProfileStore: OwnProfileStore,
@@ -80,6 +103,7 @@ export class UserMenuViewModel
             showAvatar: isAuthenticated,
             userStatus: ownProfileStore.userStatus,
             presence: UserMenuViewModel.computePresence(client),
+            presenceChoices: UserMenuViewModel.computePresenceChoices(client),
             showUserStatus: SettingsStore.getValue("feature_user_status") && isAuthenticated,
             setStatusViewModel,
             actions: {
@@ -176,6 +200,21 @@ export class UserMenuViewModel
         this.dispatcher.dispatch({
             action: Action.ViewUserSettings,
         });
+    };
+
+    public readonly setPresenceChoice = (value: UserMenuPresenceChoiceValue): void => {
+        this.setOpen(false);
+        const state = {
+            auto: null,
+            online: SetPresence.Online,
+            idle: SetPresence.Unavailable,
+            invisible: SetPresence.Offline,
+        }[value];
+        Presence.setOverride(state)
+            .catch((err) => logger.warn("Failed to set presence", err))
+            .finally(() =>
+                this.snapshot.merge({ presenceChoices: UserMenuViewModel.computePresenceChoices(this.client) }),
+            );
     };
 
     public readonly clearStatus = (): void => {

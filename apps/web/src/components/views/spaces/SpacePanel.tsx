@@ -96,6 +96,7 @@ import { ModuleApi } from "../../../modules/Api.ts";
 import { useModuleSpacePanelItems } from "../../../modules/ExtrasApi.ts";
 import { UserMenuViewModel } from "../../../viewmodels/menus/UserMenuViewModel.ts";
 import SdkConfig from "../../../SdkConfig";
+import { useNarrowWindow } from "../../../hooks/useNarrowWindow";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
 import { OwnProfileStore } from "../../../stores/OwnProfileStore.ts";
 import { type SDKContextClass } from "../../../contexts/SDKContextClass.ts";
@@ -527,6 +528,14 @@ const SpacePanel: React.FC = () => {
     const client = sdkContext.client!;
     const [dragging, setDragging] = useState(false);
     const [isPanelCollapsed, setPanelCollapsed] = useState(true);
+    // Fragment X (`fragment_x.narrow_collapse`): a window too narrow for the panels gets the icons-only rail and no
+    // right panel. Only the change to narrow does it, so the user can open either one again.
+    const narrow = useNarrowWindow();
+    useEffect(() => {
+        if (!narrow) return;
+        setPanelCollapsed(true);
+        sdkContext.rightPanelStore.hide(null);
+    }, [narrow, sdkContext.rightPanelStore]);
     const ref = useRef<HTMLDivElement>(null);
     useLayoutEffect(() => {
         if (ref.current) UIStore.instance.trackElementDimensions("SpacePanel", ref.current);

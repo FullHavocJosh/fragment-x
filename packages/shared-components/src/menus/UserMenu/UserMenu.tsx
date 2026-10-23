@@ -6,7 +6,7 @@
  */
 
 import React, { type JSX } from "react";
-import { Avatar, Button, Link, Menu, MenuItem, Separator, Text } from "@vector-im/compound-web";
+import { Avatar, Button, Link, Menu, MenuItem, RadioMenuItem, Separator, Text } from "@vector-im/compound-web";
 import {
     ChatProblemIcon,
     DevicesIcon,
@@ -34,6 +34,23 @@ export interface UserMenuPresence {
      * The text under the display name, already translated.
      */
     label: string;
+}
+
+/**
+ * What the user can choose for their presence: "auto" follows their activity, the others stay until changed.
+ */
+export type UserMenuPresenceChoiceValue = "auto" | "online" | "idle" | "invisible";
+
+/**
+ * One choice of presence in the menu.
+ */
+export interface UserMenuPresenceChoice {
+    value: UserMenuPresenceChoiceValue;
+    /**
+     * The text of the choice, already translated.
+     */
+    label: string;
+    checked: boolean;
 }
 
 export interface UserMenuViewSnapshot {
@@ -76,6 +93,10 @@ export interface UserMenuViewSnapshot {
      * name. Undefined for no dot and no line.
      */
     presence?: UserMenuPresence;
+    /**
+     * The choices of presence, as radio items under the profile. Undefined for none.
+     */
+    presenceChoices?: UserMenuPresenceChoice[];
     /**
      * ViewModel for the set status view.
      */
@@ -131,6 +152,10 @@ export declare interface UserMenuViewActions {
      * Called when the user clicks the button to clear their status.
      */
     clearStatus: () => void;
+    /**
+     * Called when the user picks a presence.
+     */
+    setPresenceChoice?: (value: UserMenuPresenceChoiceValue) => void;
 }
 
 export type UserMenuViewProps = {
@@ -152,6 +177,7 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
         showAvatar,
         userStatus,
         presence,
+        presenceChoices,
         setStatusViewModel,
         showUserStatus = true,
     } = useViewModel(vm);
@@ -237,6 +263,21 @@ export function UserMenuView({ vm, className }: UserMenuViewProps): JSX.Element 
                     )}
                 </section>
                 <Separator />
+                {presenceChoices && (
+                    <>
+                        <section className={styles.actions}>
+                            {presenceChoices.map((choice) => (
+                                <RadioMenuItem
+                                    key={choice.value}
+                                    label={choice.label}
+                                    checked={choice.checked}
+                                    onSelect={() => vm.setPresenceChoice?.(choice.value)}
+                                />
+                            ))}
+                        </section>
+                        <Separator />
+                    </>
+                )}
                 <section className={styles.actions}>
                     {actions.openHomePage && (
                         <MenuItem Icon={HomeIcon} label={_t("user_menu|open_home")} onSelect={vm.openHomePage} />
