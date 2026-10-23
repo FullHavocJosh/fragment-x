@@ -159,7 +159,7 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
 
     const dmMember = useDmMember(room);
     const isDirectMessage = !!dmMember;
-    // Fragment X: the panel tools show only while the side panel is open; the call buttons only in direct messages.
+    // Fragment X: the panel tools and the call buttons show only while the side panel is open (a call in progress stays).
     const headerIcons = !!SdkConfig.get().fragment_x?.header_icons;
     const { isOpen: panelOpen } = useCurrentPhase();
     const showPanelTools = !headerIcons || panelOpen;
@@ -358,7 +358,7 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
         voiceCallButton = undefined;
     }
 
-    if (headerIcons && !isDirectMessage && !isConnectedToCall && !isViewingCall) {
+    if (!showPanelTools && !isConnectedToCall && !isViewingCall) {
         videoCallButton = undefined;
         voiceCallButton = undefined;
     }

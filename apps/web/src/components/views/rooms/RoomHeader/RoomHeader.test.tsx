@@ -369,12 +369,17 @@ describe("RoomHeader", () => {
             expect(queryByRole("button", { name: "Side panel" })).toBeInTheDocument();
         });
 
-        it("has no call start buttons in a room that is not a direct message", () => {
+        it("has the call start buttons in every room, under the side panel: only while it is open", () => {
             SdkConfig.put({ fragment_x: { header_icons: true } });
-            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+            panelPhase.isOpen = true;
+            const open = render(<RoomHeader room={room} />, getWrapper());
+            expect(open.queryByRole("button", { name: "Video call" })).toBeInTheDocument();
+            open.unmount();
 
-            expect(queryByRole("button", { name: "Video call" })).not.toBeInTheDocument();
-            expect(queryByRole("button", { name: "Voice call" })).not.toBeInTheDocument();
+            panelPhase.isOpen = false;
+            const closed = render(<RoomHeader room={room} />, getWrapper());
+            expect(closed.queryByRole("button", { name: "Video call" })).not.toBeInTheDocument();
+            expect(closed.queryByRole("button", { name: "Voice call" })).not.toBeInTheDocument();
         });
 
         it("opens the room info from the toggle when the room has no saved panel state", async () => {

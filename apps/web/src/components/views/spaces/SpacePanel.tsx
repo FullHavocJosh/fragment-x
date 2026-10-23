@@ -587,6 +587,8 @@ const SpacePanel: React.FC = () => {
                             collapsed: isPanelCollapsed,
                             // Fragment X: the rail is the whole navigation, with the rooms listed under their spaces.
                             mx_SpacePanel_unified: isUnifiedTree(),
+                            // Fragment X: no settings button in the user's row, so the Inbox takes its place.
+                            mx_SpacePanel_settingsInMenu: !!SdkConfig.get().fragment_x?.settings_in_user_menu,
                         })}
                         onKeyDown={(ev) => {
                             const navAction = getKeyBindingsManager().getNavigationAction(ev);

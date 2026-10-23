@@ -113,8 +113,10 @@ export class UserMenuViewModel
                 linkNewDevice: isAuthenticated,
                 openSecurity: isAuthenticated,
                 openFeedback: shouldShowFeedback(),
-                // Fragment X: the user panel has a settings gear next to the name, so the menu does not repeat it.
-                openSettings: !SdkConfig.get().fragment_x?.user_panel,
+                // Fragment X: the user panel has a settings gear next to the name, so the menu does not repeat it, unless
+                // the gear is not there (`settings_in_user_menu`).
+                openSettings:
+                    !SdkConfig.get().fragment_x?.user_panel || !!SdkConfig.get().fragment_x?.settings_in_user_menu,
             },
         };
     }

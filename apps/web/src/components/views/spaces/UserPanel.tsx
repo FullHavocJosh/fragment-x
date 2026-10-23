@@ -89,15 +89,17 @@ const UserPanel: React.FC<{ compact?: boolean }> = ({ compact }): JSX.Element | 
             <UserMenu vm={userMenuVm} className="mx_UserPanel_menu" />
             <div className="mx_UserPanel_buttons">
                 {call && <CallMuteButton call={call} />}
-                <Tooltip label={_t("common|settings")}>
-                    <IconButton
-                        aria-label={_t("common|settings")}
-                        className="mx_UserPanel_button"
-                        onClick={() => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
-                    >
-                        <SettingsSolidIcon />
-                    </IconButton>
-                </Tooltip>
+                {!SdkConfig.get().fragment_x?.settings_in_user_menu && (
+                    <Tooltip label={_t("common|settings")}>
+                        <IconButton
+                            aria-label={_t("common|settings")}
+                            className="mx_UserPanel_button"
+                            onClick={() => defaultDispatcher.dispatch({ action: Action.ViewUserSettings })}
+                        >
+                            <SettingsSolidIcon />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </div>
         </div>
     );

@@ -437,6 +437,11 @@ Please see LICENSE files in the repository root for full details.
             }
         }
 
+        /* without the settings icon the Inbox is the last one in the row */
+        &.mx_SpacePanel_settingsInMenu:not(.collapsed) .mx_ThreadsActivityCentre_container {
+            inset-inline-end: var(--fragmentXIconPad);
+        }
+
         /* The user's avatar sits in a cell as high as the top bar, centred, level with the composer row. */
         .mx_UserPanel {
             min-height: var(--fragmentXFrameCell);

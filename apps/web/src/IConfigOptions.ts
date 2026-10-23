@@ -52,6 +52,11 @@ export interface ConfigOptions extends WebConfigJson {
          */
         user_panel?: boolean;
         /**
+         * When true (with `user_panel`), the settings entry is in the menu of the user's avatar and the user panel has no
+         * settings button.
+         */
+        settings_in_user_menu?: boolean;
+        /**
          * When true, Home is titled "Direct Messages" and lists only direct messages by default (the People filter is
          * applied when Home opens and can be switched off).
          */
