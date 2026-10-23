@@ -47,6 +47,7 @@ import RoomAvatar from "../avatars/RoomAvatar";
 import { E2EStatus } from "../../../utils/ShieldUtils.ts";
 import { type RoomPermalinkCreator } from "../../../utils/permalinks/Permalinks.ts";
 import { topicToHtml } from "../../../HtmlUtils.tsx";
+import SdkConfig from "../../../SdkConfig";
 import { useRoomSummaryCardViewModel } from "../../viewmodels/right_panel/RoomSummaryCardViewModel";
 import { useRoomTopicViewModel } from "../../viewmodels/right_panel/RoomSummaryCardTopicViewModel";
 import { useRoomName } from "../../../hooks/useRoomName.ts";
@@ -131,6 +132,8 @@ const RoomSummaryCardView: React.FC<IProps> = ({
     searchTerm = "",
 }) => {
     const vm = useRoomSummaryCardViewModel(room, permalinkCreator, onSearchCancel);
+    // Fragment X (`fragment_x.pinned_messages`): a direct message is pinned, not favourited
+    const pinsDm = vm.isDirectMessage && !!SdkConfig.get().fragment_x?.pinned_messages;
     // XXX: this name should be part of the view model
     const name = useRoomName(room);
 
@@ -238,8 +241,8 @@ const RoomSummaryCardView: React.FC<IProps> = ({
 
             <div role="menubar" aria-orientation="vertical">
                 <ToggleMenuItem
-                    Icon={FavouriteIcon}
-                    label={_t("room|context_menu|favourite")}
+                    Icon={pinsDm ? PinIcon : FavouriteIcon}
+                    label={pinsDm ? _t("fragment_x|pin") : _t("room|context_menu|favourite")}
                     checked={vm.isFavorite}
                     onSelect={vm.onFavoriteToggleClick}
                 />

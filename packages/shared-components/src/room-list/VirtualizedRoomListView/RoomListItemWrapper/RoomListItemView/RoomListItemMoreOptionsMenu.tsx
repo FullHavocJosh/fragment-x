@@ -11,6 +11,7 @@ import {
     MarkAsReadIcon,
     MarkAsUnreadIcon,
     FavouriteIcon,
+    PinIcon,
     ArrowDownIcon,
     UserAddIcon,
     LinkIcon,
@@ -103,8 +104,12 @@ export function MoreOptionContent({ vm }: MoreOptionContentProps): JSX.Element {
                 <>
                     <ToggleMenuItem
                         checked={snapshot.isFavourite}
-                        Icon={FavouriteIcon}
-                        label={_t("room_list|more_options|favourited")}
+                        Icon={snapshot.pinAsFavourite ? PinIcon : FavouriteIcon}
+                        label={
+                            snapshot.pinAsFavourite
+                                ? _t("room_list|more_options|pinned")
+                                : _t("room_list|more_options|favourited")
+                        }
                         onSelect={vm.onToggleFavorite}
                         onClick={(evt) => evt.stopPropagation()}
                     />

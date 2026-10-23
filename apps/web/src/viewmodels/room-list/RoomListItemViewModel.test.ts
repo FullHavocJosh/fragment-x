@@ -27,6 +27,7 @@ import { NotificationStateEvents } from "../../stores/notifications/Notification
 import { type MessagePreview, MessagePreviewStore } from "../../stores/message-preview";
 import SettingsStore, { type CallbackFn } from "../../settings/SettingsStore";
 import DMRoomMap from "../../utils/DMRoomMap";
+import SdkConfig from "../../SdkConfig";
 import { DefaultTagID } from "../../stores/room-list-v3/skip-list/tag";
 import dispatcher from "../../dispatcher/dispatcher";
 import { Action } from "../../dispatcher/actions";
@@ -484,6 +485,21 @@ describe("RoomListItemViewModel", () => {
 
             await flushPromises();
             expect(viewModel.getSnapshot().name).toBe("Updated Room");
+        });
+    });
+
+    describe("pinAsFavourite (fragment_x.pinned_messages)", () => {
+        afterEach(() => SdkConfig.reset());
+
+        it("is set for a direct message with the option, and not for a room or without it", () => {
+            vi.spyOn(DMRoomMap.shared(), "getUserIdForRoomId").mockReturnValue("@user:server");
+            expect(new RoomListItemViewModel({ room, client: matrixClient }).getSnapshot().pinAsFavourite).toBe(false);
+
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            expect(new RoomListItemViewModel({ room, client: matrixClient }).getSnapshot().pinAsFavourite).toBe(true);
+
+            vi.spyOn(DMRoomMap.shared(), "getUserIdForRoomId").mockReturnValue(undefined);
+            expect(new RoomListItemViewModel({ room, client: matrixClient }).getSnapshot().pinAsFavourite).toBe(false);
         });
     });
 

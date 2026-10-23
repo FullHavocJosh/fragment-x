@@ -24,6 +24,7 @@ import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import { MatrixClientPeg } from "../../../MatrixClientPeg";
 import { DefaultTagID } from "../../../stores/room-list-v3/skip-list/tag";
 import DMRoomMap from "../../../utils/DMRoomMap";
+import SdkConfig from "../../../SdkConfig";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { UIComponent } from "../../../settings/UIFeature";
 import SettingsStore from "../../../settings/SettingsStore";
@@ -114,6 +115,26 @@ describe("RoomGeneralContextMenu", () => {
 
         expect(shouldShowComponent).toHaveBeenCalledWith(UIComponent.InviteUsers);
         expect(screen.getByRole("menuitem", { name: "Invite" })).toBeInTheDocument();
+    });
+
+    describe("fragment_x.pinned_messages", () => {
+        afterEach(() => SdkConfig.reset());
+
+        it("calls the favourite entry Unpin in a direct message that is pinned, Favourited otherwise", () => {
+            SdkConfig.put({ fragment_x: { pinned_messages: true } });
+            vi.mocked(DMRoomMap.shared().getUserIdForRoomId).mockReturnValue("@user:id");
+            vi.spyOn(getTagsForRoomUtils, "getTagsForRoom").mockReturnValue([DefaultTagID.DM, DefaultTagID.Favourite]);
+            const { queryByText } = getComponent({});
+            expect(queryByText("Unpin")).toBeInTheDocument();
+            expect(queryByText("Favourited")).not.toBeInTheDocument();
+        });
+
+        it("keeps Favourited without the option", () => {
+            vi.mocked(DMRoomMap.shared().getUserIdForRoomId).mockReturnValue("@user:id");
+            vi.spyOn(getTagsForRoomUtils, "getTagsForRoom").mockReturnValue([DefaultTagID.DM, DefaultTagID.Favourite]);
+            const { queryByText } = getComponent({});
+            expect(queryByText("Favourited")).toBeInTheDocument();
+        });
     });
 
     it("marks the room as read", async () => {

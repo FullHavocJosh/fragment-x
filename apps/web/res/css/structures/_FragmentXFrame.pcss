@@ -447,6 +447,9 @@ Please see LICENSE files in the repository root for full details.
 .mx_MatrixChat_fragmentXFrame .mx_RoomSummaryCard [role^="menuitem"],
 body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
     margin-inline: 8px;
+    /* the items are as wide as their container, so the margin on both sides is taken off the width */
+    width: calc(100% - 16px);
+    box-sizing: border-box;
     border-radius: 8px;
     background-color: transparent;
 

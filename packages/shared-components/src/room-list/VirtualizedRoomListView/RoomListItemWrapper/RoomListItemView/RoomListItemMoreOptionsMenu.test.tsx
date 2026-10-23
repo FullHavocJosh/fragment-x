@@ -130,6 +130,16 @@ describe("<RoomListItemMoreOptionsMenu />", () => {
         expect(favoriteOption).toHaveAttribute("aria-checked", "true");
     });
 
+    it("should call the favourite option Pinned when pinAsFavourite is set", async () => {
+        const user = userEvent.setup();
+        renderMenu({ isFavourite: true, pinAsFavourite: true });
+
+        await user.click(screen.getByRole("button", { name: "More Options" }));
+
+        expect(screen.getByRole("menuitemcheckbox", { name: "Pinned" })).toHaveAttribute("aria-checked", "true");
+        expect(screen.queryByRole("menuitemcheckbox", { name: "Favourited" })).not.toBeInTheDocument();
+    });
+
     it("should show low priority option and call onToggleLowPriority", async () => {
         const user = userEvent.setup();
         renderMenu({ isLowPriority: false });

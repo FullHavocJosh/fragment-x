@@ -132,7 +132,8 @@ What it sets, all through configuration with no code changes:
   the pinned direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it
   does not vanish while it is read. A click on Messages shows the Home page on its People tab, the list of all your
   conversations, instead of the conversation that was open last. A pin button in the room header of a direct message pins
-  it; a pin is the room's favourite tag (the same as Favourite in the context menu and in other clients). See
+  it; a pin is the room's favourite tag (the same as Favourite in other clients), and in a direct message every menu calls it
+  Pin (Pinned, Unpin) with a pin icon: the room list menu, the room context menu and the room info card. See
   `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `fragment_x.user_presence: true` (needs `user_panel`): the user panel shows a dot on the user's avatar (green for online,
   amber for idle) and, in the expanded rail, a line under the name (Online or Idle). It shows only while the homeserver
