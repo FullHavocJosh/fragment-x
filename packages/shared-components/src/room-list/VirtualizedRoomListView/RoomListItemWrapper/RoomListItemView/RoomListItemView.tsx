@@ -83,6 +83,8 @@ export interface RoomListItemViewSnapshot {
     showNotificationMenu: boolean;
     /** Whether the room is a favourite room */
     isFavourite: boolean;
+    /** Whether the favourite entry of the menu is called Pin, with a pin icon (a direct message with Fragment X's pins) */
+    pinAsFavourite?: boolean;
     /** Whether the room is a low priority room */
     isLowPriority: boolean;
     /** Whether the room is a direct message */

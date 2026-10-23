@@ -110,7 +110,9 @@ What it sets, all through configuration with no code changes:
   the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom.
   Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
   Every icon that is not a person, a space or a room (Search, Collapse, Inbox, settings, the icons in the top bar) has the
-  same hover: no box, the icon brightens and glows. The highlights around a space and around a subspace have 4px between
+  same hover: no box, the icon brightens and glows. Every icon button in the rail, the top bar and the composer has the same light grey
+  (`--cpd-color-icon-secondary`), and is white while the pointer or focus is on it, while it is selected or pressed, and for
+  the Inbox while it has something unread. The highlights around a space and around a subspace have 4px between
   them and what is next to them or inside them, and the selected or hover highlight of every row (a space, a subspace, a
   room, a direct message) ends 14px from each edge of the rail, so it is inside the trays; in the icons only rail it is a
   40px tile. The menu items of the room info card and of the user menu have no dark box: they take the colour behind them
@@ -130,7 +132,8 @@ What it sets, all through configuration with no code changes:
   the pinned direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it
   does not vanish while it is read. A click on Messages shows the Home page on its People tab, the list of all your
   conversations, instead of the conversation that was open last. A pin button in the room header of a direct message pins
-  it; a pin is the room's favourite tag (the same as Favourite in the context menu and in other clients). See
+  it; a pin is the room's favourite tag (the same as Favourite in other clients), and in a direct message every menu calls it
+  Pin (Pinned, Unpin) with a pin icon: the room list menu, the room context menu and the room info card. See
   `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `fragment_x.user_presence: true` (needs `user_panel`): the user panel shows a dot on the user's avatar (green for online,
   amber for idle) and, in the expanded rail, a line under the name (Online or Idle). It shows only while the homeserver

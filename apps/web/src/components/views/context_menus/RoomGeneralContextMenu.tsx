@@ -11,6 +11,7 @@ import { type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import React, { type JSX, useContext } from "react";
 import {
     FavouriteSolidIcon,
+    PinSolidIcon,
     LinkIcon,
     SettingsSolidIcon,
     ArrowDownIcon,
@@ -28,6 +29,7 @@ import { useEventEmitterState } from "../../../hooks/useEventEmitter";
 import { useUnreadNotifications } from "../../../hooks/useUnreadNotifications";
 import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import { _t } from "../../../languageHandler";
+import SdkConfig from "../../../SdkConfig";
 import { NotificationLevel } from "../../../stores/notifications/NotificationLevel";
 import { DefaultTagID, type TagID } from "../../../stores/room-list-v3/skip-list/tag";
 import DMRoomMap from "../../../utils/DMRoomMap";
@@ -156,12 +158,21 @@ export const RoomGeneralContextMenu: React.FC<RoomGeneralContextMenuProps> = ({
     };
 
     const isFavorite = roomTags.includes(DefaultTagID.Favourite);
+    // Fragment X (`fragment_x.pinned_messages`): a direct message is pinned, not favourited
+    const pinsDm = !!isDm && !!SdkConfig.get().fragment_x?.pinned_messages;
+    const favoriteLabel = pinsDm
+        ? isFavorite
+            ? _t("fragment_x|unpin")
+            : _t("fragment_x|pin")
+        : isFavorite
+          ? _t("room|context_menu|unfavourite")
+          : _t("room|context_menu|favourite");
     const favoriteOption: JSX.Element = (
         <IconizedContextMenuCheckbox
             onClick={wrapHandler((ev) => onTagRoom(ev, DefaultTagID.Favourite), onPostFavoriteClick, true)}
             active={isFavorite}
-            label={isFavorite ? _t("room|context_menu|unfavourite") : _t("room|context_menu|favourite")}
-            icon={<FavouriteSolidIcon />}
+            label={favoriteLabel}
+            icon={pinsDm ? <PinSolidIcon /> : <FavouriteSolidIcon />}
         />
     );
 

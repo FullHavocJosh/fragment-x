@@ -119,6 +119,43 @@ Please see LICENSE files in the repository root for full details.
         }
     }
 
+    /*
+     * One light grey for every icon button in the rail, the top bar and the composer; white while the pointer is over it
+     * or it has focus, while it is selected or pressed, and for the Inbox while it has something unread.
+     */
+    .mx_RailButton,
+    .mx_ThreadsActivityCentreButton,
+    .mx_UserPanel_button,
+    .mx_SpaceButton .mx_SpaceButton_icon,
+    .mx_RoomHeader [class*="_icon-button_"],
+    .mx_MessageComposer_button,
+    .mx_MessageComposer [class*="_icon-button_"] {
+        svg {
+            fill: var(--cpd-color-icon-secondary) !important;
+            color: var(--cpd-color-icon-secondary) !important;
+        }
+    }
+
+    .mx_RailButton:hover svg,
+    .mx_RailButton:focus-visible svg,
+    .mx_ThreadsActivityCentreButton:hover svg,
+    .mx_ThreadsActivityCentreButton:focus-visible svg,
+    .mx_ThreadsActivityCentreButton_unread svg,
+    .mx_UserPanel_button:hover svg,
+    .mx_UserPanel_button:focus-visible svg,
+    .mx_SpaceButton:hover .mx_SpaceButton_icon svg,
+    .mx_SpaceButton.mx_SpaceButton_active .mx_SpaceButton_icon svg,
+    .mx_RoomHeader [class*="_icon-button_"]:hover svg,
+    .mx_RoomHeader [class*="_icon-button_"]:focus-visible svg,
+    .mx_RoomHeader [class*="_icon-button_"][aria-pressed="true"] svg,
+    .mx_RoomHeader [class*="_icon-button_"][aria-expanded="true"] svg,
+    .mx_MessageComposer_button:hover svg,
+    .mx_MessageComposer [class*="_icon-button_"]:hover svg,
+    .mx_MessageComposer [class*="_icon-button_"]:focus-visible svg {
+        fill: var(--cpd-color-icon-primary) !important;
+        color: var(--cpd-color-icon-primary) !important;
+    }
+
     /* the avatar's centre is 34px from the bottom, and the settings icon is one icon pitch above it */
     .mx_SpacePanel.mx_SpacePanel_unified .mx_UserPanel.mx_UserPanel_compact {
         padding: var(--fragmentXIconPad) 0 calc((var(--fragmentXFrameCell) - 32px) / 2);
@@ -410,6 +447,9 @@ Please see LICENSE files in the repository root for full details.
 .mx_MatrixChat_fragmentXFrame .mx_RoomSummaryCard [role^="menuitem"],
 body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
     margin-inline: 8px;
+    /* the items are as wide as their container, so the margin on both sides is taken off the width */
+    width: calc(100% - 16px);
+    box-sizing: border-box;
     border-radius: 8px;
     background-color: transparent;
 

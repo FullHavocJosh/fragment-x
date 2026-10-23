@@ -407,6 +407,7 @@ export class RoomListItemViewModel
             showMoreOptionsMenu,
             showNotificationMenu,
             isFavourite,
+            pinAsFavourite: isDm && !!SdkConfig.get().fragment_x?.pinned_messages,
             isLowPriority,
             isDm,
             canInvite,
