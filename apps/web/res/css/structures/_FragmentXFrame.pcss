@@ -180,7 +180,8 @@ Please see LICENSE files in the repository root for full details.
 
             &.mx_SpaceItem_subspace::before {
                 inset: 0 10px;
-                border-radius: 14px;
+                /* concentric with the group (16px) and the rows (8px): 4px apart each */
+                border-radius: 12px;
                 background-color: var(--cpd-color-bg-subtle-primary);
             }
         }
@@ -214,6 +215,11 @@ Please see LICENSE files in the repository root for full details.
             /* the avatar is 4px inside the highlight, on the axis, and the name lines up with the names of the spaces */
             padding-left: 4px;
             gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 16px);
+        }
+
+        /* ...and the same corners as a room's (8px, the rooms' own), so no highlight in the column is rounder than another */
+        .mx_SpaceButton .mx_SpaceButton_selectionWrapper {
+            border-radius: 8px;
         }
 
         /* a space's highlight is symmetric too: the same inset on the right as on the left */
@@ -309,6 +315,21 @@ Please see LICENSE files in the repository root for full details.
             /* and the label starts where the names of the spaces do */
             .mx_ThreadsActivityCentreButton_Icon {
                 margin-right: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 12px);
+            }
+        }
+
+        /*
+         * Expanded, the Inbox is an icon next to the settings icon in the user's row (the same 48px pitch as the icons in the
+         * top bar), not a row of its own. Collapsed, it stays in the column above the settings icon.
+         */
+        &:not(.collapsed) .mx_ThreadsActivityCentre_container {
+            position: absolute;
+            inset-inline-end: calc(var(--fragmentXIconPad) * 7);
+            inset-block-end: calc((var(--fragmentXFrameCell) - 32px) / 2);
+            z-index: 1;
+
+            .mx_ThreadsActivityCentreButton {
+                margin: 0;
             }
         }
 

@@ -327,6 +327,21 @@ describe("<SpacePanel />", () => {
             expect(names).toEqual(["Pinned Pat", "Unread Uma"]);
         });
 
+        it("shows the Home page on its People tab when Messages is clicked, not the conversation that was open", () => {
+            SdkConfig.put({ fragment_x: { unified_tree: true, messages_entry: true } });
+            const fire = vi.spyOn(defaultDispatcher, "fire").mockImplementation(() => {});
+            const setActiveSpace = vi.spyOn(sdkContext.spaceStore, "setActiveSpace").mockResolvedValue();
+            act(() => setHomeTab("servers"));
+            render(<SpacePanel />);
+
+            fireEvent.click(screen.getByRole("button", { name: "Messages" }));
+
+            expect(setActiveSpace).toHaveBeenCalledWith(MetaSpace.Home);
+            expect(fire).toHaveBeenCalledWith(Action.ViewHomePage);
+            expect(renderHook(() => useHomeTab()).result.current[0]).toBe("people");
+            act(() => setHomeTab("people"));
+        });
+
         it("calls Home Messages, lists the direct messages under it and the other rooms under Servers", () => {
             SdkConfig.put({ fragment_x: { unified_tree: true, servers_entry: true, messages_entry: true } });
             render(<SpacePanel />);

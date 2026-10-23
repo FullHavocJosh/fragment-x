@@ -38,7 +38,8 @@ import { useCreateAutoDisposedViewModel, UserMenu } from "@element-hq/web-shared
 
 import { _t } from "../../../languageHandler";
 import { useContextMenu } from "../../structures/ContextMenu";
-import { useHomeTab } from "../../structures/HomeTabs";
+import { setHomeTab, useHomeTab } from "../../structures/HomeTabs";
+import { UPDATE_EVENT } from "../../../stores/AsyncStore";
 import SpaceCreateMenu from "./SpaceCreateMenu";
 import { SpaceButton, SpaceItem } from "./SpaceTreeLevel";
 import {
@@ -193,6 +194,13 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
     // Fragment X pinned messages: only the pinned and the unread conversations, the pinned ones first
     const homeRooms = useMessagesRooms(dmRooms, isPinnedMessages());
     const homeLabel = messages ? _t("fragment_x|messages") : getMetaSpaceName(MetaSpace.Home, allRoomsInHome);
+    // Fragment X unified frame: Messages is highlighted only on its own page, not while one of its conversations is open
+    // (that row is) and not on the Servers tab (that entry is)
+    const viewedRoomId = useEventEmitterState(sdkContext.roomViewStore, UPDATE_EVENT, () =>
+        sdkContext.roomViewStore.getRoomId(),
+    );
+    const [homeTab] = useHomeTab();
+    const highlighted = isUnifiedFrame() ? selected && !viewedRoomId && homeTab !== "servers" : undefined;
     const [storedTreeCollapsed, setTreeCollapsed] = useState(() =>
         SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(MetaSpace.Home, undefined, false),
     );
@@ -246,6 +254,18 @@ const HomeButton: React.FC<MetaSpaceButtonProps> = ({ selected, isPanelCollapsed
             <SpaceButton
                 spaceKey={MetaSpace.Home}
                 selected={selected}
+                highlighted={highlighted}
+                // Fragment X Messages: a click shows the list of conversations (the Home page, on its People tab), not the
+                // conversation that was open last
+                onClick={
+                    messages
+                        ? () => {
+                              setHomeTab("people");
+                              sdkContext.spaceStore.setActiveSpace(MetaSpace.Home);
+                              defaultDispatcher.fire(Action.ViewHomePage);
+                          }
+                        : undefined
+                }
                 isNarrow={isPanelCollapsed}
                 label={homeLabel}
                 notificationState={notificationState}
@@ -616,7 +636,8 @@ const SpacePanel: React.FC = () => {
                             )}
                         </Droppable>
 
-                        <ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed} />
+                        {/* Fragment X unified frame: the Inbox is an icon next to the settings icon, so it has no label when expanded */}
+                        <ThreadsActivityCentre displayButtonLabel={!isPanelCollapsed && !isUnifiedFrame()} />
 
                         {/* Fragment X: the user panel's gear opens the settings, so with the unified tree and the user
                             panel the quick settings entry above it would be a second settings button. */}

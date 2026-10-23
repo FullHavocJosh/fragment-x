@@ -124,11 +124,12 @@ What it sets, all through configuration with no code changes:
   the rail, with a chat icon, and lists only the direct messages, pinned first, each with its latest message as a second
   line (the same preview text the room list uses). The rooms that are in no space are listed under the Servers entry as
   Other rooms. The Home page and its tabs are unchanged.
-- `fragment_x.pinned_messages: true` (needs `messages_entry`): Messages lists only the conversations that matter: the pinned
-  direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it does not
-  vanish while it is read. The other conversations are still on the Home page, under People. A pin button in the room
-  header of a direct message pins it; a pin is the room's favourite tag (the same as Favourite in the context menu and in
-  other clients). See `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
+- `fragment_x.pinned_messages: true` (needs `messages_entry`): Messages in the rail lists only the conversations that matter:
+  the pinned direct messages first (by name), then the unread ones (newest first), and the open one if it is neither, so it
+  does not vanish while it is read. A click on Messages shows the Home page on its People tab, the list of all your
+  conversations, instead of the conversation that was open last. A pin button in the room header of a direct message pins
+  it; a pin is the room's favourite tag (the same as Favourite in the context menu and in other clients). See
+  `selectMessagesRooms` in `apps/web/src/components/views/spaces/SpaceRoomRows.tsx`.
 - `fragment_x.user_presence: true` (needs `user_panel`): the user panel shows a dot on the user's avatar (green for online,
   amber for idle) and, in the expanded rail, a line under the name (Online or Idle). It shows only while the homeserver
   reports the user as online or idle: a server without presence (see `enable_presence_by_hs_url`), or an offline user,

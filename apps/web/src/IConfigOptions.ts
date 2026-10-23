@@ -129,9 +129,10 @@ export interface ConfigOptions extends WebConfigJson {
          */
         messages_entry?: boolean;
         /**
-         * When true (needs `messages_entry`), Messages lists only the pinned direct messages, first, and the unread ones
-         * under them, plus the one that is open. A pin button in the room header of a direct message pins it (the room's
-         * favourite tag, so it is the same in every client).
+         * When true (needs `messages_entry`), Messages in the rail lists the pinned direct messages first and the unread
+         * ones under them (and the one that is open), and a click on Messages shows all of them on the Home page. A pin
+         * button in the room header of a direct message pins it (the room's favourite tag, so it is the same in every
+         * client).
          */
         pinned_messages?: boolean;
         /**

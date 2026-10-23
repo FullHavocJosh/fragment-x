@@ -330,7 +330,7 @@ describe("SpaceRoomRows", () => {
             expect(isPinnedMessages()).toBe(true);
         });
 
-        it("lists the pinned conversations first by name, then the unread ones, newest first", () => {
+        it("lists the pinned conversations first by name, then the unread ones, newest first, and no others", () => {
             const zed = dm("!zed:s", "Zed", 5, true);
             const ann = dm("!ann:s", "Ann", 1, true);
             const old = dm("!old:s", "Old", 10);
