@@ -348,6 +348,68 @@ describe("RoomHeader", () => {
         });
     });
 
+    describe("Fragment X header_icons", () => {
+        const names = ["Pinned messages", "Search this room", "Side panel"];
+
+        afterEach(() => {
+            SdkConfig.reset();
+            vi.restoreAllMocks();
+        });
+
+        it("has none of the three icons without the option", () => {
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+            for (const name of names) expect(queryByRole("button", { name })).not.toBeInTheDocument();
+        });
+
+        it("has the three icons, each once, with the option", () => {
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const { getAllByRole } = render(<RoomHeader room={room} />, getWrapper());
+            for (const name of names) expect(getAllByRole("button", { name })).toHaveLength(1);
+        });
+
+        it("opens the pinned messages card from the pinned messages icon", async () => {
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const user = userEvent.setup();
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            await user.click(getByRole("button", { name: "Pinned messages" }));
+            expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.PinnedMessages, state: undefined });
+        });
+
+        it("starts the room's message search from the search icon", async () => {
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const fire = vi.spyOn(dispatcher, "fire");
+            const user = userEvent.setup();
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            await user.click(getByRole("button", { name: "Search this room" }));
+            expect(fire).toHaveBeenCalledWith("focus_search");
+        });
+
+        it("shows or hides the side panel from the toggle", async () => {
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const toggle = vi.spyOn(RightPanelStore.instance, "togglePanel").mockImplementation(() => {});
+            const user = userEvent.setup();
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(getByRole("button", { name: "Side panel" })).toHaveAttribute("aria-pressed", "false");
+            await user.click(getByRole("button", { name: "Side panel" }));
+            expect(toggle).toHaveBeenCalledWith(null);
+        });
+
+        it("has no pinned messages icon in a direct message, which has the pin for the conversation", () => {
+            vi.mocked(DMRoomMap.shared().getUserIdForRoomId).mockImplementation((roomId) => {
+                if (roomId === room.roomId) return "@user:example.com";
+            });
+            room.getMember = vi.fn((userId) => new RoomMember(room.roomId, userId));
+            SdkConfig.put({ fragment_x: { header_icons: true, pinned_messages: true } });
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(queryByRole("button", { name: "Pinned messages" })).not.toBeInTheDocument();
+            expect(queryByRole("button", { name: "Pin conversation" })).toBeInTheDocument();
+        });
+    });
+
     describe("Fragment X room_context_menu", () => {
         afterEach(() => {
             SdkConfig.reset();
