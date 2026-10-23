@@ -21,7 +21,6 @@ import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/publi
 import PinIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin";
 import PinSolidIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin-solid";
 import SearchIcon from "@vector-im/compound-design-tokens/assets/web/icons/search";
-import SidebarIcon from "@vector-im/compound-design-tokens/assets/web/icons/sidebar";
 import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
 import {
@@ -32,7 +31,12 @@ import {
     useCreateAutoDisposedViewModel,
 } from "@element-hq/web-shared-components";
 import { CallType } from "matrix-js-sdk/src/webrtc/call";
-import { HistoryIcon, UserProfileSolidIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
+import {
+    HistoryIcon,
+    LeftPanelCloseIcon,
+    LeftPanelOpenIcon,
+    UserProfileSolidIcon,
+} from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import { useRoomName } from "../../../../hooks/useRoomName.ts";
 import { RightPanelPhases } from "../../../../stores/right-panel/RightPanelStorePhases.ts";
@@ -109,7 +113,7 @@ function RoomPinButton({ room }: { room: Room }): JSX.Element {
  */
 function RoomPanelToggle(): JSX.Element {
     const sdkContext = useContext(SDKContext);
-    const { isOpen } = useCurrentPhase();
+    const { currentPhase, isOpen } = useCurrentPhase();
     const label = _t("fragment_x|side_panel");
 
     return (
@@ -119,10 +123,16 @@ function RoomPanelToggle(): JSX.Element {
                 aria-pressed={isOpen}
                 onClick={(evt) => {
                     evt.stopPropagation();
-                    sdkContext.rightPanelStore.togglePanel(null);
+                    // A room with no saved panel state cannot be toggled; open the room info to create it.
+                    if (currentPhase) sdkContext.rightPanelStore.togglePanel(null);
+                    else sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.RoomSummary);
                 }}
             >
-                <SidebarIcon className={isOpen ? "mx_RoomHeader_toggled" : undefined} />
+                {isOpen ? (
+                    <LeftPanelCloseIcon className="mx_RoomHeader_panelToggleIcon" />
+                ) : (
+                    <LeftPanelOpenIcon className="mx_RoomHeader_panelToggleIcon" />
+                )}
             </IconButton>
         </Tooltip>
     );
@@ -151,6 +161,10 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
 
     const dmMember = useDmMember(room);
     const isDirectMessage = !!dmMember;
+    // Fragment X: the panel tools show only while the side panel is open; the call buttons only in direct messages.
+    const headerIcons = !!SdkConfig.get().fragment_x?.header_icons;
+    const { isOpen: panelOpen } = useCurrentPhase();
+    const showPanelTools = !headerIcons || panelOpen;
 
     const notificationsEnabled = useFeatureEnabled("feature_notifications");
 
@@ -346,6 +360,11 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
         voiceCallButton = undefined;
     }
 
+    if (headerIcons && !isDirectMessage && !isConnectedToCall && !isViewingCall) {
+        videoCallButton = undefined;
+        voiceCallButton = undefined;
+    }
+
     if (!showVideoCallButton) {
         videoCallButton = undefined;
     }
@@ -377,21 +396,23 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
 
             {showChatButton && <VideoRoomChatButton room={room} />}
 
-            <Tooltip label={_t("common|threads")}>
-                <IconButton
-                    indicator={notificationLevelToIndicator(threadNotifications)}
-                    onClick={(evt) => {
-                        evt.stopPropagation();
-                        sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.ThreadPanel);
-                        PosthogTrackers.trackInteraction("WebRoomHeaderButtonsThreadsButton", evt);
-                    }}
-                    aria-label={_t("common|threads")}
-                >
-                    <ToggleableIcon Icon={ThreadsIcon} phase={RightPanelPhases.ThreadPanel} />
-                </IconButton>
-            </Tooltip>
+            {showPanelTools && (
+                <Tooltip label={_t("common|threads")}>
+                    <IconButton
+                        indicator={notificationLevelToIndicator(threadNotifications)}
+                        onClick={(evt) => {
+                            evt.stopPropagation();
+                            sdkContext.rightPanelStore.showOrHidePhase(RightPanelPhases.ThreadPanel);
+                            PosthogTrackers.trackInteraction("WebRoomHeaderButtonsThreadsButton", evt);
+                        }}
+                        aria-label={_t("common|threads")}
+                    >
+                        <ToggleableIcon Icon={ThreadsIcon} phase={RightPanelPhases.ThreadPanel} />
+                    </IconButton>
+                </Tooltip>
+            )}
             {/* Fragment X header icons: the pinned messages, as in Discord (a direct message has the pin for the conversation) */}
-            {SdkConfig.get().fragment_x?.header_icons && !isDirectMessage && (
+            {showPanelTools && SdkConfig.get().fragment_x?.header_icons && !isDirectMessage && (
                 <Tooltip label={_t("right_panel|pinned_messages_button")}>
                     <IconButton
                         onClick={(evt) => {
@@ -404,14 +425,14 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
                     </IconButton>
                 </Tooltip>
             )}
-            {isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
+            {showPanelTools && isDirectMessage && SdkConfig.get().fragment_x?.pinned_messages && (
                 // not the room id alone: the bell below has that key, and siblings with one key are rendered again on every update
                 <RoomPinButton key={`pin-${room.roomId}`} room={room} />
             )}
-            {SdkConfig.get().fragment_x?.room_context_menu && (
+            {showPanelTools && SdkConfig.get().fragment_x?.room_context_menu && (
                 <RoomNotificationBell key={`bell-${room.roomId}`} room={room} />
             )}
-            {SdkConfig.get().fragment_x?.header_icons && (
+            {showPanelTools && SdkConfig.get().fragment_x?.header_icons && (
                 <Tooltip label={_t("room|search|this_room_button")}>
                     <IconButton
                         onClick={(evt) => {
