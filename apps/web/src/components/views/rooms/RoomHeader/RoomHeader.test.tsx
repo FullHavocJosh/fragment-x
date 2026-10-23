@@ -66,10 +66,9 @@ import { SDKContext } from "../../../../contexts/SDKContext";
 import { SDKContextClass } from "../../../../contexts/SDKContextClass.ts";
 
 vi.mock("../../../../utils/ShieldUtils");
+const panelPhase = vi.hoisted(() => ({ currentPhase: "foo" as string | null, isOpen: false }));
 vi.mock("../../../../hooks/right-panel/useCurrentPhase", () => ({
-    useCurrentPhase: () => {
-        return { currentPhase: "foo", isOpen: false };
-    },
+    useCurrentPhase: () => panelPhase,
 }));
 vi.mock("../../../../Modal");
 vi.mock("../../../../utils/room/tagRoom", () => ({ tagRoom: vi.fn() }));
@@ -351,9 +350,46 @@ describe("RoomHeader", () => {
     describe("Fragment X header_icons", () => {
         const names = ["Pinned messages", "Search this room", "Side panel"];
 
+        beforeEach(() => {
+            panelPhase.currentPhase = "foo";
+            panelPhase.isOpen = true;
+        });
+
         afterEach(() => {
             SdkConfig.reset();
             vi.restoreAllMocks();
+            panelPhase.currentPhase = "foo";
+            panelPhase.isOpen = false;
+        });
+
+        it("keeps threads, pinned messages, search and alerts out of the header while the side panel is closed", () => {
+            panelPhase.isOpen = false;
+            SdkConfig.put({ fragment_x: { header_icons: true, room_context_menu: true } });
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            for (const name of ["Threads", "Pinned messages", "Search this room", "Notification options"]) {
+                expect(queryByRole("button", { name })).not.toBeInTheDocument();
+            }
+            expect(queryByRole("button", { name: "Side panel" })).toBeInTheDocument();
+        });
+
+        it("has no call start buttons in a room that is not a direct message", () => {
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const { queryByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            expect(queryByRole("button", { name: "Video call" })).not.toBeInTheDocument();
+            expect(queryByRole("button", { name: "Voice call" })).not.toBeInTheDocument();
+        });
+
+        it("opens the room info from the toggle when the room has no saved panel state", async () => {
+            panelPhase.currentPhase = null;
+            panelPhase.isOpen = false;
+            SdkConfig.put({ fragment_x: { header_icons: true } });
+            const user = userEvent.setup();
+            const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
+
+            await user.click(getByRole("button", { name: "Side panel" }));
+            expect(setCardSpy).toHaveBeenCalledWith({ phase: RightPanelPhases.RoomSummary, state: undefined });
         });
 
         it("has none of the three icons without the option", () => {
@@ -392,7 +428,7 @@ describe("RoomHeader", () => {
             const user = userEvent.setup();
             const { getByRole } = render(<RoomHeader room={room} />, getWrapper());
 
-            expect(getByRole("button", { name: "Side panel" })).toHaveAttribute("aria-pressed", "false");
+            expect(getByRole("button", { name: "Side panel" })).toHaveAttribute("aria-pressed", "true");
             await user.click(getByRole("button", { name: "Side panel" }));
             expect(toggle).toHaveBeenCalledWith(null);
         });

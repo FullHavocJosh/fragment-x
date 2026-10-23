@@ -138,7 +138,10 @@ What it sets, all through configuration with no code changes:
 - `fragment_x.header_icons: true`: the room header has the icons of Discord's: pinned messages (opens that side panel card;
   not in a direct message, which has the pin for the conversation), search (the same as the keyboard shortcut: the room's
   message search in the side panel) and, at the right end, a side panel toggle that shows or hides the panel with whatever
-  it holds. The member count still opens the member list. Calls stay as they are.
+  it holds. The member count still opens the member list. Threads, pinned messages, notification options and search show
+  in the header only while the side panel is open. The call start buttons show only in a direct message (in a call or
+  its lobby they stay, so the call can be left). The toggle works in a room that has no saved panel state yet, and its
+  icon is the left column's collapse icon, mirrored.
 - `fragment_x.chat_cosmetics: true`: three touches of Discord's in the chat. The time shows beside the name of the sender in
   the first message of a group (the messages that follow keep the time on hover, in the gutter); the date between days is a
   centred pill on the line; and the attachment button is a plus at the left of the composer, with the emoji and the other
