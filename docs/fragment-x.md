@@ -113,7 +113,9 @@ What it sets, all through configuration with no code changes:
   same hover: no box, the icon brightens and glows. The highlights around a space and around a subspace have 4px between
   them and what is next to them or inside them, and the selected or hover highlight of every row (a space, a subspace, a
   room, a direct message) ends 14px from each edge of the rail, so it is inside the trays; in the icons only rail it is a
-  40px tile. The styles are in
+  40px tile. The menu items of the room info card and of the user menu have no dark box: they take the colour behind them
+  and the item under the pointer has the same 8px rounded highlight as a rail row; the side panel's header has no line
+  under the search box. The styles are in
   `apps/web/res/css/structures/_FragmentXFrame.pcss`, under the class `mx_MatrixChat_fragmentXFrame` that `LoggedInView`
   adds.
 - `fragment_x.servers_entry: true`: the rail has a Servers entry (a grid icon) above the servers, after a divider, in place of

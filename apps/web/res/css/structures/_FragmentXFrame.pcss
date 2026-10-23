@@ -401,3 +401,25 @@ Please see LICENSE files in the repository root for full details.
         }
     }
 }
+
+/*
+ * The menu items of the room info card and of the user menu have no box of their own: they take the colour behind them,
+ * and the item under the pointer or focus has the rounded highlight of the expanded rail's rows. (The user menu is in a
+ * portal, outside the app wrapper, so it is found from the body.)
+ */
+.mx_MatrixChat_fragmentXFrame .mx_RoomSummaryCard [role^="menuitem"],
+body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
+    margin-inline: 8px;
+    border-radius: 8px;
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: $panel-actions;
+    }
+}
+
+/* no line under the search box of the side panel */
+.mx_MatrixChat_fragmentXFrame .mx_BaseCard .mx_BaseCard_header {
+    border-block-end-color: transparent;
+}
