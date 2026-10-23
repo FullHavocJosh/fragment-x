@@ -153,6 +153,12 @@ export interface ConfigOptions extends WebConfigJson {
          */
         chat_cosmetics?: boolean;
         /**
+         * When true (needs `home_top_bar`), the people tab of the Home page has a column beside the list, Active Now,
+         * with the people the user has a direct chat with who are online or idle. It is left out when the homeserver has no
+         * presence.
+         */
+        active_now?: boolean;
+        /**
          * When true, a server (space) with unread messages has a small pill on the left edge of its row and, in the
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */

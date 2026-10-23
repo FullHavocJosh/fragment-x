@@ -143,6 +143,11 @@ What it sets, all through configuration with no code changes:
   centred pill on the line; and the attachment button is a plus at the left of the composer, with the emoji and the other
   buttons staying on the right. See `EventTile.tsx` (`mx_EventTile_senderLine`), `MessageComposerButtons.tsx` and
   `apps/web/res/css/structures/_FragmentXChat.pcss`.
+- `fragment_x.active_now: true` (needs `home_top_bar`): the people tab of the Home page has an Active Now column beside the
+  list, like Discord's: the people you have a direct chat with who are online or idle (online first, then by name), with a
+  status line and a dot; a row opens the chat. Only people you chat with are listed, and only while the homeserver reports
+  them as online or idle; an offline or unknown person is left out, and with no presence on the server the column is not
+  shown. See `ActiveNow` in `apps/web/src/components/structures/HomeTabs.tsx`.
 - `fragment_x.server_unread: true`: a server (space) with unread messages has a small pill on the left edge of its row and,
   in the expanded rail, a line under its name such as "3 new messages in 2 rooms" ("New activity in 2 rooms" when the
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined

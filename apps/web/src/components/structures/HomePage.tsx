@@ -26,6 +26,7 @@ import PosthogTrackers from "../../PosthogTrackers";
 import EmbeddedPage from "./EmbeddedPage";
 import {
     BlockedList,
+    ActiveNow,
     HomeTopBar,
     PeopleList,
     PendingList,
@@ -165,7 +166,15 @@ const HomePage: React.FC<IProps> = ({ justRegistered = false }) => {
     } else if (tab === "blocked") {
         tabContent = <BlockedList cli={cli} />;
     } else if (contactCount > 0) {
-        tabContent = <PeopleList contacts={getDirectContacts()} />;
+        const contacts = getDirectContacts();
+        tabContent = SdkConfig.get().fragment_x?.active_now ? (
+            <div className="mx_HomeTabs_peopleLayout">
+                <PeopleList contacts={contacts} />
+                <ActiveNow cli={cli} contacts={contacts} />
+            </div>
+        ) : (
+            <PeopleList contacts={contacts} />
+        );
     } else {
         tabContent = <div className="mx_HomePage_default mx_HomePage_default_inTabs">{welcome}</div>;
     }

@@ -7,7 +7,14 @@ Please see LICENSE files in the repository root for full details.
 
 import React, { type JSX, useContext, useReducer, useSyncExternalStore } from "react";
 import classNames from "classnames";
-import { ClientEvent, type MatrixClient, KnownMembership, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
+import {
+    ClientEvent,
+    type MatrixClient,
+    KnownMembership,
+    type Room,
+    RoomEvent,
+    UserEvent,
+} from "matrix-js-sdk/src/matrix";
 import { ChatNewIcon, HelpIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 
 import { _t } from "../../languageHandler";
@@ -20,6 +27,7 @@ import AccessibleButton from "../views/elements/AccessibleButton";
 import BaseAvatar from "../views/avatars/BaseAvatar";
 import RoomAvatar from "../views/avatars/RoomAvatar";
 import { UserTab } from "../views/dialogs/UserTab";
+import { isPresenceEnabled } from "../../utils/presence";
 import { SDKContext } from "../../contexts/SDKContext";
 import { UPDATE_TOP_LEVEL_SPACES } from "../../stores/spaces";
 import { useContextMenu } from "./ContextMenu";
@@ -175,6 +183,69 @@ export function PeopleList({ contacts }: { contacts: DirectContact[] }): JSX.Ele
                 </li>
             ))}
         </ul>
+    );
+}
+
+export interface ActiveContact {
+    contact: DirectContact;
+    state: "online" | "idle";
+}
+
+/**
+ * Fragment X (`fragment_x.active_now`): the people the user has a direct chat with who are online or idle, the online
+ * ones first, then by name. An offline or unknown user is not listed, rather than listed with a wrong state.
+ */
+export function getActiveContacts(cli: MatrixClient, contacts: DirectContact[]): ActiveContact[] {
+    const rank = { online: 0, idle: 1 };
+    return contacts
+        .flatMap((contact): ActiveContact[] => {
+            const presence = cli.getUser(contact.userId)?.presence;
+            if (presence === "online") return [{ contact, state: "online" }];
+            if (presence === "unavailable") return [{ contact, state: "idle" }];
+            return [];
+        })
+        .sort((a, b) => rank[a.state] - rank[b.state] || a.contact.room.name.localeCompare(b.contact.room.name));
+}
+
+/**
+ * Fragment X (`fragment_x.active_now`): a column beside the people list with who is around right now, like Discord's
+ * Active Now. A row opens the chat. Not shown when the homeserver has no presence, which would only ever say nobody is.
+ */
+export function ActiveNow({ cli, contacts }: { cli: MatrixClient; contacts: DirectContact[] }): JSX.Element | null {
+    const [, refresh] = useReducer((n: number) => n + 1, 0);
+    useEventEmitter(cli, UserEvent.Presence, refresh);
+    if (!isPresenceEnabled(cli)) return null;
+
+    const active = getActiveContacts(cli, contacts);
+    return (
+        <section className="mx_ActiveNow" aria-label={_t("fragment_x|active_now")}>
+            <h2 className="mx_ActiveNow_heading">{_t("fragment_x|active_now")}</h2>
+            {active.length === 0 ? (
+                <p className="mx_ActiveNow_empty">{_t("fragment_x|active_now_empty")}</p>
+            ) : (
+                <ul className="mx_ActiveNow_list">
+                    {active.map(({ contact, state }) => (
+                        <li key={contact.userId}>
+                            <AccessibleButton
+                                className="mx_ActiveNow_row"
+                                onClick={() => viewRoom(contact.room.roomId)}
+                            >
+                                <span className="mx_ActiveNow_avatar">
+                                    <RoomAvatar room={contact.room} size="32px" />
+                                    <span className="mx_ActiveNow_dot" data-presence={state} />
+                                </span>
+                                <span className="mx_ActiveNow_text">
+                                    <span className="mx_ActiveNow_name">{contact.room.name}</span>
+                                    <span className="mx_ActiveNow_status">
+                                        {state === "online" ? _t("presence|online") : _t("presence|idle")}
+                                    </span>
+                                </span>
+                            </AccessibleButton>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
     );
 }
 

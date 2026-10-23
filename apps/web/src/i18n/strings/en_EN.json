@@ -1289,6 +1289,8 @@
         "sent": "Sent"
     },
     "fragment_x": {
+        "active_now": "Active Now",
+        "active_now_empty": "It's quiet for now. When someone you chat with is around, they show up here.",
         "add_friend": "Add Friend",
         "blocked": "Blocked",
         "colour_accent": "Accent",
