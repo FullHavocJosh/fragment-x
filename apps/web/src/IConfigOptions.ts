@@ -200,6 +200,12 @@ export interface ConfigOptions extends WebConfigJson {
          * to the chat and curving into it.
          */
         rail_tab?: boolean;
+        /**
+         * When true (with `unified_frame` and `unified_tree`), the edge of the server rail can be dragged. Dragging in
+         * collapses it to its icons, dragging out of the icons expands it, and it stops at the width where every name is on
+         * one line. The Expand and Collapse button still works.
+         */
+        rail_resize?: boolean;
     };
 }
 

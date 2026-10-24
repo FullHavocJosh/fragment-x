@@ -30,11 +30,15 @@ Please see LICENSE files in the repository root for full details.
         margin-left: 19px;
         margin-right: 8px;
         width: 100%;
+        /* the margins are inside the rail when it is dragged narrow, and a long label is cut, not spilled over the chat */
+        max-width: calc(100% - 27px);
+        min-width: 0;
 
         /* the compound component wraps its children in a div */
         & > div {
             display: flex;
             align-items: center;
+            min-width: 0;
         }
 
         svg {
@@ -45,6 +49,10 @@ Please see LICENSE files in the repository root for full details.
 
         & .mx_RailButton_label {
             color: $secondary-content !important;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 }
