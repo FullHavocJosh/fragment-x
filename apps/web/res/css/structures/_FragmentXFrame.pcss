@@ -618,3 +618,45 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
         display: none;
     }
 }
+
+/*
+ * fragment_x.rail_resize: the edge of the rail is a handle that can be dragged. It is 8px wide, over the rail's edge and the
+ * chat's, and shows a thin line in the accent colour while the pointer is on it, it has focus or it is being dragged.
+ */
+.mx_SpacePanel .mx_SpacePanel_resizeHandle {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: -4px;
+    z-index: 6;
+    width: 8px;
+    cursor: col-resize;
+    touch-action: none;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 3px;
+        width: 2px;
+        opacity: 0;
+        background-color: var(--cpd-color-bg-accent-rest);
+        transition: opacity 0.15s ease-out;
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+        opacity: 1;
+    }
+
+    &:focus-visible {
+        outline: none;
+    }
+}
+
+.mx_SpacePanel.mx_SpacePanel_resizing {
+    user-select: none;
+
+    .mx_SpacePanel_resizeHandle::after {
+        opacity: 1;
+    }
+}

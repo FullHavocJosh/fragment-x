@@ -96,6 +96,8 @@ import { ModuleApi } from "../../../modules/Api.ts";
 import { useModuleSpacePanelItems } from "../../../modules/ExtrasApi.ts";
 import { UserMenuViewModel } from "../../../viewmodels/menus/UserMenuViewModel.ts";
 import SdkConfig from "../../../SdkConfig";
+import { useRailResize } from "../../../hooks/useRailResize";
+import { RAIL_ICON_WIDTH } from "../../../utils/railResize";
 import { useNarrowWindow } from "../../../hooks/useNarrowWindow";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
 import { OwnProfileStore } from "../../../stores/OwnProfileStore.ts";
@@ -537,6 +539,9 @@ const SpacePanel: React.FC = () => {
         sdkContext.rightPanelStore.hide(null);
     }, [narrow, sdkContext.rightPanelStore]);
     const ref = useRef<HTMLDivElement>(null);
+    // Fragment X (`fragment_x.rail_resize`): the edge of the rail can be dragged
+    const railResizeEnabled = isUnifiedTree() && isUnifiedFrame() && !!SdkConfig.get().fragment_x?.rail_resize;
+    const railResize = useRailResize(ref, isPanelCollapsed, setPanelCollapsed, railResizeEnabled);
     useLayoutEffect(() => {
         if (ref.current) UIStore.instance.trackElementDimensions("SpacePanel", ref.current);
         return () => UIStore.instance.stopTrackingElementDimensions("SpacePanel");
@@ -589,7 +594,9 @@ const SpacePanel: React.FC = () => {
                             mx_SpacePanel_unified: isUnifiedTree(),
                             // Fragment X: no settings button in the user's row, so the Inbox takes its place.
                             mx_SpacePanel_settingsInMenu: !!SdkConfig.get().fragment_x?.settings_in_user_menu,
+                            mx_SpacePanel_resizing: railResize.resizing,
                         })}
+                        style={railResizeEnabled && !isPanelCollapsed ? { width: railResize.width } : undefined}
                         onKeyDown={(ev) => {
                             const navAction = getKeyBindingsManager().getNavigationAction(ev);
                             if (
@@ -659,6 +666,18 @@ const SpacePanel: React.FC = () => {
                             <QuickSettingsButton isPanelCollapsed={isPanelCollapsed} />
                         )}
                         {isUnifiedTree() && <UserPanel compact={isPanelCollapsed} />}
+                        {railResizeEnabled && (
+                            <div
+                                className="mx_SpacePanel_resizeHandle"
+                                role="separator"
+                                aria-orientation="vertical"
+                                aria-label={_t("fragment_x|resize_rail")}
+                                aria-valuenow={Math.round(railResize.currentWidth)}
+                                aria-valuemin={RAIL_ICON_WIDTH}
+                                tabIndex={0}
+                                {...railResize.handleProps}
+                            />
+                        )}
                     </nav>
                 </DragDropContext>
             )}

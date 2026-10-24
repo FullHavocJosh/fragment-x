@@ -1335,6 +1335,7 @@
         "pop_out_blocked_description": "Your browser blocked the new window. Allow pop-ups for this site, then try again.",
         "pop_out_blocked_title": "Could not open the call window",
         "pop_out_call": "Pop out call",
+        "resize_rail": "Resize the left panel",
         "return_to_call": "Return to call",
         "servers": "Servers",
         "side_panel": "Side panel",

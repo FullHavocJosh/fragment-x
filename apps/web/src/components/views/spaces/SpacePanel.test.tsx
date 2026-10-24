@@ -227,6 +227,101 @@ describe("<SpacePanel />", () => {
         });
     });
 
+    describe("fragment_x.rail_resize", () => {
+        const flags = { unified_tree: true, unified_frame: true, rail_resize: true };
+        const nav = (): HTMLElement => screen.getByRole("navigation");
+        const handle = (): HTMLElement => screen.getByRole("separator");
+
+        beforeEach(() => {
+            localStorage.clear();
+            SdkConfig.put({ fragment_x: flags });
+            // The unified tree lists the rooms of Home: none here
+            (sdkContext.spaceStore as any).getSpaceFilteredRoomIds = () => new Set<string>();
+            // There is no layout here: the rail is as wide as its class and width say
+            vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+                const width = this.classList.contains("mx_SpacePanel")
+                    ? this.classList.contains("collapsed")
+                        ? 68
+                        : parseFloat((this as HTMLElement).style.width) || 272
+                    : 0;
+                return { width, height: 0, x: 0, y: 0, top: 0, left: 0, right: width, bottom: 0 } as DOMRect;
+            });
+        });
+        afterEach(() => {
+            SdkConfig.reset();
+            vi.mocked(Element.prototype.getBoundingClientRect).mockRestore();
+            delete (sdkContext.spaceStore as any).getSpaceFilteredRoomIds;
+        });
+
+        it("has a handle on the edge only with the option and the unified tree and frame", () => {
+            const { unmount } = render(<SpacePanel />);
+            expect(handle()).toBeInTheDocument();
+            unmount();
+
+            SdkConfig.put({ fragment_x: { ...flags, rail_resize: false } });
+            const second = render(<SpacePanel />);
+            expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+            second.unmount();
+
+            SdkConfig.put({ fragment_x: { ...flags, unified_frame: false } });
+            render(<SpacePanel />);
+            expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+        });
+
+        it("expands the icons only rail when the handle is dragged out, following the pointer", () => {
+            render(<SpacePanel />);
+            expect(nav()).toHaveClass("collapsed");
+
+            fireEvent.pointerDown(handle(), { button: 0, clientX: 68, pointerId: 1 });
+            fireEvent.pointerMove(handle(), { clientX: 90, pointerId: 1 });
+            expect(nav()).toHaveClass("collapsed");
+
+            fireEvent.pointerMove(handle(), { clientX: 200, pointerId: 1 });
+            expect(nav()).not.toHaveClass("collapsed");
+            expect(nav().style.width).toBe("200px");
+            expect(nav()).toHaveClass("mx_SpacePanel_resizing");
+
+            fireEvent.pointerUp(handle(), { pointerId: 1 });
+            expect(nav()).not.toHaveClass("mx_SpacePanel_resizing");
+            expect(localStorage.getItem("mx_fragment_x_rail_width")).toBe("200");
+        });
+
+        it("collapses the rail when the handle is dragged in close to the icons", () => {
+            render(<SpacePanel />);
+            fireEvent.pointerDown(handle(), { button: 0, clientX: 68, pointerId: 1 });
+            fireEvent.pointerMove(handle(), { clientX: 250, pointerId: 1 });
+            expect(nav()).not.toHaveClass("collapsed");
+
+            fireEvent.pointerMove(handle(), { clientX: 120, pointerId: 1 });
+            expect(nav()).not.toHaveClass("collapsed");
+            fireEvent.pointerMove(handle(), { clientX: 150, pointerId: 1 });
+            fireEvent.pointerMove(handle(), { clientX: 30, pointerId: 1 });
+            expect(nav()).toHaveClass("collapsed");
+            fireEvent.pointerUp(handle(), { pointerId: 1 });
+        });
+
+        it("changes with the arrow keys and toggles with Enter", () => {
+            render(<SpacePanel />);
+            fireEvent.keyDown(handle(), { key: "Enter" });
+            expect(nav()).not.toHaveClass("collapsed");
+            const before = Number(nav().style.width.replace("px", ""));
+
+            fireEvent.keyDown(handle(), { key: "ArrowLeft" });
+            const after = Number(nav().style.width.replace("px", ""));
+            expect(after).toBeLessThanOrEqual(before);
+
+            fireEvent.keyDown(handle(), { key: "Enter" });
+            expect(nav()).toHaveClass("collapsed");
+        });
+
+        it("starts at the width the user chose last time", () => {
+            localStorage.setItem("mx_fragment_x_rail_width", "180");
+            render(<SpacePanel />);
+            fireEvent.keyDown(handle(), { key: "Enter" });
+            expect(nav().style.width).toBe("180px");
+        });
+    });
+
     describe("fragment_x.servers_entry", () => {
         afterEach(() => {
             SdkConfig.reset();
