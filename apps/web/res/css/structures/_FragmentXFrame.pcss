@@ -130,6 +130,39 @@ Please see LICENSE files in the repository root for full details.
         display: block;
     }
 
+    /*
+     * The reply preview is a rounded card in the rail's tone on the frame colour (12px, like the trays in the rail), with
+     * no hairline and no shadow, and the same light grey for its text and the close icon as the rest of the frame.
+     */
+    .mx_RoomView_body .mx_ReplyPreview {
+        margin-block: var(--fragmentXIconPad) 0;
+        border: 0;
+        border-radius: 12px;
+        box-shadow: none;
+        background: var(--cpd-color-bg-subtle-secondary);
+
+        .mx_ReplyPreview_section {
+            border-bottom: 0;
+            padding: var(--cpd-space-2x) var(--cpd-space-3x);
+        }
+
+        .mx_ReplyPreview_header {
+            color: var(--cpd-color-text-secondary);
+            opacity: 1;
+            font: var(--cpd-font-body-sm-medium);
+
+            .mx_ReplyPreview_header_cancel svg {
+                color: var(--cpd-color-icon-secondary);
+                fill: var(--cpd-color-icon-secondary);
+            }
+
+            .mx_ReplyPreview_header_cancel:hover svg {
+                color: var(--cpd-color-icon-primary);
+                fill: var(--cpd-color-icon-primary);
+            }
+        }
+    }
+
     .mx_MessageComposer_wrapper {
         margin: 0;
         /* no line above the text box: it has the frame's colour, not the chat's */
