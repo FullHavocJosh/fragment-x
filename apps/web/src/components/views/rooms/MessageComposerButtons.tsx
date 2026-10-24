@@ -10,6 +10,7 @@ Please see LICENSE files in the repository root for full details.
 import classNames from "classnames";
 import {
     type IEventRelation,
+    type MatrixEvent,
     type Room,
     type MatrixClient,
     THREAD_RELATION_TYPE,
@@ -41,6 +42,8 @@ import IconizedContextMenu, {
     IconizedContextMenuOptionList,
 } from "../context_menus/IconizedContextMenu";
 import { EmojiButton } from "./EmojiButton";
+import { GifButton } from "./GifButton";
+import { getKlipyAppKey } from "../../../gif/gifMessage";
 import { filterBoolean } from "../../../utils/arrays";
 import { useSettingValue } from "../../../hooks/useSettings";
 import AccessibleButton, { type ButtonEvent } from "../elements/AccessibleButton";
@@ -59,6 +62,7 @@ interface IProps {
     showLocationButton: boolean;
     showPollsButton: boolean;
     showStickersButton: boolean;
+    replyToEvent?: MatrixEvent;
     toggleButtonMenu: () => void;
     isRichTextEnabled: boolean;
     onComposerModeClick: () => void;
@@ -101,6 +105,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
                 />
             )),
             showStickersButton(props),
+            gifButton(props),
             voiceRecordingButton(props, narrow),
             props.showPollsButton ? pollButton(room, props.relation) : null,
             showLocationButton(props, room, matrixClient),
@@ -125,6 +130,7 @@ const MessageComposerButtons: React.FC<IProps> = (props: IProps) => {
                     ? { TriggerIcon: PlusIcon, className: "mx_MessageComposer_upload" }
                     : {})}
             />,
+            gifButton(props),
         ];
         moreButtons = [
             showStickersButton(props),
@@ -180,6 +186,18 @@ function emojiButton(props: IProps): ReactElement {
             className="mx_MessageComposer_button"
         />
     );
+}
+
+function gifButton(props: IProps): ReactElement | null {
+    return getKlipyAppKey() ? (
+        <GifButton
+            key="gif_button"
+            relation={props.relation}
+            replyToEvent={props.replyToEvent}
+            menuPosition={props.menuPosition}
+            className="mx_MessageComposer_button"
+        />
+    ) : null;
 }
 
 function showStickersButton(props: IProps): ReactElement | null {

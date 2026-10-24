@@ -176,6 +176,14 @@ What it sets, all through configuration with no code changes:
   rooms have only unread activity and no count). The numbers are added up from the notification state of each joined
   room of the space and its subspaces, so muted rooms count for nothing; see `useSpaceUnread` in
   `apps/web/src/hooks/useSpaceUnread.ts`. A selected server keeps its tall pill.
+- `fragment_x.gif_picker: true` and `fragment_x.klipy_app_key` (a key from the Klipy Partner Panel): the composer has a GIF
+  button that opens a search box and a grid of GIFs from Klipy (trending until you type). Clicking a GIF posts it at once.
+  The message is a plain text message whose body is the Klipy media URL (so other clients show a link), plus a
+  `fragment_x.gif` content field (`url`, `width`, `height`, `title`) that Fragment X renders inline. Only `https` URLs on
+  `static*.klipy.com` render inline. Klipy's integration rules apply: requests and media loads go straight from the
+  browser to Klipy (no proxy, no copy in Matrix), results show in the order Klipy returns them, and the search box
+  placeholder is "Search KLIPY". A key in testing mode is limited to 100 requests an hour for all users. See
+  `apps/web/src/gif/` and `GifButton.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
