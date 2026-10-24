@@ -33,6 +33,27 @@ const POPUP_FEATURES = "popup=yes,width=1100,height=720";
 const POPUP_IFRAME_STYLE = "display:block;width:100vw;height:100vh;border:0;";
 
 /**
+ * The iframe's address, changed so that Element Call joins the call again on load instead of showing its lobby:
+ * the lobby is skipped, and a start intent becomes the join intent, so that joining again does not ring anyone.
+ */
+export function rejoinSrc(src: string): string {
+    let url: URL;
+    try {
+        url = new URL(src);
+    } catch {
+        return src;
+    }
+    // Element Call keeps its settings in the hash: #?name=value&name=value
+    if (!url.hash.startsWith("#?")) return src;
+    const params = new URLSearchParams(url.hash.slice(2));
+    params.set("skipLobby", "true");
+    const intent = params.get("intent");
+    if (intent?.startsWith("start_call")) params.set("intent", intent.replace("start_call", "join_existing"));
+    url.hash = `#?${params.toString().replace(/%24/g, "$")}`;
+    return url.toString();
+}
+
+/**
  * Prepares the widget API for an iframe that is about to move. A moved iframe is a new window, so the transport has to
  * follow the iframe's current window instead of the one it read at the start. And the widget API accepts the widget's
  * content loaded message once; the reloaded widget sends it again, which the API only takes when told to expect it.
@@ -111,6 +132,7 @@ export class CallPopout extends TypedEventEmitter<CallPopoutEvent, EventMap> {
         parent.insertBefore(placeholder, iframe);
         const homeStyle = iframe.getAttribute("style");
         prepareForMove(messaging, iframe);
+        iframe.src = rejoinSrc(iframe.src);
         iframe.setAttribute("style", POPUP_IFRAME_STYLE);
         popup.document.body.appendChild(iframe);
 
@@ -143,6 +165,7 @@ export class CallPopout extends TypedEventEmitter<CallPopoutEvent, EventMap> {
             else iframe.setAttribute("style", homeStyle);
             // In the app's document the iframe loads again, and the widget starts its handshake again
             prepareForMove(messaging, iframe);
+            iframe.src = rejoinSrc(iframe.src);
             placeholder.replaceWith(iframe);
         } else {
             logger.warn("CallPopout: the place of the call iframe is gone, so the call cannot return to it");
