@@ -14,6 +14,22 @@ Please see LICENSE files in the repository root for full details.
     flex-direction: column;
 
     background-color: $header-panel-bg-color;
+    position: relative;
+
+    /* Fragment X call_popout: shown over the call while it is open in a window of its own */
+    .mx_CallView_poppedOut {
+        position: absolute;
+        inset: 0;
+        z-index: 101;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--cpd-space-4x);
+        background-color: $call-background;
+        color: var(--cpd-color-text-secondary);
+        font: var(--cpd-font-body-md-regular);
+    }
 
     .mx_AppTile {
         width: auto;

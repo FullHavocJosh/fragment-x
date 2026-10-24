@@ -186,7 +186,11 @@ What it sets, all through configuration with no code changes:
   `apps/web/src/gif/` and `GifButton.tsx`.
 - `fragment_x.call_popout: true`: the call button in the room header that sends a call to the floating window (and back)
   has its own icon (collapse and expand) and the names Float call and Return to call, in place of the plain video
-  icon with Minimise call and Maximise call. See `RoomHeader.tsx`.
+  icon with Minimise call and Maximise call. While you are in a call, a Pop out call button next to it moves the call into
+  a separate browser window (Bring call back returns it; closing the window does too, and reloading the app closes it).
+  This works in Chrome, Firefox and Safari: the call's iframe moves into a popup window and its widget messages are
+  forwarded to the app, so the call reconnects for a moment. The browser must allow the pop-up, which it does for a
+  click. See `RoomHeader.tsx`, `CallPopoutButton.tsx` and `utils/CallPopout.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

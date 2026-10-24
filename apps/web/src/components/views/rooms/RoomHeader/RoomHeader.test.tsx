@@ -720,6 +720,17 @@ describe("RoomHeader", () => {
                 expect(screen.getByRole("button", { name: "Float call" })).toBeInTheDocument();
             });
 
+            it("has a Pop out call button while you are in the call", () => {
+                SdkConfig.add({ fragment_x: { call_popout: true } });
+                render(<RoomHeader room={room} />, getWrapper());
+                expect(screen.getByRole("button", { name: "Pop out call" })).toBeInTheDocument();
+            });
+
+            it("has no Pop out call button without the flag", () => {
+                render(<RoomHeader room={room} />, getWrapper());
+                expect(screen.queryByRole("button", { name: "Pop out call" })).not.toBeInTheDocument();
+            });
+
             it("names the button Return to call while the call is floating", () => {
                 SdkConfig.add({ fragment_x: { call_popout: true } });
                 mockRoomViewStore.isViewingCall.mockReturnValue(false);

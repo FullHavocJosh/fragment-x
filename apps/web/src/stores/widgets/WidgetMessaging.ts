@@ -207,6 +207,11 @@ export class WidgetMessaging extends TypedEventEmitter<WidgetMessagingEvent, Wid
         this.stickyPromise = options.stickyPromise;
     }
 
+    /** The iframe the widget runs in, or null if the messaging has not started. */
+    public get hostIframe(): HTMLIFrameElement | null {
+        return this.iframe;
+    }
+
     private _widgetApi: ClientWidgetApi | null = null;
     private set widgetApi(value: ClientWidgetApi | null) {
         this._widgetApi = value;
