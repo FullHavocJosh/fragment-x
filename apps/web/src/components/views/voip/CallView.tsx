@@ -15,6 +15,10 @@ import { CallStore } from "../../../stores/CallStore";
 import { useTypedEventEmitter } from "../../../hooks/useEventEmitter";
 import { useCall } from "../../../hooks/useCall";
 import { SDKContext } from "../../../contexts/SDKContext.ts";
+import { useCallPopout } from "../../../hooks/useCallPopout";
+import { CallPopout } from "../../../utils/CallPopout";
+import { _t } from "../../../languageHandler";
+import AccessibleButton from "../elements/AccessibleButton";
 
 interface JoinCallViewProps {
     room: Room;
@@ -46,8 +50,18 @@ const JoinCallView: FC<JoinCallViewProps> = ({ room, resizing, call, role, onClo
         await Promise.all(calls.map(async (call) => await call.disconnect()));
     }, [sdkContext.roomViewStore]);
 
+    const poppedOut = useCallPopout(room.roomId);
+
     return (
         <div className="mx_CallView" role={role}>
+            {poppedOut && (
+                <div className="mx_CallView_poppedOut">
+                    <span>{_t("fragment_x|call_in_window")}</span>
+                    <AccessibleButton kind="primary" onClick={() => CallPopout.instance.bringBack(room.roomId)}>
+                        {_t("fragment_x|bring_call_back")}
+                    </AccessibleButton>
+                </div>
+            )}
             <CallAppTile
                 app={call.widget}
                 room={room}

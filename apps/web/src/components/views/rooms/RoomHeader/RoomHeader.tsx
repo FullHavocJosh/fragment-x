@@ -24,6 +24,7 @@ import CollapseIcon from "@vector-im/compound-design-tokens/assets/web/icons/col
 import ExpandIcon from "@vector-im/compound-design-tokens/assets/web/icons/expand";
 import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
+import { CallPopoutButton } from "./CallPopoutButton";
 import {
     Flex,
     Box,
@@ -359,7 +360,14 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
     let videoCallButton: JSX.Element | undefined = startVideoCallButton;
     let voiceCallButton: JSX.Element | undefined = startVoiceCallButton;
     if (isConnectedToCall) {
-        videoCallButton = toggleCallButton;
+        videoCallButton = callPopout ? (
+            <>
+                {toggleCallButton}
+                <CallPopoutButton room={room} />
+            </>
+        ) : (
+            toggleCallButton
+        );
         voiceCallButton = undefined;
     } else if (isViewingCall) {
         videoCallButton = closeLobbyButton;
