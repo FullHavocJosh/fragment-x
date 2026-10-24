@@ -31,7 +31,7 @@ import {
 import RoomAvatar from "../avatars/RoomAvatar";
 import { type SpaceKey } from "../../../stores/spaces";
 import SpaceTreeLevelLayoutStore from "../../../stores/spaces/SpaceTreeLevelLayoutStore";
-import { isUnifiedFrame, isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
+import { isRailTab, isUnifiedFrame, isUnifiedTree, SpaceRoomRows, sortRoomsForTree } from "./SpaceRoomRows";
 import { NotificationBadge } from "../rooms/NotificationBadge/NotificationBadge";
 import { _t } from "../../../languageHandler";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
@@ -259,7 +259,8 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
         const collapsed = SpaceTreeLevelLayoutStore.instance.getSpaceCollapsedState(
             props.space.roomId,
             this.props.parents,
-            !props.isNested, // default to collapsed for root items
+            // Fragment X rail tab: a space starts open when the selection is in it, and then keeps what the user chose
+            isRailTab() ? !this.isOnActivePath : !props.isNested, // default to collapsed for root items
         );
 
         this.state = {
@@ -275,6 +276,12 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
         // A choice made by hand lasts until another space is selected.
         if (this.state.override && prevProps.activeSpaces.join(",") !== this.props.activeSpaces.join(",")) {
             this.setState({ override: undefined });
+        }
+        // Fragment X rail tab: nothing opens or closes when the selection leaves a space, so going from a room to a
+        // conversation changes nothing. A space that the selection arrives in opens, so the selected row is in view.
+        if (isRailTab() && this.state.collapsed && prevProps.activeSpaces !== this.props.activeSpaces) {
+            const wasOnPath = this.isOnPath(prevProps.activeSpaces);
+            if (!wasOnPath && this.isOnPath(this.props.activeSpaces)) this.setCollapsed(false);
         }
     }
 
@@ -321,15 +328,30 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
 
     /** Whether the selected space is this space or inside it, so that it is on the way to the selection. */
     private get isOnActivePath(): boolean {
+        return this.isOnPath(this.props.activeSpaces);
+    }
+
+    private isOnPath(activeSpaces: SpaceKey[]): boolean {
         const id = this.props.space.roomId;
-        return this.props.activeSpaces.some(
+        return activeSpaces.some(
             (active) => active === id || this.context.spaceStore.getKnownParents(active, true).has(id),
         );
+    }
+
+    /** Fragment X rail tab: opens or closes the space, and remembers it. */
+    private setCollapsed(collapsed: boolean): void {
+        SpaceTreeLevelLayoutStore.instance.setSpaceCollapsedState(
+            this.props.space.roomId,
+            this.props.parents,
+            collapsed,
+        );
+        this.setState({ collapsed });
     }
 
     private get isCollapsed(): boolean {
         // Fragment X unified frame: there are no arrows; a space is open when the selection is in it, unless the user
         // chose otherwise since selecting it.
+        if (isRailTab()) return this.state.collapsed;
         if (isUnifiedFrame()) {
             return this.state.override ? this.state.override === "closed" : !this.isOnActivePath;
         }
@@ -338,7 +360,7 @@ export class SpaceItem extends React.PureComponent<IItemProps, IItemState> {
     }
 
     private toggleCollapse = (evt?: ButtonEvent): void => {
-        if (isUnifiedFrame()) {
+        if (isUnifiedFrame() && !isRailTab()) {
             this.setState({ override: this.isCollapsed ? "open" : "closed" });
             evt?.stopPropagation();
             return;

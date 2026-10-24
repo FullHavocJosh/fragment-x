@@ -554,3 +554,67 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
     visibility: hidden;
     pointer-events: none;
 }
+
+/*
+ * fragment_x.rail_tab: the selected room or conversation is a tab. It has the chat's colour and runs to the chat's edge, and
+ * the corners where it meets the chat curve into it (the same radius as the corner of the chat), so rail and chat read as
+ * one shape. The open groups (spaces and subspaces) keep their own, lighter tray behind it.
+ */
+.mx_MatrixChat_fragmentXRailTab .mx_SpacePanel.mx_SpacePanel_unified {
+    /* how far a tab runs past its row to reach the chat: the row's inset and the gutter after the tree */
+    --fragmentXTabReach: calc(var(--fragmentXRowInset) + var(--fragmentXTabGutter, 0px));
+
+    .mx_SpaceRoomRow.mx_SpaceRoomRow_selected {
+        position: relative;
+        z-index: 1;
+        background-color: $background;
+        border-start-start-radius: var(--fragmentXFrameRadius);
+        border-end-start-radius: var(--fragmentXFrameRadius);
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+
+        /* the part of the tab between the row and the chat, and the two curves at its top and bottom */
+        &::before {
+            content: "";
+            position: absolute;
+            inset-block: calc(-1 * var(--fragmentXFrameRadius));
+            inset-inline-start: calc(100% - 1px);
+            width: calc(var(--fragmentXTabReach) + 1px);
+            pointer-events: none;
+            background:
+                radial-gradient(
+                        circle at 0 0,
+                        transparent var(--fragmentXFrameRadius),
+                        $background calc(var(--fragmentXFrameRadius) + 0.5px)
+                    )
+                    right top / var(--fragmentXFrameRadius) var(--fragmentXFrameRadius) no-repeat,
+                radial-gradient(
+                        circle at 0 100%,
+                        transparent var(--fragmentXFrameRadius),
+                        $background calc(var(--fragmentXFrameRadius) + 0.5px)
+                    )
+                    right bottom / var(--fragmentXFrameRadius) var(--fragmentXFrameRadius) no-repeat,
+                linear-gradient($background, $background) left center / 100%
+                    calc(100% - 2 * var(--fragmentXFrameRadius)) no-repeat;
+        }
+    }
+
+    /* a group that holds the tab paints above the groups after it, or their tray would cover the curve below the tab */
+    .mx_SpaceItem.hasSubSpaces:not(.collapsed):has(.mx_SpaceRoomRow_selected) {
+        z-index: 1;
+    }
+}
+
+/*
+ * The rail's scroll area reserves a gutter for a scrollbar (8px to 11px, and more or less in each browser), which squeezes
+ * the tree and puts every icon left of the rail's centre. The rail scrolls without a visible bar, so there is no gutter, and
+ * every icon is centred on the rail's axis.
+ */
+.mx_MatrixChat_fragmentXFrame .mx_SpacePanel.mx_SpacePanel_unified .mx_AutoHideScrollbar {
+    scrollbar-width: none;
+    scrollbar-gutter: auto;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

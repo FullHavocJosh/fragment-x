@@ -668,6 +668,10 @@ class LoggedInView extends React.Component<IProps, IState> {
             mx_MatrixChat_useCompactLayout: this.state.useCompactLayout,
             // Fragment X: the styles of fragment_x.unified_frame hang on this class
             mx_MatrixChat_fragmentXFrame: Boolean(SdkConfig.get().fragment_x?.unified_frame),
+            // Fragment X: the styles of fragment_x.rail_tab hang on this class
+            mx_MatrixChat_fragmentXRailTab: Boolean(
+                SdkConfig.get().fragment_x?.unified_frame && SdkConfig.get().fragment_x?.rail_tab,
+            ),
             // Fragment X: the styles of fragment_x.chat_cosmetics hang on this class
             mx_MatrixChat_fragmentXChat: Boolean(SdkConfig.get().fragment_x?.chat_cosmetics),
         });

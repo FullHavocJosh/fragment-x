@@ -511,6 +511,92 @@ describe("SpaceItem", () => {
         });
     });
 
+    describe("keeping the open and closed spaces (fragment_x.rail_tab)", () => {
+        const other = mkRoom(cli, "!3:example.org");
+        other.name = "Other Space";
+
+        const renderItem = (activeSpaces: string[]): ReturnType<typeof render> => {
+            vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>
+                spaceId === space.roomId ? [subspace] : [],
+            );
+            Object.assign(SDKContextClass.instance.spaceStore, {
+                getChildRooms: vi.fn().mockReturnValue([]),
+                getKnownParents: vi.fn((id: string) => new Set(id === subspace.roomId ? [space.roomId] : [])),
+            });
+            return render(
+                <SpaceItem space={space} activeSpaces={activeSpaces} />,
+                clientAndSDKContextRenderOptions(cli, SDKContextClass.instance),
+            );
+        };
+        const isOpen = (): boolean => screen.queryByText("Subspace") !== null;
+        const select = (rerender: ReturnType<typeof render>["rerender"], active: string[]): void =>
+            rerender(<SpaceItem space={space} activeSpaces={active} />);
+
+        beforeEach(() => {
+            localStorage.clear();
+            SdkConfig.put({ fragment_x: { unified_frame: true, rail_tab: true } });
+        });
+
+        afterEach(() => {
+            SdkConfig.reset();
+        });
+
+        it("starts open when the selection is in the space, and closed when it is elsewhere", () => {
+            const { unmount } = renderItem([other.roomId]);
+            expect(isOpen()).toBe(false);
+            unmount();
+            localStorage.clear();
+
+            renderItem([space.roomId]);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("does not close an open space when the selection leaves it", () => {
+            const { rerender } = renderItem([space.roomId]);
+            expect(isOpen()).toBe(true);
+
+            select(rerender, [other.roomId]);
+            expect(isOpen()).toBe(true);
+            select(rerender, [MetaSpace.Home]);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("does not open a closed space when the selection goes elsewhere", () => {
+            const { rerender } = renderItem([other.roomId]);
+            select(rerender, [MetaSpace.Home]);
+            select(rerender, [other.roomId]);
+            expect(isOpen()).toBe(false);
+        });
+
+        it("opens a closed space that the selection arrives in, so the selected row is in view", () => {
+            const { rerender } = renderItem([other.roomId]);
+            expect(isOpen()).toBe(false);
+
+            select(rerender, [subspace.roomId]);
+            expect(isOpen()).toBe(true);
+        });
+
+        it("keeps a space the user closed closed while the selection moves around in it", () => {
+            const { rerender } = renderItem([space.roomId]);
+            fireEvent.click(screen.getByRole("button", { name: "Root Space" }));
+            expect(isOpen()).toBe(false);
+
+            select(rerender, [space.roomId, subspace.roomId]);
+            expect(isOpen()).toBe(false);
+        });
+
+        it("remembers what the user did across a reload", () => {
+            const first = renderItem([space.roomId]);
+            fireEvent.click(screen.getByRole("button", { name: "Root Space" }));
+            expect(isOpen()).toBe(false);
+            first.unmount();
+
+            // a new tree, with the selection in the space: the saved choice wins over the starting rule
+            renderItem([space.roomId]);
+            expect(isOpen()).toBe(false);
+        });
+    });
+
     describe("opening a space in an icons-only rail", () => {
         const renderNarrow = (onExpand: () => void) => {
             vi.mocked(SDKContextClass.instance.spaceStore.getChildSpaces).mockImplementation((spaceId) =>

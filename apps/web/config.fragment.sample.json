@@ -109,6 +109,7 @@
         "active_now": true,
         "gif_picker": true,
         "klipy_app_key": "YOUR_KLIPY_APP_KEY",
-        "call_popout": true
+        "call_popout": true,
+        "rail_tab": true
     }
 }
