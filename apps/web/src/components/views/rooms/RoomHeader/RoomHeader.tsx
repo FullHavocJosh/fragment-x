@@ -20,6 +20,8 @@ import ErrorIcon from "@vector-im/compound-design-tokens/assets/web/icons/error-
 import PublicIcon from "@vector-im/compound-design-tokens/assets/web/icons/public";
 import PinIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin";
 import PinSolidIcon from "@vector-im/compound-design-tokens/assets/web/icons/pin-solid";
+import CollapseIcon from "@vector-im/compound-design-tokens/assets/web/icons/collapse";
+import ExpandIcon from "@vector-im/compound-design-tokens/assets/web/icons/expand";
 import { HistoryVisibility, JoinRule, type Room, RoomEvent } from "matrix-js-sdk/src/matrix";
 import SdkConfig from "../../../../SdkConfig";
 import {
@@ -176,11 +178,17 @@ function RoomHeaderButtons({ room, extraButtons }: { room: Room; extraButtons?: 
         [callOptions, voiceCallClick],
     );
 
+    // Fragment X call_popout: the minimise button gets its own icon and a name that says what it does
+    const callPopout = !!SdkConfig.get().fragment_x?.call_popout;
+    let toggleCallLabel = isViewingCall ? _t("voip|minimise_call") : _t("voip|maximise_call");
+    let toggleCallIcon = <VideoCallIcon />;
+    if (callPopout) {
+        toggleCallLabel = isViewingCall ? _t("fragment_x|float_call") : _t("fragment_x|return_to_call");
+        toggleCallIcon = isViewingCall ? <CollapseIcon /> : <ExpandIcon />;
+    }
     const toggleCallButton = (
-        <Tooltip label={isViewingCall ? _t("voip|minimise_call") : _t("voip|maximise_call")}>
-            <IconButton onClick={toggleCall}>
-                <VideoCallIcon />
-            </IconButton>
+        <Tooltip label={toggleCallLabel}>
+            <IconButton onClick={toggleCall}>{toggleCallIcon}</IconButton>
         </Tooltip>
     );
 

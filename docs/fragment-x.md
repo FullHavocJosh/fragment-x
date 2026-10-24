@@ -184,6 +184,9 @@ What it sets, all through configuration with no code changes:
   browser to Klipy (no proxy, no copy in Matrix), results show in the order Klipy returns them, and the search box
   placeholder is "Search KLIPY". A key in testing mode is limited to 100 requests an hour for all users. See
   `apps/web/src/gif/` and `GifButton.tsx`.
+- `fragment_x.call_popout: true`: the call button in the room header that sends a call to the floating window (and back)
+  has its own icon (collapse and expand) and the names Float call and Return to call, in place of the plain video
+  icon with Minimise call and Maximise call. See `RoomHeader.tsx`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

@@ -697,6 +697,37 @@ describe("RoomHeader", () => {
             expect(dispatcherSpy).toHaveBeenCalledWith(expect.objectContaining({ view_call: true }));
         });
 
+        describe("Fragment X call_popout", () => {
+            beforeEach(() => {
+                mockRoomMembers(room, 3);
+                vi.spyOn(CallStore.instance, "getCall").mockReturnValue({
+                    ...createMockCall(ROOM_ID, 3, CallType.Video, true),
+                    connectionState: "connected",
+                } as unknown as Call);
+            });
+
+            it("keeps the Minimise call name without the flag", () => {
+                mockRoomViewStore.isViewingCall.mockReturnValue(true);
+                render(<RoomHeader room={room} />, getWrapper());
+                expect(screen.getByRole("button", { name: "Minimise call" })).toBeInTheDocument();
+                expect(screen.queryByRole("button", { name: "Float call" })).not.toBeInTheDocument();
+            });
+
+            it("names the button Float call while you are in the call view", () => {
+                SdkConfig.add({ fragment_x: { call_popout: true } });
+                mockRoomViewStore.isViewingCall.mockReturnValue(true);
+                render(<RoomHeader room={room} />, getWrapper());
+                expect(screen.getByRole("button", { name: "Float call" })).toBeInTheDocument();
+            });
+
+            it("names the button Return to call while the call is floating", () => {
+                SdkConfig.add({ fragment_x: { call_popout: true } });
+                mockRoomViewStore.isViewingCall.mockReturnValue(false);
+                render(<RoomHeader room={room} />, getWrapper());
+                expect(screen.getByRole("button", { name: "Return to call" })).toBeInTheDocument();
+            });
+        });
+
         it("can't call if there's an ongoing (pinned) call", () => {
             SdkConfig.add({
                 element_call: {
