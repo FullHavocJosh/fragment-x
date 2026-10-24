@@ -45,6 +45,9 @@ import {
     renderMBody,
 } from "./MBodyFactory";
 import { TextualBodyFactory } from "./TextualBodyFactory";
+import GifBody from "./GifBody";
+import SdkConfig from "../../../SdkConfig";
+import { getGifContent } from "../../../gif/gifMessage";
 
 // onMessageAllowed is handled internally
 interface IProps extends Omit<IBodyProps, "onMessageAllowed" | "mediaEventHelper"> {
@@ -296,6 +299,16 @@ export default class MessageEvent extends React.Component<IProps> implements IMe
             // TODO: move to eventTypes when location sharing spec stabilises
             if (M_LOCATION.matches(type) || (type === EventType.RoomMessage && msgtype === MsgType.Location)) {
                 BodyType = MLocationBody;
+            }
+
+            // Fragment X GIF picker: a text message with a Klipy GIF in it shows the GIF inline
+            if (
+                SdkConfig.get().fragment_x?.gif_picker &&
+                msgtype === MsgType.Text &&
+                BodyType === this.bodyTypes.get(MsgType.Text) &&
+                getGifContent(content)
+            ) {
+                BodyType = GifBody;
             }
         }
 

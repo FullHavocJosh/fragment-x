@@ -179,6 +179,16 @@ export interface ConfigOptions extends WebConfigJson {
          * expanded rail, a line under its name such as "3 new messages in 2 rooms". Muted rooms count for nothing.
          */
         server_unread?: boolean;
+        /**
+         * When true (and `klipy_app_key` is set), the composer has a GIF button that searches Klipy and posts the
+         * chosen GIF as a link message that shows inline in Fragment X.
+         */
+        gif_picker?: boolean;
+        /**
+         * The Klipy API app key for `gif_picker`. It is public in the client, as Klipy requires requests to come from
+         * the user's browser.
+         */
+        klipy_app_key?: string;
     };
 }
 

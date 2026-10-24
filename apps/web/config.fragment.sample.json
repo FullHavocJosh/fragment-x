@@ -106,6 +106,8 @@
         "user_presence": true,
         "header_icons": true,
         "chat_cosmetics": true,
-        "active_now": true
+        "active_now": true,
+        "gif_picker": true,
+        "klipy_app_key": "YOUR_KLIPY_APP_KEY"
     }
 }
