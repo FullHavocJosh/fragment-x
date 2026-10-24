@@ -189,6 +189,11 @@ export interface ConfigOptions extends WebConfigJson {
          * the user's browser.
          */
         klipy_app_key?: string;
+        /**
+         * When true, the call button in the room header that sends a call to the floating window is called Float call
+         * (and Return to call) and has its own icon, and a call can be popped out into a separate window.
+         */
+        call_popout?: boolean;
     };
 }
 

@@ -108,6 +108,7 @@
         "chat_cosmetics": true,
         "active_now": true,
         "gif_picker": true,
-        "klipy_app_key": "YOUR_KLIPY_APP_KEY"
+        "klipy_app_key": "YOUR_KLIPY_APP_KEY",
+        "call_popout": true
     }
 }
