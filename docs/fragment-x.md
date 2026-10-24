@@ -178,7 +178,7 @@ What it sets, all through configuration with no code changes:
   `apps/web/src/hooks/useSpaceUnread.ts`. A selected server keeps its tall pill.
 - `fragment_x.gif_picker: true` and `fragment_x.klipy_app_key` (a key from the Klipy Partner Panel): the composer has a GIF
   button that opens a search box and a grid of GIFs from Klipy (trending until you type). Clicking a GIF posts it at once.
-  The message is a plain text message whose body is the Klipy media URL (so other clients show a link), plus a
+  The message is a plain text message whose body is "GIF: " and the Klipy media URL plus a line telling readers to open this site for the inline view (so other clients show a link and the hint), plus a
   `fragment_x.gif` content field (`url`, `width`, `height`, `title`) that Fragment X renders inline. Only `https` URLs on
   `static*.klipy.com` render inline. Klipy's integration rules apply: requests and media loads go straight from the
   browser to Klipy (no proxy, no copy in Matrix), results show in the order Klipy returns them, and the search box
