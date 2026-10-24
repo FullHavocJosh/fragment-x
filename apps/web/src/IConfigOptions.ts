@@ -194,6 +194,12 @@ export interface ConfigOptions extends WebConfigJson {
          * (and Return to call) and has its own icon, and a call can be popped out into a separate window.
          */
         call_popout?: boolean;
+        /**
+         * When true (with `unified_frame` and `unified_tree`), the server rail keeps what the user opened and closed:
+         * opening a room or a conversation changes no space, and the selected row is a tab: the chat's colour, running
+         * to the chat and curving into it.
+         */
+        rail_tab?: boolean;
     };
 }
 

@@ -115,7 +115,7 @@ What it sets, all through configuration with no code changes:
   darker one inset in it instead. The Inbox, the user's avatar (32px too) and the names beside them use the same axis and text offset. There are no arrows and no selection or unread pills in the left column: a space opens when the selection is in it (the selected space and the spaces around it; the others are closed), clicking the selected space again closes it and a third click opens it, and Messages always lists its conversations. Every user, space, subspace and room icon is a circle, and a rounded square while the pointer is over it or it is selected. The frame is a grid of square cells as wide as the rail (68px): the top bar is one cell high, so the search icon is
   centred on both the rail column and the bar next to it, an icon at the right end of the bar is as far from the edge as
   the search icon is from the left one, and the user's avatar and the composer row are centred in a cell at the bottom. The message box has the frame's colour with no line above it, and the chat's bottom corners are rounded like the top ones (the right ones only while the right panel is open). The reply preview above the message box is a rounded card (12px) in the rail's tone, with no hairline or shadow.
-  Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
+  The rail scrolls without a visible scrollbar, so no gutter squeezes it and every icon (search, buttons, user, space, subspace, room, direct message) is centred on the rail's axis, 34px from its edge. Icon buttons are 32px with 8px around them. The corner where the rail and the top bar meet the chat is rounded (16px).
   Every icon that is not a person, a space or a room (Search, Collapse, Inbox, settings, the icons in the top bar) has the
   same hover: no box, the icon brightens and glows. Every icon button in the rail, the top bar and the composer has the same light grey
   (`--cpd-color-icon-secondary`), and is white while the pointer or focus is on it, while it is selected or pressed, and for
@@ -191,6 +191,12 @@ What it sets, all through configuration with no code changes:
   This works in Chrome, Firefox and Safari: the call's iframe moves into a popup window and its widget messages are
   forwarded to the app, so the call reconnects for a moment. The browser must allow the pop-up, which it does for a
   click. See `RoomHeader.tsx`, `CallPopoutButton.tsx` and `utils/CallPopout.ts`.
+- `fragment_x.rail_tab: true` (needs `unified_frame` and `unified_tree`): the server rail keeps what the user opened and
+  closed. Opening a room or a conversation does not open or close any space, and what is open is remembered (a space
+  the selection arrives in opens, so the selected row is in view; a space starts open when the selection is in it the first
+  time). The selected room or conversation is a tab: it has the chat's colour, runs to the chat's edge and curves into it
+  at the top and bottom (16px, the same as the chat's corner). The groups for spaces and subspaces keep their lighter
+  tray. See `SpaceItem` in `SpaceTreeLevel.tsx` and the end of `_FragmentXFrame.pcss`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 

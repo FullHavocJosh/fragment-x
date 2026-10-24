@@ -172,6 +172,14 @@ export function isUnifiedFrame(): boolean {
     return Boolean(SdkConfig.get().fragment_x?.unified_frame);
 }
 
+/**
+ * Fragment X: `fragment_x.rail_tab` is on (with the unified frame): the rail keeps what the user opened and closed, and
+ * the selected row is a tab that joins the chat.
+ */
+export function isRailTab(): boolean {
+    return isUnifiedFrame() && Boolean(SdkConfig.get().fragment_x?.rail_tab);
+}
+
 /** A room under its space in the rail tree: avatar, name, unread badge. A click opens the room. */
 export function SpaceRoomRow({ room, spaceKey, isNarrow, showPreview }: RowProps): JSX.Element {
     const sdkContext = useContext(SDKContext);
