@@ -197,6 +197,13 @@ What it sets, all through configuration with no code changes:
   time). The selected room or conversation is a tab: it has the chat's colour, runs to the chat's edge and curves into it
   at the top and bottom (16px, the same as the chat's corner). The groups for spaces and subspaces keep their lighter
   tray. See `SpaceItem` in `SpaceTreeLevel.tsx` and the end of `_FragmentXFrame.pcss`.
+- `fragment_x.rail_resize: true` (needs `unified_frame` and `unified_tree`): the edge of the server rail is a handle you can
+  drag (a line in the accent colour shows on it; it also takes the arrow keys, 16px a step, and Enter to collapse or
+  expand). Dragging in until only about three characters of a name are left collapses the rail to its icons. Dragging out of
+  the icons only rail expands it, following the pointer. Dragging out stops at the width where every name in the rail is on
+  one line, so the rail is never wider than it needs. The Expand and Collapse button still works and brings back the
+  width you chose (not wider than the names need). The width is remembered in the browser (`mx_fragment_x_rail_width`).
+  See `useRailResize` in `apps/web/src/hooks/useRailResize.ts` and `apps/web/src/utils/railResize.ts`.
 - `disable_custom_urls` and `disable_guests`: a single-server deployment without guest access.
 - The Element-hosted integration manager, room directory and presence defaults for matrix.org are removed.
 
