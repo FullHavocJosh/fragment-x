@@ -5,12 +5,22 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
+/* The composer button is a fixed 20px square; this one is as wide as its label */
+.mx_MessageComposer_button.mx_GifButton {
+    width: auto;
+    min-width: 20px;
+    padding-inline: 4px;
+    box-sizing: border-box;
+}
+
 .mx_GifButton_label {
+    display: block;
     font: var(--cpd-font-body-xs-semibold);
     border: 1.5px solid currentColor;
     border-radius: 4px;
     padding: 0 3px;
     line-height: 14px;
+    white-space: nowrap;
 }
 
 .mx_GifPicker {
