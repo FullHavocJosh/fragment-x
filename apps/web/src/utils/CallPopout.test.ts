@@ -10,7 +10,7 @@ Please see LICENSE files in the repository root for full details.
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { Window as HappyWindow } from "happy-dom";
 
-import { CallPopout, CallPopoutEvent } from "./CallPopout";
+import { CallPopout, CallPopoutEvent, rejoinSrc } from "./CallPopout";
 import { WidgetMessagingStore } from "../stores/widgets/WidgetMessagingStore";
 import { type IApp } from "../stores/WidgetStore";
 
@@ -125,5 +125,41 @@ describe("CallPopout", () => {
         popup.dispatchEvent(new Event("pagehide") as any);
         expect(CallPopout.instance.isOpen(ROOM)).toBe(false);
         expect(parent.querySelector("iframe")).toBe(iframe);
+    });
+});
+
+describe("rejoinSrc", () => {
+    const base = "https://app.example/widgets/element-call/?widgetId=w#?userId=%40a%3Ax&theme=dark";
+
+    it("skips the lobby", () => {
+        const params = new URLSearchParams(new URL(rejoinSrc(`${base}&skipLobby=false`)).hash.slice(2));
+        expect(params.get("skipLobby")).toBe("true");
+        expect(params.get("userId")).toBe("@a:x");
+        expect(params.get("theme")).toBe("dark");
+    });
+
+    it("adds skipLobby when there was none", () => {
+        expect(new URLSearchParams(new URL(rejoinSrc(base)).hash.slice(2)).get("skipLobby")).toBe("true");
+    });
+
+    it.each([
+        ["start_call", "join_existing"],
+        ["start_call_voice", "join_existing_voice"],
+        ["start_call_dm", "join_existing_dm"],
+        ["start_call_dm_voice", "join_existing_dm_voice"],
+        ["join_existing", "join_existing"],
+        ["join_existing_dm", "join_existing_dm"],
+    ])("turns the intent %s into %s", (from, to) => {
+        const params = new URLSearchParams(new URL(rejoinSrc(`${base}&intent=${from}`)).hash.slice(2));
+        expect(params.get("intent")).toBe(to);
+    });
+
+    it("keeps the query of the address", () => {
+        expect(rejoinSrc(base)).toContain("?widgetId=w#");
+    });
+
+    it("leaves an address with no settings alone", () => {
+        expect(rejoinSrc("https://app.example/x")).toBe("https://app.example/x");
+        expect(rejoinSrc("not a url")).toBe("not a url");
     });
 });
