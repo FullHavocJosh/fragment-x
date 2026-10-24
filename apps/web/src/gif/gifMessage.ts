@@ -72,10 +72,12 @@ export function makeGifMessageContent(
     gif: Gif,
     relation: IEventRelation | undefined,
     replyToEvent: MatrixEvent | undefined,
+    host: string,
 ): RoomMessageEventContent {
     const content: IContent = {
         msgtype: MsgType.Text,
-        body: gif.url,
+        // Other clients show the body, so it says why they see a link and where the GIF shows inline
+        body: `GIF: ${gif.url}\nOpen ${host} to see it as an inline GIF.`,
         [GIF_CONTENT_KEY]: { url: gif.url, width: gif.width, height: gif.height, title: gif.title },
     };
     attachRelation(content, relation);

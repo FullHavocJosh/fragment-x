@@ -48,17 +48,22 @@ describe("gifMessage", () => {
 
     describe("makeGifMessageContent", () => {
         it("is a text message with the url in the body and the gif field", () => {
-            const content = makeGifMessageContent(gif, undefined, undefined);
+            const content = makeGifMessageContent(gif, undefined, undefined, "fragment.example");
             expect(content).toEqual({
                 "msgtype": "m.text",
-                "body": gif.url,
+                "body": `GIF: ${gif.url}\nOpen fragment.example to see it as an inline GIF.`,
                 "fragment_x.gif": { url: gif.url, width: 200, height: 100, title: "Hello" },
             });
             expect(getGifContent(content)).toEqual({ url: gif.url, width: 200, height: 100, title: "Hello" });
         });
 
         it("keeps a thread relation", () => {
-            const content = makeGifMessageContent(gif, { rel_type: "m.thread", event_id: "$root" }, undefined);
+            const content = makeGifMessageContent(
+                gif,
+                { rel_type: "m.thread", event_id: "$root" },
+                undefined,
+                "fragment.example",
+            );
             expect(content["m.relates_to"]).toEqual({ rel_type: "m.thread", event_id: "$root" });
         });
     });

@@ -43,7 +43,7 @@ export function GifButton({ relation, replyToEvent, menuPosition, className }: P
     };
 
     const onChoose = (gif: Gif): void => {
-        const content = makeGifMessageContent(gif, relation, replyToEvent);
+        const content = makeGifMessageContent(gif, relation, replyToEvent, window.location.host);
         const threadId = relation?.rel_type === THREAD_RELATION_TYPE.name ? relation.event_id : null;
         void doMaybeLocalRoomAction(
             room.roomId,
