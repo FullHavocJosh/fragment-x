@@ -560,7 +560,21 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
  * the corners where it meets the chat curve into it (the same radius as the corner of the chat), so rail and chat read as
  * one shape. The open groups (spaces and subspaces) keep their own, lighter tray behind it.
  */
+.mx_MatrixChat_fragmentXRailTab {
+    /* the trays of the open groups: shades between the rail and the chat, a subspace tray a step lighter than its space */
+    --fragmentXTray: color-mix(in srgb, var(--cpd-color-bg-subtle-primary) 60%, $background);
+    --fragmentXTraySub: color-mix(in srgb, var(--cpd-color-bg-subtle-primary) 35%, $background);
+}
+
 .mx_MatrixChat_fragmentXRailTab .mx_SpacePanel.mx_SpacePanel_unified {
+    .mx_SpaceItem.hasSubSpaces:not(.collapsed)::before {
+        background-color: var(--fragmentXTray);
+    }
+
+    .mx_SpaceItem.hasSubSpaces:not(.collapsed).mx_SpaceItem_subspace::before {
+        background-color: var(--fragmentXTraySub);
+    }
+
     /* how far a tab runs past its row to reach the chat: the row's inset and the gutter after the tree */
     --fragmentXTabReach: calc(var(--fragmentXRowInset) + var(--fragmentXTabGutter, 0px));
 
