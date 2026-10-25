@@ -22,6 +22,7 @@ import { GenericToast } from "@element-hq/web-shared-components";
 import SdkConfig from "../../SdkConfig.ts";
 import type { ActionPayload } from "../../dispatcher/payloads.ts";
 import * as SessionLock from "../../utils/SessionLock.ts";
+import { installAuthedMediaFallback } from "../../utils/authedMediaFallback.ts";
 
 const POKE_RATE_MS = 10 * 60 * 1000; // 10 min
 
@@ -41,6 +42,9 @@ export default class WebPlatform extends BasePlatform {
 
     public constructor() {
         super();
+
+        // media images load without the service worker too
+        installAuthedMediaFallback(() => MatrixClientPeg.get()?.getAccessToken());
 
         // Register the service worker in the background
         this.registerServiceWorkerPromise = this.registerServiceWorker();

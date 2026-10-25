@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import React, { type AriaRole, type JSX, type Ref, useCallback, useContext, useEffect, useState } from "react";
+import React, { type AriaRole, type JSX, type Ref, useCallback, useContext, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { ClientEvent, type SyncState } from "matrix-js-sdk/src/matrix";
 import { Avatar } from "@vector-im/compound-web";
@@ -20,6 +20,7 @@ import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import { useTypedEventEmitter } from "../../../hooks/useEventEmitter";
 import { _t } from "../../../languageHandler";
 import { useScopedRoomContext } from "../../../contexts/ScopedRoomContext.tsx";
+import { fetchAuthedMediaBlobUrl } from "../../../utils/authedMediaFallback";
 
 interface IProps {
     name?: React.ComponentProps<typeof Avatar>["name"]; // The name (first initial used as default)
@@ -64,16 +65,36 @@ const useImageUrl = ({ url, urls }: { url?: string | null; urls?: string[] }): [
     const [imageUrls, setUrls] = useState<string[]>(calculateUrls(url, urls, lowBandwidth));
     const [urlsIndex, setIndex] = useState<number>(0);
 
+    const cli = useContext(MatrixClientContext);
+
+    // When a media URL fails the service worker did not authenticate it: fetch it with the access token instead of
+    // giving up on it, so the avatar does not depend on the worker running.
+    const [authed, setAuthed] = useState<{ source: string; blobUrl: string } | null>(null);
+    const triedAuthed = useRef(new Set<string>());
+    const current = useRef<string | undefined>(undefined);
+    const accessToken = useRef<string | null | undefined>(undefined);
+    accessToken.current = cli?.getAccessToken();
+
     const onError = useCallback(() => {
+        const failed = current.current;
+        if (failed && !triedAuthed.current.has(failed)) {
+            triedAuthed.current.add(failed);
+            void fetchAuthedMediaBlobUrl(failed, accessToken.current).then((blobUrl) => {
+                if (blobUrl) setAuthed({ source: failed, blobUrl });
+                else setIndex((i) => i + 1);
+            });
+            return;
+        }
         setIndex((i) => i + 1); // try the next one
     }, []);
 
     useEffect(() => {
         setUrls(calculateUrls(url, urls, lowBandwidth));
         setIndex(0);
+        setAuthed(null);
+        triedAuthed.current.clear();
     }, [url, JSON.stringify(urls)]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const cli = useContext(MatrixClientContext);
     const onClientSync = useCallback((syncState: SyncState, prevState: SyncState | null) => {
         // Consider the client reconnected if there is no error with syncing.
         // This means the state could be RECONNECTING, SYNCING, PREPARED or CATCHUP.
@@ -85,7 +106,8 @@ const useImageUrl = ({ url, urls }: { url?: string | null; urls?: string[] }): [
     useTypedEventEmitter(cli, ClientEvent.Sync, onClientSync);
 
     const imageUrl = imageUrls[urlsIndex];
-    return [imageUrl, onError];
+    current.current = imageUrl;
+    return [authed && authed.source === imageUrl ? authed.blobUrl : imageUrl, onError];
 };
 
 const BaseAvatar = (props: IProps): JSX.Element => {
