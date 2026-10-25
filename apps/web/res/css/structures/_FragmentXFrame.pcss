@@ -288,6 +288,12 @@ Please see LICENSE files in the repository root for full details.
     .mx_SpacePanel {
         /* the centre of the slot: the gutter (14px), the selection padding (4px) and half the icon (16px) */
         --fragmentXRailAxis: 34px;
+        /* the corner of every highlight is the corner of a selected icon: 30% of the 32px icon, of the 40px tile when collapsed */
+        --fragmentXIconRadius: 9.6px;
+
+        &.collapsed {
+            --fragmentXIconRadius: 12px;
+        }
         /* where names start: after the slot and a gap */
         --fragmentXRailText: 58px;
 
@@ -317,14 +323,13 @@ Please see LICENSE files in the repository root for full details.
                 position: absolute;
                 inset: 0 6px;
                 z-index: -1;
-                border-radius: 16px;
+                border-radius: var(--fragmentXIconRadius);
                 background-color: var(--cpd-color-bg-subtle-secondary);
             }
 
             &.mx_SpaceItem_subspace::before {
                 inset: 0 10px;
-                /* concentric with the group (16px) and the rows (8px): 4px apart each */
-                border-radius: 12px;
+                border-radius: var(--fragmentXIconRadius);
                 background-color: var(--cpd-color-bg-subtle-primary);
             }
         }
@@ -360,9 +365,10 @@ Please see LICENSE files in the repository root for full details.
             gap: calc(var(--fragmentXRailText) - var(--fragmentXRailAxis) - 16px);
         }
 
-        /* ...and the same corners as a room's (8px, the rooms' own), so no highlight in the column is rounder than another */
-        .mx_SpaceButton .mx_SpaceButton_selectionWrapper {
-            border-radius: 8px;
+        /* ...and the same corners as a room's, so no highlight in the column is rounder than another */
+        .mx_SpaceButton .mx_SpaceButton_selectionWrapper,
+        .mx_SpaceRoomRow {
+            border-radius: var(--fragmentXIconRadius);
         }
 
         /* a space's highlight is symmetric too: the same inset on the right as on the left */
@@ -597,8 +603,8 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
         position: relative;
         z-index: 1;
         background-color: $background;
-        border-start-start-radius: var(--fragmentXFrameRadius);
-        border-end-start-radius: var(--fragmentXFrameRadius);
+        border-start-start-radius: var(--fragmentXIconRadius);
+        border-end-start-radius: var(--fragmentXIconRadius);
         border-start-end-radius: 0;
         border-end-end-radius: 0;
 
