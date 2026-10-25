@@ -196,7 +196,7 @@ What it sets, all through configuration with no code changes:
   the selection arrives in opens, so the selected row is in view; a space starts open when the selection is in it the first
   time). The selected room or conversation is a tab: it has the chat's colour, runs to the chat's edge and curves into it
   at the top and bottom (16px, the same as the chat's corner). The groups for spaces and subspaces and the Messages group have a tray that is a shade between the
-  rail's colour and the chat's (a subspace's tray a step lighter than its space's), so the tab stands out from it. See `SpaceItem` in `SpaceTreeLevel.tsx` and the end of `_FragmentXFrame.pcss`.
+  rail's colour and the chat's (a subspace's tray a step lighter than its space's), so the tab stands out from it. Every layer of highlight is 4px from the next: a tray from its first tile, from what is beside it and from the tray inside it, whether a tile is a space, a subspace or a room; tiles touch one another. See `SpaceItem` in `SpaceTreeLevel.tsx` and the end of `_FragmentXFrame.pcss`.
 - `fragment_x.rail_resize: true` (needs `unified_frame` and `unified_tree`): the edge of the server rail is a handle you can
   drag (a line in the accent colour shows on it; it also takes the arrow keys, 16px a step, and Enter to collapse or
   expand). Dragging in until only about three characters of a name are left collapses the rail to its icons. Dragging out of

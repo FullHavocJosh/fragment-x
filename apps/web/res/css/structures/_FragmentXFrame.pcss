@@ -567,6 +567,21 @@ body:has(.mx_MatrixChat_fragmentXFrame) [role="menu"] [role^="menuitem"] {
 }
 
 .mx_MatrixChat_fragmentXRailTab .mx_SpacePanel.mx_SpacePanel_unified {
+    /*
+     * One gap, 4px, between every layer of highlight and the next: a tray and its first tile, a tray and what is next to
+     * it, a tray inside a tray, whether the tile is a space, a subspace or a room. The button of a space or a subspace had
+     * 4px of padding above and below its tile, which made the gap 8px wherever it met a tray; a room has none. Tiles touch
+     * one another like the rows of rooms do.
+     */
+    .mx_SpaceItem > .mx_SpaceButton {
+        padding-block: 0;
+    }
+
+    /* the last tray in a tray has the tray's own 4px below it, not 8 */
+    .mx_SpaceItem.hasSubSpaces:not(.collapsed).mx_SpaceItem_subspace:last-child {
+        margin-bottom: 0;
+    }
+
     .mx_SpaceItem.hasSubSpaces:not(.collapsed)::before {
         background-color: var(--fragmentXTray);
     }
