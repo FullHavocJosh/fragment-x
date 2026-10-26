@@ -266,6 +266,14 @@ Please see LICENSE files in the repository root for full details.
         padding-right: calc(var(--fragmentXFrameCell) / 2 - 16px);
     }
 
+    /* A phone-width window: the icons sit closer together, or the last one is pushed out of the window */
+    @media (max-width: 480px) {
+        .mx_RoomHeader {
+            gap: var(--fragmentXIconPad);
+            padding-right: var(--fragmentXIconPad);
+        }
+    }
+
     /* Every icon in the bars is a 24px glyph in a 32px button. */
     /* (.mx_SpaceButton too: this file loads before _SpacePanel.pcss, so it needs the higher specificity to win) */
     .mx_SpacePanel .mx_SpaceButton .mx_SpaceButton_icon {

@@ -17,11 +17,14 @@ import { useCall } from "../../../../hooks/useCall";
 import { useCallPopout } from "../../../../hooks/useCallPopout";
 import { CallPopout } from "../../../../utils/CallPopout";
 
+/** Whether the main pointer is a finger: touch browsers do not open a window of their own for a call. */
+const isTouchDevice = (): boolean => !!window.matchMedia?.("(pointer: coarse)").matches;
+
 /** Header button that opens the call of a room in a window of its own, or brings it back. */
 export function CallPopoutButton({ room }: { room: Room }): JSX.Element | null {
     const call = useCall(room.roomId);
     const poppedOut = useCallPopout(room.roomId);
-    if (!call) return null;
+    if (!call || (isTouchDevice() && !poppedOut)) return null;
 
     const onClick = (): void => {
         if (poppedOut) {
