@@ -103,20 +103,6 @@ Please see LICENSE files in the repository root for full details.
     }
 }
 
-/* A phone-width window: the tabs and Add Friend wrap onto a second row instead of running out of the window. */
-@media (max-width: 480px) {
-    .mx_HomeTopBar {
-        flex-wrap: wrap;
-        gap: 4px 8px;
-        padding: 4px 8px;
-    }
-
-    .mx_HomeTopBar_tabs {
-        flex-wrap: wrap;
-        gap: 4px;
-    }
-}
-
 .mx_HomePage_tabContent {
     flex: 1 1 auto;
     min-height: 0;
@@ -296,4 +282,54 @@ Please see LICENSE files in the repository root for full details.
 .mx_ActiveNow_status {
     font: var(--cpd-font-body-xs-regular);
     color: var(--cpd-color-text-secondary);
+}
+
+/* A phone-width window: the tabs and Add Friend wrap onto a second row instead of running out of the window. */
+@media (max-width: 480px) {
+    .mx_HomeTopBar {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        padding: 4px 8px;
+    }
+
+    .mx_HomeTopBar_tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    /* The detail (member and room counts, a user id) goes under the name instead of squeezing both on one line. */
+    .mx_HomeTabs_row {
+        flex-wrap: wrap;
+    }
+
+    .mx_HomeTabs_name {
+        flex: 1 1 0;
+    }
+
+    .mx_HomeTabs_detail {
+        flex: 1 0 100%;
+        box-sizing: border-box;
+        /* the avatar and the gap in front of the name */
+        padding-inline-start: 48px;
+        margin-top: -4px;
+    }
+
+    /* Active Now has no room beside the people list: it goes under it. */
+    .mx_HomeTabs_peopleLayout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    /* its auto margins would stop it stretching to the column, so it would be as wide as its longest line */
+    .mx_HomeTabs_peopleLayout > .mx_HomeTabs_list {
+        margin: 0;
+    }
+
+    .mx_ActiveNow {
+        flex: 0 0 auto;
+        padding: 16px 0 0;
+        border-inline-start: 0;
+        border-block-start: 1px solid var(--cpd-color-bg-subtle-secondary);
+    }
 }
