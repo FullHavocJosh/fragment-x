@@ -103,6 +103,20 @@ Please see LICENSE files in the repository root for full details.
     }
 }
 
+/* A phone-width window: the tabs and Add Friend wrap onto a second row instead of running out of the window. */
+@media (max-width: 480px) {
+    .mx_HomeTopBar {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        padding: 4px 8px;
+    }
+
+    .mx_HomeTopBar_tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+}
+
 .mx_HomePage_tabContent {
     flex: 1 1 auto;
     min-height: 0;
