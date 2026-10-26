@@ -525,6 +525,9 @@ const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(
     },
 );
 
+/** Whether the window is as narrow as a phone's, where the expanded rail floats over the page. */
+const isPhoneWidth = (): boolean => !!window.matchMedia?.("(max-width: 480px)").matches;
+
 const SpacePanel: React.FC = () => {
     const sdkContext = useContext(SDKContext);
     const client = sdkContext.client!;
@@ -539,6 +542,19 @@ const SpacePanel: React.FC = () => {
         sdkContext.rightPanelStore.hide(null);
     }, [narrow, sdkContext.rightPanelStore]);
     const ref = useRef<HTMLDivElement>(null);
+    // On a phone-width window the expanded rail floats over the page (see _SpacePanel.pcss), so it closes when a room
+    // is opened or the page behind it is tapped.
+    useDispatcher(defaultDispatcher, (payload: ActionPayload) => {
+        if (payload.action === Action.ViewRoom && isPhoneWidth()) setPanelCollapsed(true);
+    });
+    useEffect(() => {
+        if (isPanelCollapsed || !isPhoneWidth()) return;
+        const onPointerDown = (ev: PointerEvent): void => {
+            if (ev.target instanceof Node && !ref.current?.contains(ev.target)) setPanelCollapsed(true);
+        };
+        document.addEventListener("pointerdown", onPointerDown);
+        return () => document.removeEventListener("pointerdown", onPointerDown);
+    }, [isPanelCollapsed]);
     // Fragment X (`fragment_x.rail_resize`): the edge of the rail can be dragged
     const railResizeEnabled = isUnifiedTree() && isUnifiedFrame() && !!SdkConfig.get().fragment_x?.rail_resize;
     const railResize = useRailResize(ref, isPanelCollapsed, setPanelCollapsed, railResizeEnabled);

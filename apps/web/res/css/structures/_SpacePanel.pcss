@@ -598,3 +598,18 @@ Please see LICENSE files in the repository root for full details.
 .mx_SpacePanel.mx_SpacePanel_unified:not(.collapsed) .mx_SpacePanel_divider {
     width: calc(100% - 24px);
 }
+
+/*
+ * A phone-width window: the expanded rail floats over the page instead of pushing it aside, which left the page about
+ * 88px. It keeps the width of the icons-only rail in the layout, and its own width is set here because the resizer sets
+ * one inline.
+ */
+@media (max-width: 480px) {
+    .mx_SpacePanel.mx_SpacePanel_unified:not(.collapsed) {
+        --expandedWidth: min(272px, calc(100vw - 68px));
+
+        width: var(--expandedWidth) !important;
+        margin-right: calc(68px - var(--expandedWidth));
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.5);
+    }
+}
