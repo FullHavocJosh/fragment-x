@@ -1449,7 +1449,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             this.showScreenAfterLogin();
         }
 
-        if (SdkConfig.get("mobile_guide_toast")) {
+        if (SdkConfig.get("mobile_guide_toast") && !SdkConfig.get().fragment_x?.mobile_web) {
             // The toast contains further logic to detect mobile platforms,
             // check if it has been dismissed before, etc.
             showMobileGuideToast();

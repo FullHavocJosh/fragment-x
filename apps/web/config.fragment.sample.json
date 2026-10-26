@@ -111,6 +111,7 @@
         "klipy_app_key": "YOUR_KLIPY_APP_KEY",
         "call_popout": true,
         "rail_tab": true,
-        "rail_resize": true
+        "rail_resize": true,
+        "mobile_web": true
     }
 }

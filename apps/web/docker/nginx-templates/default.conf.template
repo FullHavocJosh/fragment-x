@@ -28,6 +28,12 @@ server {
         root /tmp/element-web-config;
         add_header Cache-Control "no-cache";
     }
+
+    # Fragment X: the page for phones, with or without a trailing slash
+    location ~ ^/mobile/?$ {
+        try_files /mobile.html =404;
+        add_header Cache-Control "no-cache";
+    }
     location /modules {
         alias /modules;
     }

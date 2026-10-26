@@ -206,6 +206,11 @@ export interface ConfigOptions extends WebConfigJson {
          * one line. The Expand and Collapse button still works.
          */
         rail_resize?: boolean;
+        /**
+         * When true, phones use the web app: they are not sent to the mobile guide page, which asks for a native app, and
+         * get no prompt to download one. The `/mobile` page is served either way.
+         */
+        mobile_web?: boolean;
     };
 }
 

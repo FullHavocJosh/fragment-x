@@ -191,6 +191,10 @@ What it sets, all through configuration with no code changes:
   This works in Chrome, Firefox and Safari: the call's iframe moves into a popup window and its widget messages are
   forwarded to the app, so the call reconnects for a moment. The browser must allow the pop-up, which it does for a
   click. See `RoomHeader.tsx`, `CallPopoutButton.tsx` and `utils/CallPopout.ts`.
+- `fragment_x.mobile_web: true`: phones use the web app. They are not sent to the mobile guide page, which tells them to
+  download an Element app, and the download prompt does not show. Fragment X also serves a `/mobile` page (with or
+  without a trailing slash) with an Open Fragment X button, whatever this option is. See `apps/web/src/vector/mobileRedirect.ts`
+  and `apps/web/src/vector/mobile/index.html`.
 - `fragment_x.rail_tab: true` (needs `unified_frame` and `unified_tree`): the server rail keeps what the user opened and
   closed. Opening a room or a conversation does not open or close any space, and what is open is remembered (a space
   the selection arrives in opens, so the selected row is in view; a space starts open when the selection is in it the first
