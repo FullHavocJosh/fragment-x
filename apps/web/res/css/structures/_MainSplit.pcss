@@ -30,3 +30,15 @@ Please see LICENSE files in the repository root for full details.
         opacity: 0.8;
     }
 }
+
+/*
+ * A phone-width window: the panel takes all the width next to the rail instead of a fixed 320px. The resizer sets its
+ * minimum width inline, which is wider than the window next to the rail and pushes the panel's buttons out of it.
+ */
+@media (max-width: 480px) {
+    .mx_MainSplit > .mx_RightPanel_ResizeWrapper {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+}
