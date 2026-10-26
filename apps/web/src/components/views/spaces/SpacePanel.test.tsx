@@ -322,6 +322,56 @@ describe("<SpacePanel />", () => {
         });
     });
 
+    describe("phone width", () => {
+        const nav = (): HTMLElement => screen.getByRole("navigation");
+        let matchMedia: typeof window.matchMedia;
+
+        const setPhoneWidth = (matches: boolean): void => {
+            window.matchMedia = vi.fn().mockReturnValue({
+                matches,
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+            }) as unknown as typeof window.matchMedia;
+        };
+        const renderExpanded = (): void => {
+            SdkConfig.put({ fragment_x: { unified_tree: true, unified_frame: true, rail_resize: true } });
+            (sdkContext.spaceStore as any).getSpaceFilteredRoomIds = () => new Set<string>();
+            render(<SpacePanel />);
+            fireEvent.keyDown(screen.getByRole("separator"), { key: "Enter" });
+            expect(nav()).not.toHaveClass("collapsed");
+        };
+
+        beforeEach(() => {
+            matchMedia = window.matchMedia;
+        });
+        afterEach(() => {
+            window.matchMedia = matchMedia;
+            SdkConfig.reset();
+            delete (sdkContext.spaceStore as any).getSpaceFilteredRoomIds;
+        });
+
+        it("collapses the expanded rail when the page behind it is tapped", () => {
+            setPhoneWidth(true);
+            renderExpanded();
+            fireEvent.pointerDown(document.body);
+            expect(nav()).toHaveClass("collapsed");
+        });
+
+        it("keeps the rail expanded when it is tapped itself", () => {
+            setPhoneWidth(true);
+            renderExpanded();
+            fireEvent.pointerDown(nav());
+            expect(nav()).not.toHaveClass("collapsed");
+        });
+
+        it("leaves the expanded rail alone in a wider window", () => {
+            setPhoneWidth(false);
+            renderExpanded();
+            fireEvent.pointerDown(document.body);
+            expect(nav()).not.toHaveClass("collapsed");
+        });
+    });
+
     describe("fragment_x.servers_entry", () => {
         afterEach(() => {
             SdkConfig.reset();
