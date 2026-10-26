@@ -652,6 +652,14 @@ export default (env: string, argv: Record<string, any>): webpack.Configuration =
                 chunks: ["mobileguide"],
             }),
 
+            // Fragment X /mobile: a page for phones that opens the web app (nginx serves it at /mobile)
+            new HtmlWebpackPlugin({
+                template: "./src/vector/mobile/index.html",
+                filename: "mobile.html",
+                minify: false,
+                chunks: [],
+            }),
+
             // These are the static error pages for when the javascript env is *really unsupported*
             new HtmlWebpackPlugin({
                 template: "./src/vector/static/unable-to-load.html",
