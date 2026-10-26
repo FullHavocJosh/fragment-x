@@ -726,6 +726,18 @@ describe("RoomHeader", () => {
                 expect(screen.getByRole("button", { name: "Pop out call" })).toBeInTheDocument();
             });
 
+            it("has no Pop out call button on a touch device", () => {
+                SdkConfig.add({ fragment_x: { call_popout: true } });
+                const matchMedia = window.matchMedia;
+                window.matchMedia = vi.fn().mockReturnValue({ matches: true }) as unknown as typeof window.matchMedia;
+                try {
+                    render(<RoomHeader room={room} />, getWrapper());
+                    expect(screen.queryByRole("button", { name: "Pop out call" })).not.toBeInTheDocument();
+                } finally {
+                    window.matchMedia = matchMedia;
+                }
+            });
+
             it("has no Pop out call button without the flag", () => {
                 render(<RoomHeader room={room} />, getWrapper());
                 expect(screen.queryByRole("button", { name: "Pop out call" })).not.toBeInTheDocument();
