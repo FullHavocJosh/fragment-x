@@ -73,7 +73,7 @@ const useImageUrl = ({ url, urls }: { url?: string | null; urls?: string[] }): [
     const triedAuthed = useRef(new Set<string>());
     const current = useRef<string | undefined>(undefined);
     const accessToken = useRef<string | null | undefined>(undefined);
-    accessToken.current = cli?.getAccessToken();
+    accessToken.current = cli?.getAccessToken?.();
 
     const onError = useCallback(() => {
         const failed = current.current;
